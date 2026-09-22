@@ -88,8 +88,11 @@ namespace DontFallGranny.UI
             if (coinsLabel != null)
                 coinsLabel.text = $"● {coins}";
 
-            if (motionSettings != null && motionSettings.ReducedMotion)
+            if (coins <= 0 ||
+                (motionSettings != null && motionSettings.ReducedMotion))
+            {
                 return;
+            }
 
             if (coinPulseTarget != null)
             {
