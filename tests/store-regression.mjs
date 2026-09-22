@@ -23,8 +23,8 @@ assert.match(sprite, /viewBox="0 0 720 120"/);
 assert.equal((sprite.match(/<use href="#hanger"/g) || []).length, 6);
 assert.match(html, /assets\/hanger-spritesheet\.svg/);
 assert.doesNotMatch(html, /assets\/hanger-spritesheet\.png/);
-assert.match(html, /background-size:576px 96px/);
-assert.match(html, /background-size:504px 84px/);
+assert.match(html, /background-size:432px 72px/);
+assert.match(html, /background-size:348px 58px/);
 assert.match(html, /function setHangerFrame\(/);
 assert.match(html, /function syncClothesHanger\(/);
 
