@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync('index.html','utf8');
+assert.equal((html.match(/Agent UI\/UX review 2026-09-22/g)||[]).length,1,'UI patch should be applied once');
+assert.match(html,/#overlay\.storepage \.store-item small\{flex:1/,'Descriptions align shop actions');
+assert.match(html,/#overlay\.storepage \.store-item button\{margin-top:auto;min-height:44px/,'Purchase buttons are aligned and touch sized');
+assert.match(html,/#overlay\.storepage \.menu-tabs\{position:sticky/,'Shop tabs remain reachable');
+assert.match(html,/#overlay button:focus-visible/,'Keyboard focus remains visible');
+assert.match(html, /class="panel" tabindex="0" aria-label="Spelmenu en winkel/,'The store panel is keyboard scrollable');
+assert.match(html,/setAttribute\('aria-pressed',String\(active\)\)/,'Menu tabs expose their current state');
+assert.match(html,/updated\.focus\(\{preventScroll:true\}\)/,'Focus restores after equipping without jumping scroll');
+assert.match(html,/menuPanel\.scrollTop=previousScroll/,'Scroll remains in place after purchase');
+const script=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
+assert.ok(script);
+new Function(script);
+console.log('PASS: UI/UX shop alignment, navigation, focus, scroll and JS syntax');
