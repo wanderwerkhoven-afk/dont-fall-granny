@@ -1,0 +1,34 @@
+name: Fix wardrobe rail position
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-wardrobe-rail.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Move hanger rail below shop controls and test
+        run: |
+          set -eu
+          python3 tools/fix-wardrobe-rail-position.py
+          node tests/store-regression.mjs
+          node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
+          node tests/wardrobe-scroll-outfits.mjs
+          node tests/boutique-regression.mjs
+          git diff --check
+      - name: Commit verified result directly to main
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/wardrobe-scroll-outfits.mjs
+          git commit -m 'ui: anchor wardrobe hanger rail beneath shop controls'
+          git pull --rebase origin main
+          git push origin HEAD:main
