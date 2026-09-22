@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify sprites, store UI, preview, and game syntax
+      - name: Verify sprites, store UI, preview, wardrobe scroll, outfits, and game syntax
         run: |
           set -eu
           test -s index.html
@@ -29,6 +29,7 @@ jobs:
           node tests/store-regression.mjs
           node tests/ui-ux-regression.mjs
           node tests/shop-ux.mjs
+          node tests/wardrobe-scroll-outfits.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
