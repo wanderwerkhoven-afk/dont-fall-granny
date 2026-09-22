@@ -1,0 +1,13 @@
+import {readFileSync} from 'node:fs';
+import assert from 'node:assert/strict';
+const html=readFileSync('index.html','utf8');
+assert.match(html,/#overlay\.storepage \.store-item\.selected\{/,'Selected outfit styling missing');
+assert.match(html,/#overlay\.storepage \.store-item\.selected::before\{content:'AANGETROKKEN'/,'Selected badge missing');
+assert.match(html,/const focusTarget=updated\?\.disabled\?updated\.closest\('\.store-item'\):updated/,'Disabled active button focus fallback missing');
+assert.match(html,/focusTarget\.focus\(\{preventScroll:true\}\)/,'Purchase focus restoration missing');
+assert.match(html,/menuPanel\.scrollTop=previousScroll/,'Purchase scroll restoration missing');
+assert.match(html,/if\(btn\.dataset\.page!==menuPage\)/,'Tab change guard missing');
+assert.match(html,/menuPanel\.scrollTop=0/,'Tab scroll reset missing');
+assert.match(html,/id="menuWallet" role="status" aria-live="polite"/,'Accessible wallet status missing');
+const source=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];assert.ok(source);new Function(source);
+console.log('PASS shop UX selected state, purchase focus, tab scroll, live wallet and JS syntax');
