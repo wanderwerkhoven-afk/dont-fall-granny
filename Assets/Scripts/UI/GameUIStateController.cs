@@ -5,8 +5,9 @@ namespace DontFallGranny.UI
 {
     public sealed class GameUIStateController : MonoBehaviour
     {
-        [Header("State source")]
+        [Header("State sources")]
         [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GameSessionFlowController sessionFlow;
 
         [Header("UI groups")]
         [SerializeField] private CanvasGroup hud;
@@ -18,34 +19,55 @@ namespace DontFallGranny.UI
         {
             if (runState == null)
                 runState = FindFirstObjectByType<GameRunStateController>();
+
+            if (sessionFlow == null)
+                sessionFlow = FindFirstObjectByType<GameSessionFlowController>();
         }
 
         private void OnEnable()
         {
-            if (runState == null)
-                return;
+            if (runState != null)
+                runState.StateChanged += HandleRunStateChanged;
 
-            runState.StateChanged += HandleStateChanged;
-            Apply(runState.State);
+            if (sessionFlow != null)
+                sessionFlow.StateChanged += HandleSessionStateChanged;
+
+            Apply();
         }
 
         private void OnDisable()
         {
             if (runState != null)
-                runState.StateChanged -= HandleStateChanged;
+                runState.StateChanged -= HandleRunStateChanged;
+
+            if (sessionFlow != null)
+                sessionFlow.StateChanged -= HandleSessionStateChanged;
         }
 
-        private void HandleStateChanged(GameRunState _, GameRunState current)
+        private void HandleRunStateChanged(GameRunState _, GameRunState __)
         {
-            Apply(current);
+            Apply();
         }
 
-        private void Apply(GameRunState state)
+        private void HandleSessionStateChanged(GameSessionState _, GameSessionState __)
         {
-            SetGroup(hud, state == GameRunState.Running || state == GameRunState.Recovering);
-            SetGroup(recoveryPrompt, state == GameRunState.Recovering);
-            SetGroup(rescueCard, state == GameRunState.Rescue);
-            SetGroup(gameOverPanel, state == GameRunState.GameOver);
+            Apply();
+        }
+
+        private void Apply()
+        {
+            bool playing =
+                sessionFlow == null || sessionFlow.State == GameSessionState.Playing;
+
+            GameRunState state =
+                runState != null ? runState.State : GameRunState.Running;
+
+            SetGroup(hud, playing &&
+                (state == GameRunState.Running || state == GameRunState.Recovering));
+
+            SetGroup(recoveryPrompt, playing && state == GameRunState.Recovering);
+            SetGroup(rescueCard, playing && state == GameRunState.Rescue);
+            SetGroup(gameOverPanel, playing && state == GameRunState.GameOver);
         }
 
         private static void SetGroup(CanvasGroup group, bool visible)
