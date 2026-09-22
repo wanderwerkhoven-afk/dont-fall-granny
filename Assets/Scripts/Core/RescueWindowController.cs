@@ -9,6 +9,7 @@ namespace DontFallGranny.Core
         [Header("References")]
         [SerializeField] private FallController fallController;
         [SerializeField] private BalanceController balanceController;
+        [SerializeField] private GameRunStateController runState;
 
         [Header("Timing")]
         [SerializeField] private float rescueWindowSeconds = 10f;
@@ -37,6 +38,9 @@ namespace DontFallGranny.Core
 
             if (balanceController == null)
                 balanceController = GetComponent<BalanceController>();
+
+            if (runState == null)
+                runState = GetComponent<GameRunStateController>();
         }
 
         private void OnEnable()
@@ -71,6 +75,7 @@ namespace DontFallGranny.Core
 
             IsOpen = true;
             deadline = Time.unscaledTime + rescueWindowSeconds;
+            runState?.SetState(GameRunState.Rescue);
 
             onWindowOpened?.Invoke();
             WindowOpened?.Invoke(rescueWindowSeconds);
@@ -85,6 +90,7 @@ namespace DontFallGranny.Core
 
             balanceController?.ResetBalance();
             fallController?.ResetFall();
+            runState?.SetState(GameRunState.Running);
 
             onRescued?.Invoke();
             Rescued?.Invoke();
@@ -104,6 +110,7 @@ namespace DontFallGranny.Core
                 return;
 
             IsOpen = false;
+            runState?.SetState(GameRunState.GameOver);
 
             onExpired?.Invoke();
             Expired?.Invoke();
