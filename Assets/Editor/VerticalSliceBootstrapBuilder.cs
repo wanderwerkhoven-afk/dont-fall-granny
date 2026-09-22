@@ -1,4 +1,3 @@
-using System.IO;
 using DontFallGranny.Core;
 using DontFallGranny.Feedback;
 using DontFallGranny.Input;
@@ -30,10 +29,10 @@ namespace DontFallGranny.EditorTools
 
             GameObject systems = BuildSystems();
             GameObject granny = BuildGrannyPrototype(materials);
-            GameObject environment = BuildStreet(materials);
+            BuildStreet(materials);
             BuildLighting();
-            BuildCamera(granny.transform);
-            BuildUI(systems);
+            BuildCamera(granny);
+            BuildUI(systems, granny);
 
             PrefabUtility.SaveAsPrefabAssetAndConnect(
                 granny,
@@ -77,23 +76,23 @@ namespace DontFallGranny.EditorTools
 
         private static MaterialSet CreateMaterials(VisualDirectionProfile profile)
         {
-            return new MaterialSet
-            {
-                Cream = GetOrCreateMaterial("Cream", profile.cream),
-                Plum = GetOrCreateMaterial("Plum", profile.plum),
-                Mustard = GetOrCreateMaterial("Mustard", profile.mustard),
-                DustyPink = GetOrCreateMaterial("DustyPink", profile.dustyPink),
-                Mint = GetOrCreateMaterial("Mint", profile.mint),
-                Asphalt = GetOrCreateMaterial("Asphalt", new Color(0.17f, 0.18f, 0.22f)),
-                Grass = GetOrCreateMaterial("Grass", new Color(0.42f, 0.62f, 0.43f)),
-                White = GetOrCreateMaterial("White", new Color(0.94f, 0.93f, 0.90f))
-            };
+            var set = new MaterialSet();
+            set.Cream = GetOrCreateMaterial("Cream", profile.cream);
+            set.Plum = GetOrCreateMaterial("Plum", profile.plum);
+            set.Mustard = GetOrCreateMaterial("Mustard", profile.mustard);
+            set.DustyPink = GetOrCreateMaterial("DustyPink", profile.dustyPink);
+            set.Mint = GetOrCreateMaterial("Mint", profile.mint);
+            set.Asphalt = GetOrCreateMaterial("Asphalt", new Color(0.17f, 0.18f, 0.22f));
+            set.Grass = GetOrCreateMaterial("Grass", new Color(0.42f, 0.62f, 0.43f));
+            set.White = GetOrCreateMaterial("White", new Color(0.94f, 0.93f, 0.90f));
+            return set;
         }
 
         private static Material GetOrCreateMaterial(string name, Color color)
         {
             string path = $"{MaterialFolder}/{name}.mat";
             Material material = AssetDatabase.LoadAssetAtPath<Material>(path);
+
             if (material == null)
             {
                 Shader shader = Shader.Find("Universal Render Pipeline/Lit");
@@ -113,9 +112,6 @@ namespace DontFallGranny.EditorTools
         {
             var systems = new GameObject("GameSystems");
             systems.AddComponent<GameSessionFlowController>();
-            systems.AddComponent<GameRunStateController>();
-            systems.AddComponent<GameTimeController>();
-
             return systems;
         }
 
@@ -129,7 +125,10 @@ namespace DontFallGranny.EditorTools
             body.constraints = RigidbodyConstraints.FreezeRotationX |
                                RigidbodyConstraints.FreezeRotationZ;
 
-            root.AddComponent<CapsuleCollider>();
+            var capsule = root.AddComponent<CapsuleCollider>();
+            capsule.height = 1.8f;
+            capsule.radius = 0.42f;
+
             root.AddComponent<BalanceController>();
             root.AddComponent<GameRunStateController>();
             root.AddComponent<GameTimeController>();
@@ -168,29 +167,58 @@ namespace DontFallGranny.EditorTools
                 materials.White
             );
 
-            var glasses = new GameObject("Glasses");
-            glasses.transform.SetParent(root.transform);
-            glasses.transform.localPosition = new Vector3(0f, 1.02f, 0.31f);
-
-            CreatePrimitiveChild(
-                glasses.transform,
-                PrimitiveType.Torus,
-                "Lens_L",
-                new Vector3(-0.19f, 0f, 0f),
-                new Vector3(0.18f, 0.18f, 0.18f),
-                materials.Plum
-            );
-
-            CreatePrimitiveChild(
-                glasses.transform,
-                PrimitiveType.Torus,
-                "Lens_R",
-                new Vector3(0.19f, 0f, 0f),
-                new Vector3(0.18f, 0.18f, 0.18f),
-                materials.Plum
-            );
+            BuildGlasses(root.transform, materials);
 
             return root;
+        }
+
+        private static void BuildGlasses(Transform root, MaterialSet materials)
+        {
+            var glasses = new GameObject("Glasses");
+            glasses.transform.SetParent(root);
+            glasses.transform.localPosition = new Vector3(0f, 1.02f, 0.31f);
+
+            CreateGlassesLens(
+                glasses.transform,
+                "Lens_L",
+                new Vector3(-0.19f, 0f, 0f),
+                materials.Plum
+            );
+
+            CreateGlassesLens(
+                glasses.transform,
+                "Lens_R",
+                new Vector3(0.19f, 0f, 0f),
+                materials.Plum
+            );
+
+            CreatePrimitiveChild(
+                glasses.transform,
+                PrimitiveType.Cube,
+                "Bridge",
+                Vector3.zero,
+                new Vector3(0.16f, 0.035f, 0.035f),
+                materials.Plum
+            );
+        }
+
+        private static void CreateGlassesLens(
+            Transform parent,
+            string name,
+            Vector3 localPosition,
+            Material material
+        )
+        {
+            GameObject lens = CreatePrimitiveChild(
+                parent,
+                PrimitiveType.Cylinder,
+                name,
+                localPosition,
+                new Vector3(0.17f, 0.02f, 0.17f),
+                material
+            );
+
+            lens.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
         }
 
         private static GameObject BuildStreet(MaterialSet materials)
@@ -216,7 +244,12 @@ namespace DontFallGranny.EditorTools
                 for (int i = 0; i < 6; i++)
                 {
                     float z = 12f + i * 16f;
-                    BuildHouse(environment.transform, new Vector3(side * 10f, 1.4f, z), materials, i);
+                    BuildHouse(
+                        environment.transform,
+                        new Vector3(side * 10f, 1.4f, z),
+                        materials,
+                        i + (side > 0 ? 6 : 0)
+                    );
                 }
             }
 
@@ -235,7 +268,7 @@ namespace DontFallGranny.EditorTools
         )
         {
             GameObject house = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            house.name = $"House_{index}";
+            house.name = $"House_{index:00}";
             house.transform.SetParent(parent);
             house.transform.position = position;
             house.transform.localScale = new Vector3(5f, 2.8f, 5f);
@@ -277,7 +310,7 @@ namespace DontFallGranny.EditorTools
             RenderSettings.ambientGroundColor = new Color(0.31f, 0.31f, 0.34f);
         }
 
-        private static void BuildCamera(Transform granny)
+        private static void BuildCamera(GameObject granny)
         {
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
@@ -290,13 +323,18 @@ namespace DontFallGranny.EditorTools
 
             SerializedObject serialized = new SerializedObject(feel);
             serialized.FindProperty("targetCamera").objectReferenceValue = camera;
-            serialized.FindProperty("followTarget").objectReferenceValue = granny;
+            serialized.FindProperty("followTarget").objectReferenceValue = granny.transform;
+            serialized.FindProperty("runState").objectReferenceValue =
+                granny.GetComponent<GameRunStateController>();
+            serialized.FindProperty("balance").objectReferenceValue =
+                granny.GetComponent<BalanceController>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
-            cameraObject.transform.position = granny.position + new Vector3(4.6f, 2.8f, -7.5f);
+            cameraObject.transform.position =
+                granny.transform.position + new Vector3(4.6f, 2.8f, -7.5f);
         }
 
-        private static void BuildUI(GameObject systems)
+        private static void BuildUI(GameObject systems, GameObject granny)
         {
             GameObject canvasObject = new GameObject("GameCanvas");
             var canvas = canvasObject.AddComponent<Canvas>();
@@ -322,7 +360,7 @@ namespace DontFallGranny.EditorTools
             var gameUI = canvasObject.AddComponent<GameUIStateController>();
 
             var sessionFlow = systems.GetComponent<GameSessionFlowController>();
-            var runState = systems.GetComponent<GameRunStateController>();
+            var runState = granny.GetComponent<GameRunStateController>();
 
             SerializedObject frontEndSO = new SerializedObject(frontEnd);
             frontEndSO.FindProperty("sessionFlow").objectReferenceValue = sessionFlow;
@@ -352,8 +390,11 @@ namespace DontFallGranny.EditorTools
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
 
-            panel.AddComponent<CanvasGroup>();
-            return panel.GetComponent<CanvasGroup>();
+            var canvasGroup = panel.AddComponent<CanvasGroup>();
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+            return canvasGroup;
         }
 
         private static GameObject CreatePrimitiveChild(
@@ -380,16 +421,16 @@ namespace DontFallGranny.EditorTools
             return child;
         }
 
-        private readonly struct MaterialSet
+        private sealed class MaterialSet
         {
-            public Material Cream { get; init; }
-            public Material Plum { get; init; }
-            public Material Mustard { get; init; }
-            public Material DustyPink { get; init; }
-            public Material Mint { get; init; }
-            public Material Asphalt { get; init; }
-            public Material Grass { get; init; }
-            public Material White { get; init; }
+            public Material Cream;
+            public Material Plum;
+            public Material Mustard;
+            public Material DustyPink;
+            public Material Mint;
+            public Material Asphalt;
+            public Material Grass;
+            public Material White;
         }
     }
 }
