@@ -1,0 +1,50 @@
+name: Resize shop hanger on main
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/resize-hanger-on-main.yml'
+permissions:
+  contents: write
+jobs:
+  resize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Resize hanger CSS and synchronize sprite frame size
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          text=p.read_text()
+          needle="function hangerFrameSize(){return window.matchMedia('(max-width:650px)').matches?84:96}"
+          assert text.count(needle)==1, 'Unexpected hanger JS; inspect before editing'
+          text=text.replace(needle,"function hangerFrameSize(){return window.matchMedia('(max-width:650px)').matches?58:72}")
+          css='''\n/* Shop hanger: compact decorative indicator; keep each sprite frame synchronized with JS. */
+.clothes-hanger{width:72px;height:72px;left:-26px;background-size:432px 72px}
+@media(max-width:650px){.clothes-hanger{width:58px;height:58px;left:-19px;background-size:348px 58px}}
+'''
+          assert text.count('</style>')==1
+          assert '/* Shop hanger: compact decorative indicator' not in text
+          text=text.replace('</style>',css+'</style>')
+          p.write_text(text)
+          test=Path('tests/store-regression.mjs')
+          content=test.read_text()
+          for old,new in [('/background-size:576px 96px/','/background-size:432px 72px/'),('/background-size:504px 84px/','/background-size:348px 58px/')]:
+              assert content.count(old)==1, f'Expected one existing assertion {old}'
+              content=content.replace(old,new)
+          content=content.replace("assert.match(html, /function setHangerFrame\\(/);", "assert.match(html, /function hangerFrameSize\\(\\)\\{return window\\.matchMedia\\('\\(max-width:650px\\)'\\)\\.matches\\?58:72\\}/);\nassert.match(html, /function setHangerFrame\\(/);")
+          test.write_text(content)
+          PY
+          node tests/store-regression.mjs
+          node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
+          git diff --check
+      - name: Push verified change to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/store-regression.mjs
+          git diff --cached --quiet || (git commit -m 'ui: shrink shop hanger without changing animation' && git pull --rebase origin main && git push origin HEAD:main)
