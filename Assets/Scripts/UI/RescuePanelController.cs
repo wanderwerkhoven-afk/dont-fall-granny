@@ -1,7 +1,6 @@
 using DontFallGranny.Core;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace DontFallGranny.UI
 {
@@ -12,7 +11,7 @@ namespace DontFallGranny.UI
         [SerializeField] private CanvasGroup panel;
         [SerializeField] private TMP_Text titleLabel;
         [SerializeField] private TMP_Text countdownLabel;
-        [SerializeField] private Image perimeterTimer;
+        [SerializeField] private RectPerimeterTimerController perimeterTimer;
 
         [Header("Text")]
         [SerializeField] private string fallTitle = "Granny is gevallen!";
@@ -28,7 +27,7 @@ namespace DontFallGranny.UI
             rescueWindow.WindowOpened += HandleOpened;
             rescueWindow.CountdownChanged += HandleCountdown;
             rescueWindow.Rescued += Hide;
-            rescueWindow.Expired += HandleExpired;
+            rescueWindow.Expired += Hide;
         }
 
         private void OnDisable()
@@ -39,7 +38,7 @@ namespace DontFallGranny.UI
             rescueWindow.WindowOpened -= HandleOpened;
             rescueWindow.CountdownChanged -= HandleCountdown;
             rescueWindow.Rescued -= Hide;
-            rescueWindow.Expired -= HandleExpired;
+            rescueWindow.Expired -= Hide;
         }
 
         public void OnRescuePressed()
@@ -68,16 +67,7 @@ namespace DontFallGranny.UI
             if (countdownLabel != null)
                 countdownLabel.text = string.Format(countdownFormat, seconds);
 
-            if (perimeterTimer != null)
-                perimeterTimer.fillAmount = Mathf.Clamp01(seconds / fullDuration);
-        }
-
-        private void HandleExpired()
-        {
-            if (countdownLabel != null)
-                countdownLabel.text = "Tijd voorbij";
-
-            SetVisible(true);
+            perimeterTimer?.SetProgress(seconds / fullDuration);
         }
 
         private void Hide()
