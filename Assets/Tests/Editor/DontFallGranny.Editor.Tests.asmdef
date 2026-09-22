@@ -1,0 +1,13 @@
+{
+  "name": "DontFallGranny.Editor.Tests",
+  "references": [
+    "DontFallGranny.Runtime",
+    "DontFallGranny.Editor"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
