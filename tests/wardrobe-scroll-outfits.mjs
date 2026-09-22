@@ -12,3 +12,10 @@ assert.match(html, /localStorage\.setItem\('grandma-clothes'/);
 assert.match(html, /selectedClothes=item\.id/);
 const script=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];assert.ok(script);new Function(script);
 console.log('PASS unified wardrobe scrollbar, draggable hanger, six outfits, inventory and JS syntax');
+
+// Rail begins underneath all controls rather than covering the shop's tabs or coin badge.
+assert.match(html, /top:var\(--wardrobe-rail-top,45%\)/);
+assert.match(html, /function syncClothesRailOffset\(\)/);
+assert.match(html, /originalMetaBottom=meta\.getBoundingClientRect\(\)\.bottom\+menuPanel\.scrollTop/);
+assert.match(html, /Math\.max\(originalMetaBottom,tabBottom\)-overlayTop\+14/);
+assert.match(html, /requestAnimationFrame\(\(\)=>\{syncClothesRailOffset\(\);syncClothesHanger\(\);refreshHangerAnimation\(\)\}\)/);
