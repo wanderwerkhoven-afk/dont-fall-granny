@@ -1,0 +1,10 @@
+{
+  "name": "DontFallGranny.EditMode.Tests",
+  "references": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ]
+}
