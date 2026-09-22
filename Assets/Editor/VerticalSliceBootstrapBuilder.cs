@@ -1,5 +1,6 @@
 using DontFallGranny.Core;
 using DontFallGranny.Feedback;
+using DontFallGranny.Gameplay;
 using DontFallGranny.Input;
 using DontFallGranny.UI;
 using DontFallGranny.Visual;
@@ -147,6 +148,7 @@ namespace DontFallGranny.EditorTools
             root.AddComponent<FallController>();
             root.AddComponent<RescueWindowController>();
             root.AddComponent<TensionFeedbackSystem>();
+            root.AddComponent<RunDataController>();
             root.AddComponent<GameRunLifecycleController>();
 
             CreatePrimitiveChild(root.transform, PrimitiveType.Sphere, "Head",
@@ -218,6 +220,10 @@ namespace DontFallGranny.EditorTools
             BuildObstacle(environment.transform, new Vector3(0f, 0.5f, 18f), m.Mustard);
             BuildObstacle(environment.transform, new Vector3(1.4f, 0.5f, 31f), m.Mint);
             BuildObstacle(environment.transform, new Vector3(-1.3f, 0.5f, 45f), m.DustyPink);
+
+            BuildCoin(environment.transform, new Vector3(0f, 0.7f, 8f), m.Mustard);
+            BuildCoin(environment.transform, new Vector3(0f, 0.7f, 11f), m.Mustard);
+            BuildCoin(environment.transform, new Vector3(0f, 0.7f, 14f), m.Mustard);
         }
 
         private static void BuildHouse(Transform parent, Vector3 position, MaterialSet m, int index)
@@ -248,6 +254,22 @@ namespace DontFallGranny.EditorTools
             obstacle.transform.localScale = new Vector3(1f, 1f, 0.8f);
             obstacle.GetComponent<Renderer>().sharedMaterial = material;
             obstacle.AddComponent<ObstacleImpactSource>();
+        }
+
+        private static void BuildCoin(
+            Transform parent,
+            Vector3 position,
+            Material material
+        )
+        {
+            GameObject coin = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            coin.name = "CoinPickup";
+            coin.transform.SetParent(parent);
+            coin.transform.position = position;
+            coin.transform.localScale = new Vector3(0.35f, 0.08f, 0.35f);
+            coin.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            coin.GetComponent<Renderer>().sharedMaterial = material;
+            coin.AddComponent<CoinPickup>();
         }
 
         private static void BuildLighting()
@@ -317,6 +339,7 @@ namespace DontFallGranny.EditorTools
             var sessionFlow = systems.GetComponent<GameSessionFlowController>();
             var runState = granny.GetComponent<GameRunStateController>();
             var balance = granny.GetComponent<BalanceController>();
+            var runData = granny.GetComponent<RunDataController>();
             var recoveryWindow = granny.GetComponent<RecoveryWindowController>();
             var rescueWindow = granny.GetComponent<RescueWindowController>();
             var inputRouter = granny.GetComponent<GrannyInputRouter>();
@@ -338,10 +361,10 @@ namespace DontFallGranny.EditorTools
 
             BuildHome(home.transform, lifecycle, frontEnd);
             BuildLoadout(loadout.transform, lifecycle, frontEnd);
-            BuildHUD(hud.transform);
+            BuildHUD(hud.transform, runData, balance);
             BuildRecovery(recovery, recoveryWindow, inputRouter);
             BuildRescue(rescue, rescueWindow);
-            BuildGameOver(gameOver, lifecycle);
+            BuildGameOver(gameOver, lifecycle, runState, runData);
 
             canvasObject.SetActive(true);
         }
@@ -405,17 +428,28 @@ namespace DontFallGranny.EditorTools
             UnityEventTools.AddPersistentListener(back.onClick, frontEnd.OnHomePressed);
         }
 
-        private static void BuildHUD(Transform parent)
+        private static void BuildHUD(
+            Transform parent,
+            RunDataController runData,
+            BalanceController balance
+        )
         {
-            CreateText(parent, "Distance", "0 m", 38,
+            TMP_Text distance = CreateText(parent, "Distance", "0 m", 38,
                 new Vector2(0.04f, 0.92f), new Vector2(0.30f, 0.98f),
                 TextAlignmentOptions.Left, Color.white);
-            CreateText(parent, "Coins", "● 0", 34,
+            TMP_Text coins = CreateText(parent, "Coins", "● 0", 34,
                 new Vector2(0.72f, 0.92f), new Vector2(0.96f, 0.98f),
                 TextAlignmentOptions.Right, new Color32(255, 204, 101, 255));
-            CreateText(parent, "Balance", "BALANCE: STABLE", 24,
+            TMP_Text balanceLabel = CreateText(parent, "Balance", "BALANCE: STABLE", 24,
                 new Vector2(0.25f, 0.86f), new Vector2(0.75f, 0.91f),
                 TextAlignmentOptions.Center, new Color32(255, 248, 236, 230));
+
+            var controller = parent.gameObject.AddComponent<RunHUDController>();
+            Wire(controller, "runData", runData);
+            Wire(controller, "balance", balance);
+            Wire(controller, "distanceLabel", distance);
+            Wire(controller, "coinsLabel", coins);
+            Wire(controller, "balanceLabel", balanceLabel);
         }
 
         private static void BuildRecovery(
@@ -491,7 +525,9 @@ namespace DontFallGranny.EditorTools
 
         private static void BuildGameOver(
             CanvasGroup panel,
-            GameRunLifecycleController lifecycle
+            GameRunLifecycleController lifecycle,
+            GameRunStateController runState,
+            RunDataController runData
         )
         {
             CreateBackdrop(panel.transform, new Color(0.08f, 0.06f, 0.12f, 0.82f));
@@ -516,6 +552,8 @@ namespace DontFallGranny.EditorTools
 
             var controller = panel.gameObject.AddComponent<GameOverPanelController>();
             Wire(controller, "lifecycle", lifecycle);
+            Wire(controller, "runState", runState);
+            Wire(controller, "runData", runData);
             Wire(controller, "resultLabel", result);
             Wire(controller, "rewardLabel", reward);
 
