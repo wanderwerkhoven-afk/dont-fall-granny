@@ -183,10 +183,95 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 }
 @media(max-width:650px){body{background:#f8eddf;padding:max(5px,env(safe-area-inset-top)) 5px max(5px,env(safe-area-inset-bottom))}.shell{background:transparent;padding:0;box-shadow:none;gap:7px}.game{border-width:3px;border-radius:18px}.game .scoreboard{top:10px;right:8px;gap:4px}.game .pill{padding:5px 6px;min-width:59px;font-size:13px}.game .pill small{font-size:8px}.tier-track{left:9px;top:11px;width:24%}.tier-track-label{font-size:8px}#tierNext{font-size:7px}.tier-track-rail{height:8px;margin-top:4px}.game .footer{bottom:43px}.game .controls .button{min-height:59px}#overlay{padding:8px}#overlay .panel{max-height:calc(100% - 18px);padding:12px;border-radius:21px}.menu-hero{height:100px}.menu-grandma{height:98px}.menu-grandma svg{height:93px}.home-card{min-height:80px;padding:8px}.home-card small{font-size:9px}.menu-kicker{margin:9px 0 6px}.menu-tabs{margin:6px 0}.menu-tabs button{padding:9px 2px}.store-item{min-height:151px}.store-item .preview{height:50px}.store-item .preview svg{height:47px}.menu-guide{font-size:8px}}
 @media(max-width:380px){.tier-track{top:69px;width:42%;background:#fff9e6c9;border-radius:8px;padding:4px}.game .pill{min-width:54px;font-size:12px;padding:4px}.game .scoreboard{gap:3px}.home-card small{display:none}.home-card{min-height:60px}.menu-hero{height:85px}.menu-grandma svg{height:80px}}
+
+/* Clothing store scrollbar: animated wardrobe rail + hanger. */
+#overlay .clothes-scroll-rail{
+  display:none;
+  position:absolute;
+  z-index:12;
+  pointer-events:none;
+  width:34px;
+}
+#overlay.clothespage .clothes-scroll-rail{display:block}
+#overlay.clothespage .panel{
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+#overlay.clothespage .panel::-webkit-scrollbar{width:0;height:0}
+.clothes-scroll-rail{
+  top:23%;
+  bottom:7%;
+  right:max(8px,calc(50% - 405px));
+}
+.clothes-pole{
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:16px;
+  width:4px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#241f32,#6f6478 45%,#241f32);
+  box-shadow:1px 0 0 #fff5;
+}
+.clothes-pole:before,
+.clothes-pole:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  width:15px;
+  height:5px;
+  border-radius:999px;
+  background:#30263f;
+  transform:translateX(-50%);
+}
+.clothes-pole:before{top:-2px}
+.clothes-pole:after{bottom:-2px}
+.clothes-hanger{
+  position:absolute;
+  top:0;
+  left:0;
+  width:34px;
+  height:31px;
+  transform:translateY(0);
+  will-change:transform;
+  filter:drop-shadow(0 2px 0 #fff7);
+}
+.clothes-hanger .hook{
+  position:absolute;
+  left:14px;
+  top:0;
+  width:9px;
+  height:11px;
+  border:3px solid #30263f;
+  border-bottom:0;
+  border-radius:9px 9px 0 0;
+  transform:rotate(16deg);
+}
+.clothes-hanger .shoulders{
+  position:absolute;
+  left:3px;
+  top:11px;
+  width:28px;
+  height:17px;
+  border-left:3px solid #30263f;
+  border-right:3px solid #30263f;
+  border-bottom:3px solid #30263f;
+  transform:skewY(-18deg) rotate(0deg);
+  border-radius:0 0 5px 5px;
+}
+@media(max-width:650px){
+  .clothes-scroll-rail{
+    top:27%;
+    bottom:6%;
+    right:3px;
+    transform:scale(.88);
+    transform-origin:top right;
+  }
+}
 @media(prefers-reduced-motion:reduce){.menu-grandma,.hero-orbit,.hero-spark{animation:none}}
 </style>
 </head>
-<body><main class="shell"><header><div><h1>Don't Trip Grandma! 👵</h1><p class="subtitle">Een eindeloze wandeling · pas op voor sprintende katten!</p></div></header><section class="game" id="game" aria-label="Spring over obstakels en pak snoepjes"><canvas id="canvas" width="900" height="390"></canvas><div class="tier-track" id="tierTrack"><div class="tier-track-label"><span id="tierNow">BUURT · TIER 1</span><span id="tierNext">VOLGENDE WERELD · 500 M</span></div><div class="tier-track-rail"><div id="tierFill"></div></div></div><div class="scoreboard"><div class="pill"><small>Munten</small><span id="coins">🪙 0</span></div><div class="pill"><small>Afstand</small><span id="score">0 m</span></div><div class="pill"><small>Record</small><span id="best">0 m</span></div></div><div class="overlay" id="overlay"><div class="panel"><div class="menu-hero"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-spark spark-a">✦</div><div class="hero-spark spark-b">✧</div><div class="menu-grandma" id="menuGrandma"><svg viewBox="0 0 110 125" aria-label="Oma met wandelstok" role="img"><ellipse cx="55" cy="117" rx="35" ry="6" fill="#30263f" opacity=".2"/><path d="M35 92 L31 116 M70 92 L75 116" stroke="#362d48" stroke-width="9" stroke-linecap="round"/><path d="M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z" fill="#9b6bb0" stroke="#392d44" stroke-width="4"/><path d="M30 65 L14 88 M80 65 L97 85" stroke="#f0c6a9" stroke-width="9" stroke-linecap="round"/><path d="M96 84 L96 116" stroke="#8c6749" stroke-width="5"/><circle cx="55" cy="37" r="29" fill="#f1c8aa" stroke="#392d44" stroke-width="4"/><path d="M27 34 Q18 6 45 7 Q75 -2 84 26 Q70 19 60 23 Q40 16 27 34" fill="#f4f1ee" stroke="#392d44" stroke-width="3"/><circle cx="27" cy="36" r="9" fill="#f4f1ee"/><circle cx="84" cy="36" r="9" fill="#f4f1ee"/><rect x="36" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><rect x="57" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><path d="M54 39 L57 39" stroke="#392d44" stroke-width="3"/><path d="M50 51 Q56 56 64 51" fill="none" stroke="#ad6d75" stroke-width="3"/></svg></div><div class="hero-shadow"></div></div><div class="menu-kicker" id="menuKicker">OMA’S GROTE ONTSNAPPING <span>✦</span> SEIZOEN 01</div><div class="menu-tabs" id="menuTabs"><button data-page="home" class="active">🏠 Start</button><button data-page="clothes">👗 Kleding</button><button data-page="gadgets">🛠 Gadgets</button></div><div class="menu-meta"><span class="menu-record" id="menuRecord">🏁 RECORD 0 M</span><div id="menuWallet">🪙 0 munten</div></div><div id="countdown" role="timer" aria-live="off">⏳ Nog 10 seconden</div><div id="menuContent"></div><div class="menu-guide" id="menuGuide">TIK OM TE SPRINGEN <span>•</span> VERZAMEL MUNTEN <span>•</span> ONTGRENDEL GADGETS</div><h2 id="overlayTitle">Oma gaat wandelen!</h2><p id="overlayText">Spring over katten (pas op: ze sprinten soms!), hondjes, geraniums, sokken en rollators. Pak een snoepje 🍬 voor bescherming tegen één botsing.</p><div id="shop" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"><button class="button" id="reviveBtn">❤️ Verder · 10 🪙</button><button class="button" id="boostBtn">⚡ Boost · 6 🪙</button></div><button class="button" id="startBtn">Start het spel →</button></div></div><div class="footer"><div class="hint">Spatie / ↑ / W of tik op het spel om te springen · P = pauze</div><div class="controls"><button class="button" id="pauseBtn" aria-label="Pauzeer of hervat">⏸ Pauze</button><button class="button scooter-control" id="leftBtn" aria-label="Scootmobiel naar links">⬅ Links</button><button class="button" id="jumpBtn">↑ Spring!</button><button class="button scooter-control" id="rightBtn" aria-label="Scootmobiel naar rechts">Rechts ➡</button></div></div><div class="status" id="status" aria-live="polite">Pak snoepjes om een beschermschild te verdienen.</div></section></main>
+<body><main class="shell"><header><div><h1>Don't Trip Grandma! 👵</h1><p class="subtitle">Een eindeloze wandeling · pas op voor sprintende katten!</p></div></header><section class="game" id="game" aria-label="Spring over obstakels en pak snoepjes"><canvas id="canvas" width="900" height="390"></canvas><div class="tier-track" id="tierTrack"><div class="tier-track-label"><span id="tierNow">BUURT · TIER 1</span><span id="tierNext">VOLGENDE WERELD · 500 M</span></div><div class="tier-track-rail"><div id="tierFill"></div></div></div><div class="scoreboard"><div class="pill"><small>Munten</small><span id="coins">🪙 0</span></div><div class="pill"><small>Afstand</small><span id="score">0 m</span></div><div class="pill"><small>Record</small><span id="best">0 m</span></div></div><div class="overlay" id="overlay"><div class="panel"><div class="menu-hero"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-spark spark-a">✦</div><div class="hero-spark spark-b">✧</div><div class="menu-grandma" id="menuGrandma"><svg viewBox="0 0 110 125" aria-label="Oma met wandelstok" role="img"><ellipse cx="55" cy="117" rx="35" ry="6" fill="#30263f" opacity=".2"/><path d="M35 92 L31 116 M70 92 L75 116" stroke="#362d48" stroke-width="9" stroke-linecap="round"/><path d="M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z" fill="#9b6bb0" stroke="#392d44" stroke-width="4"/><path d="M30 65 L14 88 M80 65 L97 85" stroke="#f0c6a9" stroke-width="9" stroke-linecap="round"/><path d="M96 84 L96 116" stroke="#8c6749" stroke-width="5"/><circle cx="55" cy="37" r="29" fill="#f1c8aa" stroke="#392d44" stroke-width="4"/><path d="M27 34 Q18 6 45 7 Q75 -2 84 26 Q70 19 60 23 Q40 16 27 34" fill="#f4f1ee" stroke="#392d44" stroke-width="3"/><circle cx="27" cy="36" r="9" fill="#f4f1ee"/><circle cx="84" cy="36" r="9" fill="#f4f1ee"/><rect x="36" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><rect x="57" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><path d="M54 39 L57 39" stroke="#392d44" stroke-width="3"/><path d="M50 51 Q56 56 64 51" fill="none" stroke="#ad6d75" stroke-width="3"/></svg></div><div class="hero-shadow"></div></div><div class="menu-kicker" id="menuKicker">OMA’S GROTE ONTSNAPPING <span>✦</span> SEIZOEN 01</div><div class="menu-tabs" id="menuTabs"><button data-page="home" class="active">🏠 Start</button><button data-page="clothes">👗 Kleding</button><button data-page="gadgets">🛠 Gadgets</button></div><div class="menu-meta"><span class="menu-record" id="menuRecord">🏁 RECORD 0 M</span><div id="menuWallet">🪙 0 munten</div></div><div id="countdown" role="timer" aria-live="off">⏳ Nog 10 seconden</div><div id="menuContent"></div><div class="menu-guide" id="menuGuide">TIK OM TE SPRINGEN <span>•</span> VERZAMEL MUNTEN <span>•</span> ONTGRENDEL GADGETS</div><h2 id="overlayTitle">Oma gaat wandelen!</h2><p id="overlayText">Spring over katten (pas op: ze sprinten soms!), hondjes, geraniums, sokken en rollators. Pak een snoepje 🍬 voor bescherming tegen één botsing.</p><div id="shop" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"><button class="button" id="reviveBtn">❤️ Verder · 10 🪙</button><button class="button" id="boostBtn">⚡ Boost · 6 🪙</button></div><button class="button" id="startBtn">Start het spel →</button></div><div class="clothes-scroll-rail" id="clothesScrollRail" aria-hidden="true"><div class="clothes-pole"></div><div class="clothes-hanger" id="clothesHanger"><span class="hook"></span><span class="shoulders"></span></div></div></div><div class="footer"><div class="hint">Spatie / ↑ / W of tik op het spel om te springen · P = pauze</div><div class="controls"><button class="button" id="pauseBtn" aria-label="Pauzeer of hervat">⏸ Pauze</button><button class="button scooter-control" id="leftBtn" aria-label="Scootmobiel naar links">⬅ Links</button><button class="button" id="jumpBtn">↑ Spring!</button><button class="button scooter-control" id="rightBtn" aria-label="Scootmobiel naar rechts">Rechts ➡</button></div></div><div class="status" id="status" aria-live="polite">Pak snoepjes om een beschermschild te verdienen.</div></section></main>
 <script>
 (()=>{'use strict';
 const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),title=document.getElementById('overlayTitle'),text=document.getElementById('overlayText'),startBtn=document.getElementById('startBtn'),pauseBtn=document.getElementById('pauseBtn'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),statusEl=document.getElementById('status'),coinsEl=document.getElementById('coins'),shop=document.getElementById('shop'),reviveBtn=document.getElementById('reviveBtn'),boostBtn=document.getElementById('boostBtn');
@@ -262,7 +347,7 @@ function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaini
 function returnHome(){stopDeathTimer();state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='▶ START RUN';overlay.classList.remove('hidden');render()}
 
 function showMenu(page='home'){
- menuPage=page;overlay.classList.toggle('storepage',page!=='home');
+ menuPage=page;overlay.classList.toggle('storepage',page!=='home');overlay.classList.toggle('clothespage',page==='clothes');overlay.classList.toggle('gadgetspage',page==='gadgets');
  menuWallet.textContent='🪙 '+coins+' munten';
  menuTabs.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
  if(page==='home'){
@@ -284,8 +369,19 @@ function showMenu(page='home'){
  else if(!ownedGadgets.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedGadgets.push(item.id)}
  saveCoins();saveInventory();showMenu(page);
  }));
+ requestAnimationFrame(syncClothesHanger);
 }
 menuTabs.addEventListener('click',e=>{const btn=e.target.closest('[data-page]');if(btn)showMenu(btn.dataset.page)});
+const clothesRail=document.getElementById('clothesScrollRail'),clothesHanger=document.getElementById('clothesHanger'),menuPanel=overlay.querySelector('.panel');
+function syncClothesHanger(){
+ if(menuPage!=='clothes'||!clothesRail||!clothesHanger||!menuPanel)return;
+ const scrollMax=Math.max(0,menuPanel.scrollHeight-menuPanel.clientHeight);
+ const progress=scrollMax?menuPanel.scrollTop/scrollMax:0;
+ const travel=Math.max(0,clothesRail.clientHeight-clothesHanger.offsetHeight);
+ clothesHanger.style.transform='translateY('+(travel*progress)+'px)';
+}
+menuPanel.addEventListener('scroll',syncClothesHanger,{passive:true});
+window.addEventListener('resize',syncClothesHanger);
 function random(a,b){return a+Math.random()*(b-a)}function reset(){document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(frame)}function end(){
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
