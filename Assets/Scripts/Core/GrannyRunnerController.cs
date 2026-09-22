@@ -1,3 +1,4 @@
+using DontFallGranny.Input;
 using UnityEngine;
 
 namespace DontFallGranny.Core
@@ -8,6 +9,7 @@ namespace DontFallGranny.Core
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
         [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GrannyInputRouter inputRouter;
         [SerializeField] private Transform groundProbe;
         [SerializeField] private LayerMask groundMask = ~0;
 
@@ -15,6 +17,7 @@ namespace DontFallGranny.Core
         [SerializeField] private float forwardSpeed = 6.5f;
         [SerializeField] private float acceleration = 0.08f;
         [SerializeField] private float maxForwardSpeed = 11f;
+        [SerializeField, Range(0f, 1f)] private float recoveringSpeedMultiplier = 0.45f;
 
         [Header("Jump")]
         [SerializeField] private float jumpVelocity = 7.4f;
@@ -37,6 +40,7 @@ namespace DontFallGranny.Core
         public bool IsGrounded { get; private set; }
 
         private bool AllowsLocomotion => runState == null || runState.AllowsLocomotion;
+        private bool AllowsJump => runState == null || runState.State == GameRunState.Running;
 
         private void Awake()
         {
@@ -48,6 +52,21 @@ namespace DontFallGranny.Core
 
             if (runState == null)
                 runState = GetComponent<GameRunStateController>();
+
+            if (inputRouter == null)
+                inputRouter = GetComponent<GrannyInputRouter>();
+        }
+
+        private void OnEnable()
+        {
+            if (inputRouter != null)
+                inputRouter.JumpRequested += RequestJump;
+        }
+
+        private void OnDisable()
+        {
+            if (inputRouter != null)
+                inputRouter.JumpRequested -= RequestJump;
         }
 
         private void Update()
@@ -66,14 +85,6 @@ namespace DontFallGranny.Core
             );
 
             UpdateGroundedState();
-
-            if (Input.GetKeyDown(KeyCode.Space) ||
-                Input.GetKeyDown(KeyCode.UpArrow) ||
-                Input.GetKeyDown(KeyCode.W))
-            {
-                RequestJump();
-            }
-
             TryConsumeJump();
             DetectHardLanding();
 
@@ -91,14 +102,19 @@ namespace DontFallGranny.Core
                 return;
             }
 
+            float stateMultiplier =
+                runState != null && runState.State == GameRunState.Recovering
+                    ? recoveringSpeedMultiplier
+                    : 1f;
+
             Vector3 velocity = body.linearVelocity;
-            velocity.z = CurrentSpeed;
+            velocity.z = CurrentSpeed * stateMultiplier;
             body.linearVelocity = velocity;
         }
 
         public void RequestJump()
         {
-            if (!AllowsLocomotion)
+            if (!AllowsJump)
                 return;
 
             lastJumpRequestTime = Time.time;
@@ -133,6 +149,9 @@ namespace DontFallGranny.Core
 
         private void TryConsumeJump()
         {
+            if (!AllowsJump)
+                return;
+
             bool buffered = Time.time - lastJumpRequestTime <= jumpBufferTime;
             bool canUseGround = Time.time - lastGroundedTime <= coyoteTime;
 
