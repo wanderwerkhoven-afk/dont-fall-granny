@@ -104,6 +104,12 @@ namespace DontFallGranny.Core
             Expire();
         }
 
+        public void ResetWindow()
+        {
+            IsOpen = false;
+            deadline = 0f;
+        }
+
         public void Expire()
         {
             if (!IsOpen)
