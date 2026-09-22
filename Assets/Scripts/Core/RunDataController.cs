@@ -13,10 +13,12 @@ namespace DontFallGranny.Core
 
         public float DistanceMeters { get; private set; }
         public int Coins { get; private set; }
+        public int NearMisses { get; private set; }
         public float BestDistanceMeters { get; private set; }
 
         public event Action<float> DistanceChanged;
         public event Action<int> CoinsChanged;
+        public event Action<int> NearMissChanged;
         public event Action RunDataReset;
 
         private void Awake()
@@ -60,16 +62,24 @@ namespace DontFallGranny.Core
             CoinsChanged?.Invoke(Coins);
         }
 
+        public void RegisterNearMiss()
+        {
+            NearMisses++;
+            NearMissChanged?.Invoke(NearMisses);
+        }
+
         public void ResetRunData()
         {
             DistanceMeters = 0f;
             Coins = 0;
+            NearMisses = 0;
             runStartPosition = distanceTarget != null
                 ? distanceTarget.position
                 : transform.position;
 
             DistanceChanged?.Invoke(DistanceMeters);
             CoinsChanged?.Invoke(Coins);
+            NearMissChanged?.Invoke(NearMisses);
             RunDataReset?.Invoke();
         }
 
