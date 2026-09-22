@@ -1,3 +1,4 @@
+using DontFallGranny.Gameplay;
 using UnityEngine;
 
 namespace DontFallGranny.Core
@@ -9,6 +10,7 @@ namespace DontFallGranny.Core
         [SerializeField, Range(0.01f, 1f)] private float balanceDamage = 0.28f;
         [SerializeField] private bool heavyImpact;
         [SerializeField] private float cooldownSeconds = 0.35f;
+        [SerializeField] private NearMissTrigger nearMissTrigger;
 
         private float lastImpactTime = float.NegativeInfinity;
 
@@ -30,12 +32,20 @@ namespace DontFallGranny.Core
             if (Time.time - lastImpactTime < cooldownSeconds)
                 return;
 
-            GrannyImpactReceiver receiver = other.GetComponentInParent<GrannyImpactReceiver>();
+            GrannyImpactReceiver receiver =
+                other.GetComponentInParent<GrannyImpactReceiver>();
+
             if (receiver == null)
                 return;
 
             lastImpactTime = Time.time;
-            receiver.ReceiveImpact(balanceDamage, heavyImpact, transform.position);
+            nearMissTrigger?.MarkHit();
+
+            receiver.ReceiveImpact(
+                balanceDamage,
+                heavyImpact,
+                transform.position
+            );
         }
     }
 }

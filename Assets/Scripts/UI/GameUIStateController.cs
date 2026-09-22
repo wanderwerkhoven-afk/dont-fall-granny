@@ -14,6 +14,7 @@ namespace DontFallGranny.UI
         [SerializeField] private CanvasGroup recoveryPrompt;
         [SerializeField] private CanvasGroup rescueCard;
         [SerializeField] private CanvasGroup gameOverPanel;
+        [SerializeField, Range(0f, 1f)] private float recoveringHudAlpha = 0.42f;
 
         private void Awake()
         {
@@ -62,8 +63,17 @@ namespace DontFallGranny.UI
             GameRunState state =
                 runState != null ? runState.State : GameRunState.Running;
 
-            SetGroup(hud, playing &&
-                (state == GameRunState.Running || state == GameRunState.Recovering));
+            bool hudVisible = playing &&
+                (state == GameRunState.Running || state == GameRunState.Recovering);
+
+            SetGroup(hud, hudVisible);
+
+            if (hud != null && hudVisible && state == GameRunState.Recovering)
+            {
+                hud.alpha = recoveringHudAlpha;
+                hud.interactable = false;
+                hud.blocksRaycasts = false;
+            }
 
             SetGroup(recoveryPrompt, playing && state == GameRunState.Recovering);
             SetGroup(rescueCard, playing && state == GameRunState.Rescue);
