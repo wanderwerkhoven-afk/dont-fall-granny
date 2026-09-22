@@ -33,3 +33,4 @@ jobs:
           git commit -m 'ui: keep grandma hero and primary start, remove redundant home explanations'
           git pull --rebase origin main
           git push origin HEAD:main
+# Rerun after fixing literal CSS selector assertions.
