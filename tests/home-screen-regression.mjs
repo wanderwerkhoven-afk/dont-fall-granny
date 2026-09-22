@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync('index.html','utf8');
+assert.ok(html.includes('/* Home screen: hero first, no redundant explanations.'));
+for(const id of ['menuContent','menuGuide','overlayTitle','overlayText']) assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #'+id),id+' only hidden on home');
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) .menu-hero{display:grid}'));
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #startBtn{display:block'));
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover){align-items:start}'));
+for(const id of ['menuGrandma','menuTabs','menuRecord','menuWallet','startBtn','clothesScrollRail']) assert.ok(html.includes('id="'+id+'"'),id+' preserved');
+assert.ok(html.includes("function showMenu(page='home')"));
+const script=html.split('<script>')[1]?.split('</script>')[0];assert.ok(script);new Function(script);
+console.log('PASS compact home, hero preserved, start action present, shops isolated, JS syntax');
