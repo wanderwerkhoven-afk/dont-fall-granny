@@ -2,11 +2,9 @@ name: Deploy game with assets
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -23,21 +21,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify hanger source and HTML reference
+      - name: Verify sprites, preview wiring, and game script
         run: |
           set -eu
           test -s index.html
           test -s assets/hanger-spritesheet.svg
-          grep -q "assets/hanger-spritesheet.svg" index.html
-          if grep -q "assets/hanger-spritesheet.png" index.html; then exit 1; fi
           node --input-type=module <<'NODE'
-          import fs from 'node:fs';
+          import {readFileSync,writeFileSync} from 'node:fs';
           import assert from 'node:assert/strict';
-          const svg = fs.readFileSync('assets/hanger-spritesheet.svg', 'utf8');
-          assert.match(svg, /width="720" height="120"/);
-          assert.equal((svg.match(/<use href="#hanger"/g) || []).length, 6);
-          console.log('Six SVG frames and asset reference verified');
+          const html=readFileSync('index.html','utf8');
+          const svg=readFileSync('assets/hanger-spritesheet.svg','utf8');
+          assert.match(svg,/width="720" height="120"/);
+          assert.equal((svg.match(/<use href="#hanger"/g)||[]).length,6);
+          assert.match(html,/background-image:url\('\.\/assets\/hanger-spritesheet\.svg'\)/);
+          assert.doesNotMatch(html,/hanger-spritesheet\.png/);
+          assert.match(html,/background-size:576px 96px/);
+          assert.match(html,/background-size:504px 84px/);
+          assert.equal((html.match(/data-preview-coat="true"/g)||[]).length,1);
+          assert.equal((html.match(/data-preview-hair="true"/g)||[]).length,3);
+          assert.match(html,/function updateGrandmaOutfitPreview\(\)/);
+          assert.match(html,/function showMenu\(page='home'\)\{\s*updateGrandmaOutfitPreview\(\)/);
+          assert.match(html,/selectedClothes=item\.id/);
+          assert.match(html,/saveCoins\(\);saveInventory\(\);showMenu\(page\)/);
+          const inline=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match=>match[1]);
+          assert.equal(inline.length,1,'Expected one native V11 inline game script');
+          writeFileSync('/tmp/granny-inline.js',inline[0]);
+          console.log('PASS: sprite geometry, HTML references, clothing preview, inventory flow');
           NODE
+          node --check /tmp/granny-inline.js
 
   deploy:
     if: github.ref == 'refs/heads/main'
