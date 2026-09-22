@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -16,6 +17,7 @@ namespace DontFallGranny.Core
         [Header("Fall")]
         [SerializeField] private float impactSlowMotionScale = 0.28f;
         [SerializeField] private float impactSlowMotionDuration = 0.22f;
+        [SerializeField] private float rescueRevealDelay = 0.08f;
         [SerializeField] private float forwardFallImpulse = 2.4f;
         [SerializeField] private float downwardFallImpulse = 1.6f;
 
@@ -28,12 +30,16 @@ namespace DontFallGranny.Core
         [SerializeField] private UnityEvent onStumble;
         [SerializeField] private UnityEvent onFallStarted;
         [SerializeField] private UnityEvent onFallImpact;
+        [SerializeField] private UnityEvent onRescueReady;
         [SerializeField] private UnityEvent onRecovered;
+
+        private Coroutine rescueReadyRoutine;
 
         public bool HasFallen { get; private set; }
 
         public event Action FallStarted;
         public event Action FallImpact;
+        public event Action RescueReady;
         public event Action Recovered;
 
         private void Awake()
@@ -63,18 +69,31 @@ namespace DontFallGranny.Core
 
         private void OnDisable()
         {
-            if (balanceController == null)
-                return;
+            if (balanceController != null)
+            {
+                balanceController.StateChanged -= HandleStateChanged;
+                balanceController.Fallen -= HandleFallen;
+                balanceController.RecoveredFromCritical -= HandleRecoveredFromCritical;
+            }
 
-            balanceController.StateChanged -= HandleStateChanged;
-            balanceController.Fallen -= HandleFallen;
-            balanceController.RecoveredFromCritical -= HandleRecoveredFromCritical;
+            if (rescueReadyRoutine != null)
+            {
+                StopCoroutine(rescueReadyRoutine);
+                rescueReadyRoutine = null;
+            }
         }
 
         public void ResetFall()
         {
             HasFallen = false;
             gameTime?.CancelHitStop();
+
+            if (rescueReadyRoutine != null)
+            {
+                StopCoroutine(rescueReadyRoutine);
+                rescueReadyRoutine = null;
+            }
+
             runState?.SetState(GameRunState.Running);
 
             animator?.ResetTrigger(fallTrigger);
@@ -132,6 +151,19 @@ namespace DontFallGranny.Core
 
             onFallImpact?.Invoke();
             FallImpact?.Invoke();
+
+            rescueReadyRoutine = StartCoroutine(WaitForRescueReady());
+        }
+
+        private IEnumerator WaitForRescueReady()
+        {
+            yield return new WaitForSecondsRealtime(
+                impactSlowMotionDuration + rescueRevealDelay
+            );
+
+            rescueReadyRoutine = null;
+            onRescueReady?.Invoke();
+            RescueReady?.Invoke();
         }
     }
 }
