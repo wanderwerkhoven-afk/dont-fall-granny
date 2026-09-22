@@ -403,6 +403,9 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .home-achievement{padding:6px 10px}
 }
 @media(prefers-reduced-motion:reduce){.home-hub-tile{transition:none}}
+
+/* In-world recovery: the balance arc replaces the ordinary score HUD, never a popup. */
+.game.recovery-mode .scoreboard,.game.recovery-mode .tier-track{visibility:hidden}
 </style>
 </head>
 <body><main class="shell"><header><div><h1>Don't Trip Grandma! 👵</h1><p class="subtitle">Een eindeloze wandeling · pas op voor sprintende katten!</p></div></header><section class="game" id="game" aria-label="Spring over obstakels en pak snoepjes"><canvas id="canvas" width="900" height="390"></canvas><div class="tier-track" id="tierTrack"><div class="tier-track-label"><span id="tierNow">BUURT · TIER 1</span><span id="tierNext">VOLGENDE WERELD · 500 M</span></div><div class="tier-track-rail"><div id="tierFill"></div></div></div><div class="scoreboard"><div class="pill"><small>Munten</small><span id="coins">🪙 0</span></div><div class="pill"><small>Afstand</small><span id="score">0 m</span></div><div class="pill"><small>Record</small><span id="best">0 m</span></div></div><div class="overlay" id="overlay"><div class="panel" tabindex="0" aria-label="Spelmenu en winkel, scroll met pijltjestoetsen of veeg"><div class="menu-hero"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-spark spark-a">✦</div><div class="hero-spark spark-b">✧</div><div class="menu-grandma" id="menuGrandma"><svg viewBox="0 0 110 125" aria-label="Oma met wandelstok" role="img"><ellipse cx="55" cy="117" rx="35" ry="6" fill="#30263f" opacity=".2"/><path d="M35 92 L31 116 M70 92 L75 116" stroke="#362d48" stroke-width="9" stroke-linecap="round"/><path d="M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z" data-preview-coat="true" fill="#9b6bb0" stroke="#392d44" stroke-width="4"/><g data-preview-pattern="true"></g><path d="M30 65 L14 88 M80 65 L97 85" stroke="#f0c6a9" stroke-width="9" stroke-linecap="round"/><path d="M96 84 L96 116" stroke="#8c6749" stroke-width="5"/><circle cx="55" cy="37" r="29" fill="#f1c8aa" stroke="#392d44" stroke-width="4"/><path d="M27 34 Q18 6 45 7 Q75 -2 84 26 Q70 19 60 23 Q40 16 27 34" data-preview-hair="true" fill="#f4f1ee" stroke="#392d44" stroke-width="3"/><circle cx="27" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><circle cx="84" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><rect x="36" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><rect x="57" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><path d="M54 39 L57 39" stroke="#392d44" stroke-width="3"/><path d="M50 51 Q56 56 64 51" fill="none" stroke="#ad6d75" stroke-width="3"/></svg></div><div class="hero-shadow"></div></div><div class="menu-kicker" id="menuKicker">OMA’S GROTE ONTSNAPPING <span>✦</span> SEIZOEN 01</div><div class="menu-tabs" id="menuTabs"><button data-page="home" class="menu-back" aria-label="Terug naar het startscherm">← Terug</button><button data-page="clothes">👗 Kleding</button><button data-page="gadgets">🛠 Gadgets</button></div><div class="menu-meta"><span class="menu-record" id="menuRecord">🏁 RECORD 0 M</span><div id="menuWallet" role="status" aria-live="polite" aria-atomic="true">🪙 0 munten</div></div><div id="countdown" role="timer" aria-live="off">⏳ Nog 10 seconden</div><div id="menuContent"></div><div class="menu-guide" id="menuGuide">TIK OM TE SPRINGEN <span>•</span> VERZAMEL MUNTEN <span>•</span> ONTGRENDEL GADGETS</div><h2 id="overlayTitle">Oma gaat wandelen!</h2><p id="overlayText">Spring over katten (pas op: ze sprinten soms!), hondjes, geraniums, sokken en rollators. Pak een snoepje 🍬 voor bescherming tegen één botsing.</p><div id="shop" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"><button class="button" id="reviveBtn">❤️ Verder · 10 🪙</button><button class="button" id="boostBtn">⚡ Boost · 6 🪙</button></div><button class="button" id="startBtn">Start het spel →</button></div><div class="clothes-scroll-rail" id="clothesScrollRail" aria-hidden="true"><div class="clothes-pole"></div><div class="clothes-hanger" id="clothesHanger"></div></div></div><div class="footer"><div class="hint">Spatie / ↑ / W of tik op het spel om te springen · P = pauze</div><div class="controls"><button class="button" id="pauseBtn" aria-label="Pauzeer of hervat">⏸ Pauze</button><button class="button scooter-control" id="leftBtn" aria-label="Scootmobiel naar links">⬅ Links</button><button class="button" id="jumpBtn">↑ Spring!</button><button class="button scooter-control" id="rightBtn" aria-label="Scootmobiel naar rechts">Rechts ➡</button></div></div><div class="status" id="status" aria-live="polite">Pak snoepjes om een beschermschild te verdienen.</div></section></main>
@@ -458,6 +461,96 @@ const extras=[
  {id:'asteroid',w:47,h:44,emoji:'☄️'},{id:'alien',w:47,h:48,emoji:'👾'},{id:'satellite',w:54,h:52,emoji:'🛰️'},{id:'moonrock',w:49,h:37,emoji:'🪨'}
 ];
 const allTypes=[...types,...extras];
+// Current single-file game has no separate Balance/Fall controllers: keep this small
+// deterministic window integrated with the existing collision -> rescue -> game-over flow.
+class RecoveryWindowController{
+ constructor(){this.duration=.9;this.active=false;this.position=0;this.elapsed=0;this.safeMin=.38;this.safeMax=.62;this.perfectMin=.47;this.perfectMax=.53;}
+ begin(distance){
+  this.active=true;this.elapsed=0;this.position=0;
+  const shrink=Math.min(.065,Math.floor(distance/1000)*.008);
+  this.safeMin=.38+shrink;this.safeMax=.62-shrink;
+ }
+ tick(dt){
+  if(!this.active)return false;
+  this.elapsed=Math.min(this.duration,this.elapsed+Math.max(0,dt));
+  this.position=this.elapsed/this.duration;
+  return this.elapsed>=this.duration;
+ }
+ resolve(){
+  if(!this.active)return 'inactive';
+  this.active=false;
+  const p=this.position;
+  if(p>=this.perfectMin&&p<=this.perfectMax)return 'perfect';
+  if(p>=this.safeMin&&p<=this.safeMax)return 'safe';
+  return 'miss';
+ }
+ reset(){this.active=false;this.elapsed=0;this.position=0;}
+}
+const recoveryWindow=new RecoveryWindowController();
+const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+let balance=1,recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0;
+function triggerRecovery(){
+ if(state!=='playing'||vehicle)return;
+ recoveryWindow.begin(score);balance=.25;state='recovery';
+ document.getElementById('game').classList.add('recovery-mode');
+ statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
+}
+function finishRecovery(result){
+ document.getElementById('game').classList.remove('recovery-mode');
+ recoveryWindow.reset();
+ if(result==='miss'){balance=0;end();return;}
+ balance=result==='perfect'?1:.65;
+ recoveryBoost=result==='perfect'?1.5:0;
+ recoverySlow=result==='safe'?1.6:0;
+ recoverySettle=result==='perfect'&&!reducedRecoveryMotion.matches?.26:0;
+ recoveryFeedback=1.05;
+ recoveryFeedbackText=result==='perfect'?'PERFECT SAVE!':'GERED!';
+ invulnerable=1.2;state='playing';
+ statusEl.textContent=result==='perfect'?'PERFECT SAVE! Korte snelheidsboost.':'Net gered! Oma moet even op snelheid komen.';
+}
+function attemptRecovery(){
+ if(state!=='recovery')return false;
+ finishRecovery(recoveryWindow.resolve());return true;
+}
+function updateRecovery(dt){if(recoveryWindow.tick(dt))finishRecovery('miss');}
+function drawRecoveryMeter(){
+ if(state!=='recovery')return;
+ const cx=grandma.x+grandma.w/2,cy=ground+56,r=49,a0=Math.PI*1.08,a1=Math.PI*1.92;
+ const angle=p=>a0+(a1-a0)*p;
+ ctx.save();ctx.lineCap='round';
+ const segment=(start,end,color,width)=>{ctx.beginPath();ctx.arc(cx,cy,r,angle(start),angle(end));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()};
+ segment(0,1,'#493e49',14);
+ segment(recoveryWindow.safeMin,recoveryWindow.safeMax,'#ffce52',12);
+ segment(recoveryWindow.perfectMin,recoveryWindow.perfectMax,'#fff7d7',13);
+ const a=angle(recoveryWindow.position),nx=cx+Math.cos(a)*r,ny=cy+Math.sin(a)*r;
+ ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(nx+Math.cos(a)*13,ny+Math.sin(a)*13);
+ ctx.strokeStyle='#fffaf2';ctx.lineWidth=5;ctx.stroke();
+ ctx.beginPath();ctx.arc(nx,ny,6,0,Math.PI*2);ctx.fillStyle='#493e49';ctx.fill();
+ ctx.strokeStyle='#fffaf2';ctx.lineWidth=2;ctx.stroke();
+ ctx.font='900 16px system-ui';ctx.textAlign='center';ctx.fillStyle='#493e49';
+ ctx.fillText('TIK!  BALANS',cx,cy+18);
+ ctx.restore();
+}
+function drawRecoveryGrandma(){
+ if(recoverySettle>0&&!reducedRecoveryMotion.matches){
+  const t=1-recoverySettle/.26,impact=Math.sin(t*Math.PI);
+  ctx.save();ctx.translate(grandma.x+grandma.w/2,grandma.y+grandma.h);
+  ctx.scale(1+impact*.11,1-impact*.11);
+  ctx.translate(-(grandma.x+grandma.w/2),-(grandma.y+grandma.h));
+  drawGrandma();ctx.restore();return;
+ }
+ drawGrandma();
+}
+function drawRecoveryFeedback(){
+ if(recoveryFeedback<=0)return;
+ ctx.save();ctx.globalAlpha=Math.min(1,recoveryFeedback*2);
+ ctx.font='900 19px system-ui';ctx.textAlign='center';
+ ctx.strokeStyle='#493e49';ctx.lineWidth=4;
+ ctx.strokeText(recoveryFeedbackText,grandma.x+grandma.w/2+22,grandma.y-30);
+ ctx.fillStyle='#ffcc65';ctx.fillText(recoveryFeedbackText,grandma.x+grandma.w/2+22,grandma.y-30);
+ ctx.restore();
+}
+
 function saveCoins(){if(typeof menuWallet!=='undefined')menuWallet.textContent='🪙 '+coins+' munten';coinsEl.textContent='🪙 '+coins;try{localStorage.setItem('dont-trip-grandma-coins',coins)}catch(e){}}
 const clothing=[
  {id:'classic',name:'Klassieke oma',cost:0,color:'#ad78a4',hair:'#e6e4e3'},
@@ -666,8 +759,9 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function random(a,b){return a+Math.random()*(b-a)}function reset(){recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');balance=1;recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(frame)}function end(){
+ recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
  state='over';showMenu('home');overlay.classList.add('gameover');deathDeadline=performance.now()+GAME_OVER_SECONDS*1000;deathTimerFrame=requestAnimationFrame(tickDeathTimer);if(score>best){best=score;bestEl.textContent=best+' m';try{localStorage.setItem('dont-trip-grandma-best',best)}catch(e){}}
  title.textContent='RUN VOORBIJ!';
@@ -687,14 +781,14 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=-690;grandma.y-=1}}function activate(){if(state==='over')returnHome();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=-690;grandma.y-=1}}function activate(){if(state==='over')returnHome();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){elapsed+=dt;walk+=dt*11;speed=245+elapsed*2.15+Math.max(0,elapsed-35)*.65;travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
+function update(dt){elapsed+=dt;walk+=dt*11;recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
  if(vehicle){
   vehicleTime=Math.max(0,vehicleTime-dt);modeDistance+=speed*dt;modeSpawn-=dt;
   if(vehicleTime<=0){finishVehicle();return;}
@@ -761,7 +855,7 @@ for(const o of obstacles){
   if(o.attacking&&!o.charging&&o.x<=o.chargeX)o.charging=true;
   o.x-=speed*(o.charging?o.multiplier:1)*dt;
 }for(const c of candies){c.x-=speed*dt;c.t+=dt}obstacles=obstacles.filter(o=>o.x+o.w>-30);candies=candies.filter(c=>c.x+c.w>-30);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
-const body={x:grandma.x+7,y:grandma.y+7,w:grandma.w-13,h:grandma.h-9};for(const o of obstacles){if(!vehicle&&!o.hit&&rectHit(body,{x:o.x+3,y:o.y+3,w:o.w-6,h:o.h-3},7)){o.hit=true;if(invulnerable>0||boostTime>0)continue;if(shield){shield=0;invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Je bent weer kwetsbaar.'}else{puff(grandma.x+20,grandma.y+25,'#e88999');end();return}}}for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
+const body={x:grandma.x+7,y:grandma.y+7,w:grandma.w-13,h:grandma.h-9};for(const o of obstacles){if(!vehicle&&!o.hit&&rectHit(body,{x:o.x+3,y:o.y+3,w:o.w-6,h:o.h-3},7)){o.hit=true;if(invulnerable>0||boostTime>0)continue;if(shield){shield=0;invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Je bent weer kwetsbaar.'}else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery();return}}}for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
 for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;coins++;coinsRun++;saveCoins();puff(c.x,c.y,'#ffcf49')}}
 coinItems=coinItems.filter(c=>!c.taken);
 }
@@ -966,12 +1060,13 @@ function render(){
  const tier=TIERS[currentTier%TIERS.length];
  // Tier is painted inside the world, rather than outside the game frame.
  ctx.save();ctx.textAlign='center';
+ if(state==='recovery')ctx.globalAlpha=0;
  ctx.font='900 23px system-ui';ctx.fillStyle=(currentTier===4||currentTier>=6)?'#fff':'#493e49';
  ctx.globalAlpha=.82;
  ctx.fillText(`TIER ${currentTier+1}`,W/2,Math.max(108,ground*.35));
  ctx.font='800 15px system-ui';ctx.fillText(tier.name.toUpperCase(),W/2,Math.max(132,ground*.35+23));
  ctx.restore();
- if(tierFlash>0){
+ if(tierFlash>0&&state!=='recovery'){
   const alpha=Math.min(1,tierFlash/0.4,(3.3-tierFlash)/0.3);
   ctx.save();ctx.globalAlpha=Math.max(0,alpha);
   rounded(W*.1,ground*.38,W*.8,110,22,'#fffaf2');
@@ -985,7 +1080,7 @@ for(const c of coinItems){
  ellipse(0,0,12,12,'#f8ad2c');ellipse(0,0,9,9,'#ffe17a');
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
-for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawGrandma();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}}
-function frame(now){if(state!=='playing')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;update(dt);render();if(state==='playing')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
+for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}}
+function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;if(state==='recovery')updateRecovery(dt);else update(dt);render();if(state==='playing'||state==='recovery')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 })();
 </script></body></html>
