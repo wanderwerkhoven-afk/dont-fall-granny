@@ -1,4 +1,4 @@
-name: Phaser Web + GitHub Pages
+name: V8 Native Web + GitHub Pages
 
 on:
   push:
@@ -13,34 +13,37 @@ permissions:
   contents: read
 
 concurrency:
-  group: phaser-pages-${{ github.ref }}
+  group: v8-native-pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Typecheck and build
+  validate:
+    name: Validate native V8 web
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - name: Verify expected files
+        run: |
+          test -f web/index.html
+          test -f web/styles.css
+          test -f web/game.js
 
-      - name: Install dependencies
-        run: npm install
+      - name: Syntax-check JavaScript
+        run: node --check web/game.js
 
-      - name: Typecheck and build
-        run: npm run build
+      - name: Verify split references
+        run: |
+          grep -q './styles.css' web/index.html
+          grep -q './game.js' web/index.html
 
-      - name: Upload browser build
+      - name: Upload native web artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dont-fall-granny-web
-          path: dist
+          name: dont-fall-granny-v8-native
+          path: web
           if-no-files-found: error
 
       - name: Configure GitHub Pages
@@ -51,12 +54,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: web
 
   deploy:
     name: Deploy GitHub Pages
     if: github.ref == 'refs/heads/main'
-    needs: build
+    needs: validate
     runs-on: ubuntu-latest
 
     permissions:
