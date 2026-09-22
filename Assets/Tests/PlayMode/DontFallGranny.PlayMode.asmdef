@@ -1,9 +1,0 @@
-{
-  "name": "DontFallGranny.PlayMode.Tests",
-  "references": [
-    "DontFallGranny.Runtime"
-  ],
-  "optionalUnityReferences": [
-    "TestAssemblies"
-  ]
-}
