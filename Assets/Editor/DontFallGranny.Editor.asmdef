@@ -1,7 +1,9 @@
 {
   "name": "DontFallGranny.Editor",
   "references": [
-    "DontFallGranny.Runtime"
+    "DontFallGranny.Runtime",
+    "Unity.TextMeshPro",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [
     "Editor"
