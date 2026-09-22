@@ -1,0 +1,10 @@
+{
+  "name": "DontFallGranny.Editor",
+  "references": [
+    "DontFallGranny.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": true
+}
