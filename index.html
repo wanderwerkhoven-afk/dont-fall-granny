@@ -296,9 +296,25 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 #overlay.clothespage .clothes-scroll-rail{pointer-events:auto;touch-action:none;cursor:grab;width:44px;user-select:none;-webkit-user-select:none}
 #overlay.clothespage .clothes-scroll-rail:active{cursor:grabbing}
 @media(max-width:650px){#overlay.clothespage .clothes-scroll-rail{right:3px;transform:none;top:27%;bottom:6%}#overlay.clothespage .panel{max-height:calc(100% - 18px)}}
+
+/* Boutique mobile: one scroll surface and a clear rail gutter; no cards under hanger. */
+@media(max-width:650px){
+ #overlay.clothespage .panel{padding:12px 12px 18px;overflow-y:auto;overflow-x:hidden}
+ #overlay.clothespage .store-grid{grid-template-columns:minmax(0,1fr);gap:10px;margin:10px 49px 18px 0}
+ #overlay.clothespage .store-item{display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-areas:'preview name' 'preview details' 'preview action';column-gap:10px;row-gap:4px;min-height:112px;padding:10px;text-align:left;align-items:center}
+ #overlay.clothespage .store-item .preview{grid-area:preview;width:72px;height:76px;align-self:center}
+ #overlay.clothespage .store-item b{grid-area:name;font-size:13px;line-height:1.2;padding-right:2px}
+ #overlay.clothespage .store-item small{grid-area:details;min-height:0;font-size:10px;line-height:1.2;flex:none}
+ #overlay.clothespage .store-item button{grid-area:action;min-height:44px;margin:0;font-size:11px}
+ #overlay.clothespage .store-item.selected::before{top:3px;right:3px;font-size:7px;padding:2px 3px}
+ #overlay.clothespage .clothes-scroll-rail{right:5px;width:44px;top:25%;bottom:6%;transform:none}
+ #overlay.clothespage .clothes-pole{left:21px}
+ #overlay.clothespage .clothes-hanger{left:0;width:44px;height:44px;background-size:264px 44px}
+ #overlay.clothespage .menu-tabs{background:#fff8ec;isolation:isolate}
+}
 </style>
 </head>
-<body><main class="shell"><header><div><h1>Don't Trip Grandma! 👵</h1><p class="subtitle">Een eindeloze wandeling · pas op voor sprintende katten!</p></div></header><section class="game" id="game" aria-label="Spring over obstakels en pak snoepjes"><canvas id="canvas" width="900" height="390"></canvas><div class="tier-track" id="tierTrack"><div class="tier-track-label"><span id="tierNow">BUURT · TIER 1</span><span id="tierNext">VOLGENDE WERELD · 500 M</span></div><div class="tier-track-rail"><div id="tierFill"></div></div></div><div class="scoreboard"><div class="pill"><small>Munten</small><span id="coins">🪙 0</span></div><div class="pill"><small>Afstand</small><span id="score">0 m</span></div><div class="pill"><small>Record</small><span id="best">0 m</span></div></div><div class="overlay" id="overlay"><div class="panel" tabindex="0" aria-label="Spelmenu en winkel, scroll met pijltjestoetsen of veeg"><div class="menu-hero"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-spark spark-a">✦</div><div class="hero-spark spark-b">✧</div><div class="menu-grandma" id="menuGrandma"><svg viewBox="0 0 110 125" aria-label="Oma met wandelstok" role="img"><ellipse cx="55" cy="117" rx="35" ry="6" fill="#30263f" opacity=".2"/><path d="M35 92 L31 116 M70 92 L75 116" stroke="#362d48" stroke-width="9" stroke-linecap="round"/><path d="M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z" data-preview-coat="true" fill="#9b6bb0" stroke="#392d44" stroke-width="4"/><path d="M30 65 L14 88 M80 65 L97 85" stroke="#f0c6a9" stroke-width="9" stroke-linecap="round"/><path d="M96 84 L96 116" stroke="#8c6749" stroke-width="5"/><circle cx="55" cy="37" r="29" fill="#f1c8aa" stroke="#392d44" stroke-width="4"/><path d="M27 34 Q18 6 45 7 Q75 -2 84 26 Q70 19 60 23 Q40 16 27 34" data-preview-hair="true" fill="#f4f1ee" stroke="#392d44" stroke-width="3"/><circle cx="27" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><circle cx="84" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><rect x="36" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><rect x="57" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><path d="M54 39 L57 39" stroke="#392d44" stroke-width="3"/><path d="M50 51 Q56 56 64 51" fill="none" stroke="#ad6d75" stroke-width="3"/></svg></div><div class="hero-shadow"></div></div><div class="menu-kicker" id="menuKicker">OMA’S GROTE ONTSNAPPING <span>✦</span> SEIZOEN 01</div><div class="menu-tabs" id="menuTabs"><button data-page="home" class="active">🏠 Start</button><button data-page="clothes">👗 Kleding</button><button data-page="gadgets">🛠 Gadgets</button></div><div class="menu-meta"><span class="menu-record" id="menuRecord">🏁 RECORD 0 M</span><div id="menuWallet" role="status" aria-live="polite" aria-atomic="true">🪙 0 munten</div></div><div id="countdown" role="timer" aria-live="off">⏳ Nog 10 seconden</div><div id="menuContent"></div><div class="menu-guide" id="menuGuide">TIK OM TE SPRINGEN <span>•</span> VERZAMEL MUNTEN <span>•</span> ONTGRENDEL GADGETS</div><h2 id="overlayTitle">Oma gaat wandelen!</h2><p id="overlayText">Spring over katten (pas op: ze sprinten soms!), hondjes, geraniums, sokken en rollators. Pak een snoepje 🍬 voor bescherming tegen één botsing.</p><div id="shop" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"><button class="button" id="reviveBtn">❤️ Verder · 10 🪙</button><button class="button" id="boostBtn">⚡ Boost · 6 🪙</button></div><button class="button" id="startBtn">Start het spel →</button></div><div class="clothes-scroll-rail" id="clothesScrollRail" aria-hidden="true"><div class="clothes-pole"></div><div class="clothes-hanger" id="clothesHanger"></div></div></div><div class="footer"><div class="hint">Spatie / ↑ / W of tik op het spel om te springen · P = pauze</div><div class="controls"><button class="button" id="pauseBtn" aria-label="Pauzeer of hervat">⏸ Pauze</button><button class="button scooter-control" id="leftBtn" aria-label="Scootmobiel naar links">⬅ Links</button><button class="button" id="jumpBtn">↑ Spring!</button><button class="button scooter-control" id="rightBtn" aria-label="Scootmobiel naar rechts">Rechts ➡</button></div></div><div class="status" id="status" aria-live="polite">Pak snoepjes om een beschermschild te verdienen.</div></section></main>
+<body><main class="shell"><header><div><h1>Don't Trip Grandma! 👵</h1><p class="subtitle">Een eindeloze wandeling · pas op voor sprintende katten!</p></div></header><section class="game" id="game" aria-label="Spring over obstakels en pak snoepjes"><canvas id="canvas" width="900" height="390"></canvas><div class="tier-track" id="tierTrack"><div class="tier-track-label"><span id="tierNow">BUURT · TIER 1</span><span id="tierNext">VOLGENDE WERELD · 500 M</span></div><div class="tier-track-rail"><div id="tierFill"></div></div></div><div class="scoreboard"><div class="pill"><small>Munten</small><span id="coins">🪙 0</span></div><div class="pill"><small>Afstand</small><span id="score">0 m</span></div><div class="pill"><small>Record</small><span id="best">0 m</span></div></div><div class="overlay" id="overlay"><div class="panel" tabindex="0" aria-label="Spelmenu en winkel, scroll met pijltjestoetsen of veeg"><div class="menu-hero"><div class="hero-orbit orbit-a"></div><div class="hero-orbit orbit-b"></div><div class="hero-spark spark-a">✦</div><div class="hero-spark spark-b">✧</div><div class="menu-grandma" id="menuGrandma"><svg viewBox="0 0 110 125" aria-label="Oma met wandelstok" role="img"><ellipse cx="55" cy="117" rx="35" ry="6" fill="#30263f" opacity=".2"/><path d="M35 92 L31 116 M70 92 L75 116" stroke="#362d48" stroke-width="9" stroke-linecap="round"/><path d="M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z" data-preview-coat="true" fill="#9b6bb0" stroke="#392d44" stroke-width="4"/><g data-preview-pattern="true"></g><path d="M30 65 L14 88 M80 65 L97 85" stroke="#f0c6a9" stroke-width="9" stroke-linecap="round"/><path d="M96 84 L96 116" stroke="#8c6749" stroke-width="5"/><circle cx="55" cy="37" r="29" fill="#f1c8aa" stroke="#392d44" stroke-width="4"/><path d="M27 34 Q18 6 45 7 Q75 -2 84 26 Q70 19 60 23 Q40 16 27 34" data-preview-hair="true" fill="#f4f1ee" stroke="#392d44" stroke-width="3"/><circle cx="27" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><circle cx="84" cy="36" r="9" data-preview-hair="true" fill="#f4f1ee"/><rect x="36" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><rect x="57" y="34" width="18" height="11" rx="4" fill="#e2f3ef" stroke="#392d44" stroke-width="3"/><path d="M54 39 L57 39" stroke="#392d44" stroke-width="3"/><path d="M50 51 Q56 56 64 51" fill="none" stroke="#ad6d75" stroke-width="3"/></svg></div><div class="hero-shadow"></div></div><div class="menu-kicker" id="menuKicker">OMA’S GROTE ONTSNAPPING <span>✦</span> SEIZOEN 01</div><div class="menu-tabs" id="menuTabs"><button data-page="home" class="active">🏠 Start</button><button data-page="clothes">👗 Kleding</button><button data-page="gadgets">🛠 Gadgets</button></div><div class="menu-meta"><span class="menu-record" id="menuRecord">🏁 RECORD 0 M</span><div id="menuWallet" role="status" aria-live="polite" aria-atomic="true">🪙 0 munten</div></div><div id="countdown" role="timer" aria-live="off">⏳ Nog 10 seconden</div><div id="menuContent"></div><div class="menu-guide" id="menuGuide">TIK OM TE SPRINGEN <span>•</span> VERZAMEL MUNTEN <span>•</span> ONTGRENDEL GADGETS</div><h2 id="overlayTitle">Oma gaat wandelen!</h2><p id="overlayText">Spring over katten (pas op: ze sprinten soms!), hondjes, geraniums, sokken en rollators. Pak een snoepje 🍬 voor bescherming tegen één botsing.</p><div id="shop" style="display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0"><button class="button" id="reviveBtn">❤️ Verder · 10 🪙</button><button class="button" id="boostBtn">⚡ Boost · 6 🪙</button></div><button class="button" id="startBtn">Start het spel →</button></div><div class="clothes-scroll-rail" id="clothesScrollRail" aria-hidden="true"><div class="clothes-pole"></div><div class="clothes-hanger" id="clothesHanger"></div></div></div><div class="footer"><div class="hint">Spatie / ↑ / W of tik op het spel om te springen · P = pauze</div><div class="controls"><button class="button" id="pauseBtn" aria-label="Pauzeer of hervat">⏸ Pauze</button><button class="button scooter-control" id="leftBtn" aria-label="Scootmobiel naar links">⬅ Links</button><button class="button" id="jumpBtn">↑ Spring!</button><button class="button scooter-control" id="rightBtn" aria-label="Scootmobiel naar rechts">Rechts ➡</button></div></div><div class="status" id="status" aria-live="polite">Pak snoepjes om een beschermschild te verdienen.</div></section></main>
 <script>
 (()=>{'use strict';
 const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),title=document.getElementById('overlayTitle'),text=document.getElementById('overlayText'),startBtn=document.getElementById('startBtn'),pauseBtn=document.getElementById('pauseBtn'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),statusEl=document.getElementById('status'),coinsEl=document.getElementById('coins'),shop=document.getElementById('shop'),reviveBtn=document.getElementById('reviveBtn'),boostBtn=document.getElementById('boostBtn');
@@ -354,17 +370,17 @@ const allTypes=[...types,...extras];
 function saveCoins(){if(typeof menuWallet!=='undefined')menuWallet.textContent='🪙 '+coins+' munten';coinsEl.textContent='🪙 '+coins;try{localStorage.setItem('dont-trip-grandma-coins',coins)}catch(e){}}
 const clothing=[
  {id:'classic',name:'Klassieke oma',cost:0,color:'#ad78a4',hair:'#e6e4e3'},
- {id:'red',name:'Rode jas',cost:12,color:'#e35d67',hair:'#e6e4e3'},
- {id:'sport',name:'Sportieve oma',cost:20,color:'#3e8db7',hair:'#f0e9d5'},
- {id:'gold',name:'Gouden outfit',cost:40,color:'#edb74c',hair:'#fff3d0'},
- {id:'night',name:'Nachtloper',cost:55,color:'#6250a5',hair:'#b4c4ec'},
- {id:'mint',name:'Mintgroen',cost:28,color:'#4eb79b',hair:'#f3e9e1'},
- {id:'denim',name:'Denim diva',cost:18,color:'#426c9e',hair:'#f2e4cf'},
- {id:'flower',name:'Bloemenfeest',cost:24,color:'#ed87ac',hair:'#f8f0de'},
- {id:'forest',name:'Boswandeling',cost:30,color:'#477a53',hair:'#ded9ca'},
- {id:'disco',name:'Disco oma',cost:48,color:'#b55dcd',hair:'#f9e6ac'},
- {id:'coral',name:'Koraal chic',cost:34,color:'#f4866a',hair:'#e6e4e3'},
- {id:'midnight',name:'Middernacht',cost:62,color:'#263e63',hair:'#e6d7f3'}
+ {id:'red',name:'Rode jas',cost:250,color:'#e35d67',hair:'#e6e4e3',pattern:'stripes',patternColor:'#ffe0e2'},
+ {id:'sport',name:'Sportieve oma',cost:325,color:'#3e8db7',hair:'#f0e9d5',pattern:'chevron',patternColor:'#d8eef8'},
+ {id:'gold',name:'Gouden outfit',cost:700,color:'#edb74c',hair:'#fff3d0',pattern:'stars',patternColor:'#ffeab0'},
+ {id:'night',name:'Nachtloper',cost:825,color:'#6250a5',hair:'#b4c4ec',pattern:'dots',patternColor:'#def7ed'},
+ {id:'mint',name:'Mintgroen',cost:375,color:'#4eb79b',hair:'#f3e9e1',pattern:'dots',patternColor:'#def7ed'},
+ {id:'denim',name:'Denim diva',cost:425,color:'#426c9e',hair:'#f2e4cf',pattern:'checks',patternColor:'#d8e6f5'},
+ {id:'flower',name:'Bloemenfeest',cost:475,color:'#ed87ac',hair:'#f8f0de',pattern:'flowers',patternColor:'#fff2cd'},
+ {id:'forest',name:'Boswandeling',cost:550,color:'#477a53',hair:'#ded9ca',pattern:'leaves',patternColor:'#d2e8bd'},
+ {id:'disco',name:'Disco oma',cost:950,color:'#b55dcd',hair:'#f9e6ac',pattern:'sparkles',patternColor:'#fbe9ae'},
+ {id:'coral',name:'Koraal chic',cost:625,color:'#f4866a',hair:'#e6e4e3',pattern:'waves',patternColor:'#ffe3d8'},
+ {id:'midnight',name:'Middernacht',cost:1200,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
 ];
 const gadgets=[
  {id:'plane',name:'Vliegtuig',cost:45,description:'Zeldzame Flappy-modus · tik om te vliegen · 10 sec.'},
@@ -373,11 +389,44 @@ const gadgets=[
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
 function saveInventory(){try{localStorage.setItem('grandma-clothes',JSON.stringify(ownedClothes));localStorage.setItem('grandma-outfit',selectedClothes);localStorage.setItem('grandma-gadgets',JSON.stringify(ownedGadgets))}catch(e){}}
+function outfitPatternSvg(outfit,id,coatPath){
+ if(!outfit.pattern)return '';
+ const c=outfit.patternColor||'#fff5df';
+ const motifs={
+ stripes:`<path d="M2 0V12 M9 0V12" stroke="${c}" stroke-width="2"/>`,
+ chevron:`<path d="M0 3L3 7L6 3L9 7L12 3" fill="none" stroke="${c}" stroke-width="1.8"/>`,
+ stars:`<path d="M6 1L7.5 4.5L11 5L8 7.5L9 11L6 9L3 11L4 7.5L1 5L4.5 4.5Z" fill="${c}"/>`,
+ dots:`<circle cx="3" cy="3" r="1.9" fill="${c}"/><circle cx="9" cy="9" r="1.9" fill="${c}"/>`,
+ checks:`<path d="M0 0V12 M6 0V12 M12 0V12 M0 0H12 M0 6H12 M0 12H12" fill="none" stroke="${c}" stroke-width="1"/>`,
+ flowers:`<circle cx="6" cy="3" r="2.7" fill="${c}"/><circle cx="3" cy="6" r="2.7" fill="${c}"/><circle cx="9" cy="6" r="2.7" fill="${c}"/><circle cx="6" cy="9" r="2.7" fill="${c}"/><circle cx="6" cy="6" r="1.6" fill="#f5bd55"/>`,
+ leaves:`<path d="M1 10Q1 2 10 1Q10 10 1 10M2 10L9 2" fill="${c}" stroke="#558960" stroke-width=".7"/>`,
+ sparkles:`<path d="M6 0L7.5 4.5L12 6L7.5 7.5L6 12L4.5 7.5L0 6L4.5 4.5Z" fill="${c}"/>`,
+ waves:`<path d="M0 4Q3 0 6 4T12 4M0 10Q3 6 6 10T12 10" stroke="${c}" stroke-width="1.6" fill="none"/>`
+ };
+ return `<defs><pattern id="${id}" patternUnits="userSpaceOnUse" width="12" height="12">${motifs[outfit.pattern]||motifs.dots}</pattern></defs><path d="${coatPath}" fill="url(#${id})" pointer-events="none"/>`;
+}
+function drawOutfitPattern(outfit,x,y,bob){
+ if(!outfit.pattern)return;
+ ctx.save();ctx.beginPath();ctx.roundRect(x+5,y+28+bob,36,31,11);ctx.clip();
+ ctx.strokeStyle=outfit.patternColor||'#fff5df';ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=1.5;
+ for(let row=0;row<4;row++)for(let col=0;col<4;col++){
+  const px=x+9+col*10,py=y+31+bob+row*9;
+  if(outfit.pattern==='stripes'||outfit.pattern==='checks'){ctx.beginPath();ctx.moveTo(px,py-3);ctx.lineTo(px,py+8);ctx.stroke();if(outfit.pattern==='checks'){ctx.beginPath();ctx.moveTo(px-4,py+3);ctx.lineTo(px+6,py+3);ctx.stroke()}}
+  else if(outfit.pattern==='waves'||outfit.pattern==='chevron'){ctx.beginPath();ctx.moveTo(px-3,py+2);ctx.lineTo(px+2,py+(outfit.pattern==='waves'?-1:5));ctx.lineTo(px+7,py+2);ctx.stroke()}
+  else if(outfit.pattern==='leaves'){ctx.beginPath();ctx.ellipse(px,py,3.1,1.7,-.5,0,Math.PI*2);ctx.fill()}
+  else if(outfit.pattern==='flowers'){for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(px+Math.cos(i*Math.PI/2)*2,py+Math.sin(i*Math.PI/2)*2,1.5,0,Math.PI*2);ctx.fill()}}
+  else if(outfit.pattern==='stars'||outfit.pattern==='sparkles'){ctx.beginPath();ctx.moveTo(px,py-3);ctx.lineTo(px+1,py-1);ctx.lineTo(px+3,py);ctx.lineTo(px+1,py+1);ctx.lineTo(px,py+3);ctx.lineTo(px-1,py+1);ctx.lineTo(px-3,py);ctx.lineTo(px-1,py-1);ctx.fill()}
+  else{ctx.beginPath();ctx.arc(px,py,1.6,0,Math.PI*2);ctx.fill()}
+ }
+ ctx.restore();
+}
 function updateGrandmaOutfitPreview(){
  const outfit=clothing.find(item=>item.id===selectedClothes)||clothing[0];
  const hero=document.getElementById('menuGrandma');
  if(!hero)return;
  hero.querySelector('[data-preview-coat]')?.setAttribute('fill',outfit.color);
+ const patternTarget=hero.querySelector('[data-preview-pattern]');
+ if(patternTarget)patternTarget.innerHTML=outfitPatternSvg(outfit,'hero-outfit-pattern','M28 61 Q55 47 82 61 L86 96 Q54 115 24 96Z');
  hero.querySelectorAll('[data-preview-hair]').forEach(part=>part.setAttribute('fill',outfit.hair));
  hero.setAttribute('aria-label','Oma draagt: '+outfit.name);
 }
@@ -403,7 +452,7 @@ function showMenu(page='home'){
  menuContent.innerHTML='<div class="store-grid">'+items.map(item=>{
  const owned=page==='clothes'?ownedClothes.includes(item.id):ownedGadgets.includes(item.id);
  const selected=page==='clothes'&&selectedClothes===item.id;
- const symbol=page==='clothes'?`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/><path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>`:(item.id==='plane'?'✈️':'🛵');
+ const symbol=page==='clothes'?`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>`:(item.id==='plane'?'✈️':'🛵');
  return `<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>`
  }).join('')+'</div>';
  menuContent.querySelectorAll('[data-buy]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -438,7 +487,7 @@ const clothesRail=document.getElementById('clothesScrollRail'),clothesHanger=doc
 const hangerReduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 let hangerTargetY=0,hangerCurrentY=0,hangerScrollImpulse=0,hangerLastScrollTop=0,hangerFrame=2,hangerLastFrameTime=0;
 let hangerRaf=0;
-function hangerFrameSize(){return window.matchMedia('(max-width:650px)').matches?58:72}
+function hangerFrameSize(){return window.matchMedia('(max-width:650px)').matches?44:72}
 function setHangerFrame(frame){
  if(!clothesHanger)return;
  const size=hangerFrameSize();
@@ -684,7 +733,7 @@ function background(tierIndex=currentTier){
   rounded(x,ground+29,43,4,2,zone===4||zone===6?'#d5c6e3':'#edbb94');
  ctx.restore();
 }
-function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0)return;ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);line(x+8,y+36+bob,x-1,y+50+bob,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);ellipse(x+24,y+27+bob,5,2,'#a86f77');
+function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0)return;ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);drawOutfitPattern(outfit,x,y,bob);line(x+8,y+36+bob,x-1,y+50+bob,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);ellipse(x+24,y+27+bob,5,2,'#a86f77');
  if(vehicle==='plane'){ctx.save();ctx.translate(x-37,y+37);rounded(0,0,128,24,12,'#d8e9f0');rounded(40,-17,44,20,8,'#6ea4c6');rounded(18,13,87,11,5,'#e49b60');ellipse(10,10,11,11,'#f6cb69');ctx.restore()}
  if(vehicle==='booster'){ctx.save();ctx.translate(x-20,y+35);rounded(0,0,86,30,12,'#6655a5');rounded(9,5,68,13,6,'#a2bce1');ellipse(5,15,10,10,'#33364e');ellipse(82,15,10,10,'#33364e');for(let i=0;i<3;i++)line(-8-i*13,10,0-i*13,20,'#f6b353',4);ctx.restore()}
  }
