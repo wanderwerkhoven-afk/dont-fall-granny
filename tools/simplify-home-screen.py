@@ -24,14 +24,14 @@ t=Path('tests/home-screen-regression.mjs')
 t.write_text('''import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const html=readFileSync('index.html','utf8');
-assert.match(html,/\/\* Home screen: hero first, no redundant explanations/);
-for(const id of ['menuContent','menuGuide','overlayTitle','overlayText']) assert.match(html,new RegExp('#overlay:not\\(\\.storepage\\):not\\(\\.gameover\\) #'+id));
-assert.match(html,/#overlay:not\\(\\.storepage\\):not\\(\\.gameover\\) \\.menu-hero\\{display:grid\\}/);
-assert.match(html,/#overlay:not\\(\\.storepage\\):not\\(\\.gameover\\) #startBtn\\{display:block/);
-assert.match(html,/#overlay:not\\(\\.storepage\\):not\\(\\.gameover\\)\\{align-items:start\\}/);
-for(const id of ['menuGrandma','menuTabs','menuRecord','menuWallet','startBtn','clothesScrollRail']) assert.match(html,new RegExp('id="'+id+'"'));
-assert.match(html,/function showMenu\\(page='home'\\)/);
-const script=html.match(/<script>\\s*([\\s\\S]*?)\\s*<\\/script>/)?.[1];assert.ok(script);new Function(script);
+assert.ok(html.includes('/* Home screen: hero first, no redundant explanations.'));
+for(const id of ['menuContent','menuGuide','overlayTitle','overlayText']) assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #'+id),id+' only hidden on home');
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) .menu-hero{display:grid}'));
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #startBtn{display:block'));
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover){align-items:start}'));
+for(const id of ['menuGrandma','menuTabs','menuRecord','menuWallet','startBtn','clothesScrollRail']) assert.ok(html.includes('id="'+id+'"'),id+' preserved');
+assert.ok(html.includes("function showMenu(page='home')"));
+const script=html.split('<script>')[1]?.split('</script>')[0];assert.ok(script);new Function(script);
 console.log('PASS compact home, hero preserved, start action present, shops isolated, JS syntax');
 ''',encoding='utf-8')
 print('PASS home-screen patch generated')
