@@ -8,6 +8,7 @@ namespace DontFallGranny.Core
     {
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
+        [SerializeField] private GameRunStateController runState;
 
         [Header("Recovery")]
         [SerializeField] private float normalWindowSeconds = 1.15f;
@@ -34,6 +35,9 @@ namespace DontFallGranny.Core
         {
             if (balanceController == null)
                 balanceController = GetComponent<BalanceController>();
+
+            if (runState == null)
+                runState = GetComponent<GameRunStateController>();
         }
 
         private void Update()
@@ -57,6 +61,7 @@ namespace DontFallGranny.Core
 
             IsRecovering = true;
             recoveryDeadline = Time.time + duration;
+            runState?.SetState(GameRunState.Recovering);
 
             onRecoveryStarted?.Invoke();
             RecoveryStarted?.Invoke(duration);
@@ -69,6 +74,7 @@ namespace DontFallGranny.Core
 
             IsRecovering = false;
             balanceController?.Recover(successfulRecoveryAmount);
+            runState?.SetState(GameRunState.Running);
 
             onRecoverySucceeded?.Invoke();
             RecoverySucceeded?.Invoke();
