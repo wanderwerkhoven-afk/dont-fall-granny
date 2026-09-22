@@ -9,6 +9,7 @@ namespace DontFallGranny.Core
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
         [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GameSessionFlowController sessionFlow;
         [SerializeField] private GrannyInputRouter inputRouter;
         [SerializeField] private Transform groundProbe;
         [SerializeField] private LayerMask groundMask = ~0;
@@ -38,9 +39,16 @@ namespace DontFallGranny.Core
 
         public float CurrentSpeed { get; private set; }
         public bool IsGrounded { get; private set; }
+        public bool SessionAllowsGameplay =>
+            sessionFlow == null || sessionFlow.State == GameSessionState.Playing;
 
-        private bool AllowsLocomotion => runState == null || runState.AllowsLocomotion;
-        private bool AllowsJump => runState == null || runState.State == GameRunState.Running;
+        private bool AllowsLocomotion =>
+            SessionAllowsGameplay &&
+            (runState == null || runState.AllowsLocomotion);
+
+        private bool AllowsJump =>
+            SessionAllowsGameplay &&
+            (runState == null || runState.State == GameRunState.Running);
 
         private void Awake()
         {
@@ -52,6 +60,9 @@ namespace DontFallGranny.Core
 
             if (runState == null)
                 runState = GetComponent<GameRunStateController>();
+
+            if (sessionFlow == null)
+                sessionFlow = FindFirstObjectByType<GameSessionFlowController>();
 
             if (inputRouter == null)
                 inputRouter = GetComponent<GrannyInputRouter>();
@@ -112,6 +123,14 @@ namespace DontFallGranny.Core
             body.linearVelocity = velocity;
         }
 
+        public void ResetRunMotion()
+        {
+            elapsed = 0f;
+            CurrentSpeed = forwardSpeed;
+            lastGroundedTime = float.NegativeInfinity;
+            lastJumpRequestTime = float.NegativeInfinity;
+        }
+
         public void RequestJump()
         {
             if (!AllowsJump)
@@ -122,11 +141,17 @@ namespace DontFallGranny.Core
 
         public void ApplyObstacleImpact(float severity)
         {
+            if (!SessionAllowsGameplay)
+                return;
+
             balanceController?.ApplyImpact(severity);
         }
 
         public void ApplyRecovery(float amount)
         {
+            if (!SessionAllowsGameplay)
+                return;
+
             balanceController?.Recover(amount);
         }
 
