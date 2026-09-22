@@ -5,7 +5,11 @@ export class RunData extends Phaser.Events.EventEmitter {
   distance = 0;
   coins = 0;
   nearMisses = 0;
-  bestDistance = Number(localStorage.getItem('dfg.bestDistance') ?? 0);
+  bestDistance = Number(
+    localStorage.getItem('dfg.bestDistance') ??
+    localStorage.getItem('dont-trip-grandma-best') ??
+    0
+  );
 
   addDistance(amount: number): void {
     if (amount <= 0) return;
@@ -14,6 +18,10 @@ export class RunData extends Phaser.Events.EventEmitter {
     if (this.distance > this.bestDistance) {
       this.bestDistance = this.distance;
       localStorage.setItem('dfg.bestDistance', String(this.bestDistance));
+      localStorage.setItem(
+        'dont-trip-grandma-best',
+        String(Math.floor(this.bestDistance))
+      );
     }
 
     this.emit('distance', this.distance);
