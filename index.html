@@ -560,6 +560,6 @@ for(const c of coinItems){
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
 for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawGrandma();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(shield){rounded(18,17,169,35,12,'#fffaf2');ctx.fillStyle='#493e49';ctx.font='bold 17px system-ui';ctx.textAlign='left';ctx.fillText('🍬 Schild actief',30,41)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}}
-function frame(now){if(state!=='playing')return;const dt=Math.min((now-last)/1000,.035);last=now;update(dt);render();if(state==='playing')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
+function frame(now){if(state!=='playing')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;update(dt);render();if(state==='playing')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 })();
 </script></body></html>
