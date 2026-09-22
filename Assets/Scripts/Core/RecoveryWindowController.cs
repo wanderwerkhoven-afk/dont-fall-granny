@@ -10,6 +10,7 @@ namespace DontFallGranny.Core
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
         [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GameSessionFlowController sessionFlow;
         [SerializeField] private GrannyInputRouter inputRouter;
 
         [Header("Recovery")]
@@ -40,6 +41,9 @@ namespace DontFallGranny.Core
             if (runState == null)
                 runState = GetComponent<GameRunStateController>();
 
+            if (sessionFlow == null)
+                sessionFlow = FindFirstObjectByType<GameSessionFlowController>();
+
             if (inputRouter == null)
                 inputRouter = GetComponent<GrannyInputRouter>();
         }
@@ -64,8 +68,11 @@ namespace DontFallGranny.Core
 
         public void BeginRecovery(bool heavyImpact)
         {
-            if (IsRecovering)
+            if (IsRecovering ||
+                (sessionFlow != null && sessionFlow.State != GameSessionState.Playing))
+            {
                 return;
+            }
 
             float duration = heavyImpact ? heavyWindowSeconds : normalWindowSeconds;
 
@@ -79,8 +86,11 @@ namespace DontFallGranny.Core
 
         public void AttemptRecovery()
         {
-            if (!IsRecovering)
+            if (!IsRecovering ||
+                (sessionFlow != null && sessionFlow.State != GameSessionState.Playing))
+            {
                 return;
+            }
 
             IsRecovering = false;
             balanceController?.Recover(successfulRecoveryAmount);
@@ -96,6 +106,12 @@ namespace DontFallGranny.Core
                 return;
 
             FailRecovery();
+        }
+
+        public void CancelRecovery()
+        {
+            IsRecovering = false;
+            recoveryDeadline = 0f;
         }
 
         private void FailRecovery()
