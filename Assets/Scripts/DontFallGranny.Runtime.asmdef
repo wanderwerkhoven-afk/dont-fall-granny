@@ -1,0 +1,7 @@
+{
+  "name": "DontFallGranny.Runtime",
+  "references": [
+    "Unity.TextMeshPro"
+  ],
+  "autoReferenced": true
+}
