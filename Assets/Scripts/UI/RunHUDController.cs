@@ -14,10 +14,12 @@ namespace DontFallGranny.UI
         [SerializeField] private TMP_Text distanceLabel;
         [SerializeField] private TMP_Text coinsLabel;
         [SerializeField] private TMP_Text balanceLabel;
+        [SerializeField] private TMP_Text nearMissLabel;
         [SerializeField] private Image balanceFill;
         [SerializeField] private RectTransform coinPulseTarget;
 
         private Coroutine coinPulseRoutine;
+        private Coroutine nearMissRoutine;
 
         private void Awake()
         {
@@ -37,8 +39,10 @@ namespace DontFallGranny.UI
             {
                 runData.DistanceChanged += HandleDistanceChanged;
                 runData.CoinsChanged += HandleCoinsChanged;
+                runData.NearMissChanged += HandleNearMissChanged;
                 HandleDistanceChanged(runData.DistanceMeters);
                 HandleCoinsChanged(runData.Coins);
+                SetNearMissVisible(false);
             }
 
             if (balance != null)
@@ -56,6 +60,7 @@ namespace DontFallGranny.UI
             {
                 runData.DistanceChanged -= HandleDistanceChanged;
                 runData.CoinsChanged -= HandleCoinsChanged;
+                runData.NearMissChanged -= HandleNearMissChanged;
             }
 
             if (balance != null)
@@ -64,14 +69,12 @@ namespace DontFallGranny.UI
                 balance.BalanceChanged -= HandleBalanceChanged;
             }
 
-            if (coinPulseRoutine != null)
-            {
-                StopCoroutine(coinPulseRoutine);
-                coinPulseRoutine = null;
-            }
+            StopFeedbackCoroutines();
 
             if (coinPulseTarget != null)
                 coinPulseTarget.localScale = Vector3.one;
+
+            SetNearMissVisible(false);
         }
 
         private void HandleDistanceChanged(float meters)
@@ -97,6 +100,19 @@ namespace DontFallGranny.UI
             }
         }
 
+        private void HandleNearMissChanged(int count)
+        {
+            if (count <= 0 || nearMissLabel == null)
+                return;
+
+            nearMissLabel.text = $"NEAR MISS ×{count}";
+
+            if (nearMissRoutine != null)
+                StopCoroutine(nearMissRoutine);
+
+            nearMissRoutine = StartCoroutine(ShowNearMiss());
+        }
+
         private void HandleBalanceChanged(float value)
         {
             if (balanceFill != null)
@@ -109,8 +125,10 @@ namespace DontFallGranny.UI
         )
         {
             if (balanceLabel != null)
+            {
                 balanceLabel.text =
                     $"BALANCE: {current.ToString().ToUpperInvariant()}";
+            }
         }
 
         private IEnumerator PulseCoin()
@@ -129,6 +147,42 @@ namespace DontFallGranny.UI
 
             coinPulseTarget.localScale = Vector3.one;
             coinPulseRoutine = null;
+        }
+
+        private IEnumerator ShowNearMiss()
+        {
+            SetNearMissVisible(true);
+
+            float hold = motionSettings != null &&
+                         motionSettings.ReducedMotion
+                ? 0.65f
+                : 0.9f;
+
+            yield return new WaitForSecondsRealtime(hold);
+
+            SetNearMissVisible(false);
+            nearMissRoutine = null;
+        }
+
+        private void SetNearMissVisible(bool visible)
+        {
+            if (nearMissLabel != null)
+                nearMissLabel.gameObject.SetActive(visible);
+        }
+
+        private void StopFeedbackCoroutines()
+        {
+            if (coinPulseRoutine != null)
+            {
+                StopCoroutine(coinPulseRoutine);
+                coinPulseRoutine = null;
+            }
+
+            if (nearMissRoutine != null)
+            {
+                StopCoroutine(nearMissRoutine);
+                nearMissRoutine = null;
+            }
         }
     }
 }
