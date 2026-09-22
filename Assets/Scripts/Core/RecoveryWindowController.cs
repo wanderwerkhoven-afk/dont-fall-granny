@@ -1,4 +1,5 @@
 using System;
+using DontFallGranny.Input;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,12 +10,12 @@ namespace DontFallGranny.Core
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
         [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GrannyInputRouter inputRouter;
 
         [Header("Recovery")]
         [SerializeField] private float normalWindowSeconds = 1.15f;
         [SerializeField] private float heavyWindowSeconds = 0.8f;
         [SerializeField, Range(0f, 1f)] private float successfulRecoveryAmount = 0.24f;
-        [SerializeField] private KeyCode keyboardRecoveryKey = KeyCode.Space;
 
         [Header("Events")]
         [SerializeField] private UnityEvent onRecoveryStarted;
@@ -38,17 +39,26 @@ namespace DontFallGranny.Core
 
             if (runState == null)
                 runState = GetComponent<GameRunStateController>();
+
+            if (inputRouter == null)
+                inputRouter = GetComponent<GrannyInputRouter>();
+        }
+
+        private void OnEnable()
+        {
+            if (inputRouter != null)
+                inputRouter.RecoverRequested += AttemptRecovery;
+        }
+
+        private void OnDisable()
+        {
+            if (inputRouter != null)
+                inputRouter.RecoverRequested -= AttemptRecovery;
         }
 
         private void Update()
         {
-            if (!IsRecovering)
-                return;
-
-            if (Input.GetKeyDown(keyboardRecoveryKey))
-                AttemptRecovery();
-
-            if (Time.time >= recoveryDeadline)
+            if (IsRecovering && Time.time >= recoveryDeadline)
                 FailRecovery();
         }
 
