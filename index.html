@@ -173,6 +173,7 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
   .menu-guide{margin:6px 0 4px}
   #menuContent{max-height:none;overflow:visible}
   #overlay.storepage .panel{
+    touch-action:pan-y;
     overflow-y:auto;
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
@@ -194,6 +195,7 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 }
 #overlay.clothespage .clothes-scroll-rail{display:block}
 #overlay.clothespage .panel{
+  touch-action:pan-y;
   scrollbar-width:none;
   -ms-overflow-style:none;
 }
@@ -356,13 +358,17 @@ function showMenu(page='home'){
  const item=items.find(x=>x.id===btn.dataset.buy);if(!item)return;
  if(page==='clothes'){if(!ownedClothes.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedClothes.push(item.id)}selectedClothes=item.id}
  else if(!ownedGadgets.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedGadgets.push(item.id)}
+ const previousScroll=menuPanel.scrollTop;
  saveCoins();saveInventory();showMenu(page);
+ if(page==='clothes'||page==='gadgets'){menuPanel.scrollTop=previousScroll;requestAnimationFrame(syncClothesHanger)}
  }));
- requestAnimationFrame(syncClothesHanger);
+ requestAnimationFrame(()=>{syncClothesHanger();refreshHangerAnimation()});
 }
 menuTabs.addEventListener('click',e=>{const btn=e.target.closest('[data-page]');if(btn)showMenu(btn.dataset.page)});
 const clothesRail=document.getElementById('clothesScrollRail'),clothesHanger=document.getElementById('clothesHanger'),menuPanel=overlay.querySelector('.panel');
-let hangerTargetY=0,hangerCurrentY=0,hangerScrollImpulse=0,hangerLastScrollTop=0,hangerFrame=2,hangerAnimationStarted=false;
+const hangerReduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+let hangerTargetY=0,hangerCurrentY=0,hangerScrollImpulse=0,hangerLastScrollTop=0,hangerFrame=2,hangerLastFrameTime=0;
+let hangerRaf=0;
 function hangerFrameSize(){return window.matchMedia('(max-width:650px)').matches?84:96}
 function setHangerFrame(frame){
  if(!clothesHanger)return;
@@ -378,25 +384,42 @@ function syncClothesHanger(){
  const delta=menuPanel.scrollTop-hangerLastScrollTop;
  hangerLastScrollTop=menuPanel.scrollTop;
  hangerScrollImpulse=Math.max(-18,Math.min(18,hangerScrollImpulse+delta*.7));
+ if(hangerReduceMotion.matches){
+  hangerCurrentY=hangerTargetY;
+  clothesHanger.style.transform='translateY('+hangerCurrentY+'px)';
+  setHangerFrame(2);
+ }
 }
 function animateClothesHanger(now){
- if(menuPage==='clothes'&&clothesRail&&clothesHanger&&menuPanel){
-  hangerCurrentY+=(hangerTargetY-hangerCurrentY)*.18;
-  hangerScrollImpulse*=.88;
-  const active=Math.abs(hangerScrollImpulse)>.35;
-  const idle=Math.sin(now/420);
-  const targetFrame=active
-   ?Math.max(0,Math.min(5,Math.round(2.5+hangerScrollImpulse*.16)))
-   :Math.max(1,Math.min(4,Math.round(2.5+idle*1.25)));
-  if(targetFrame!==hangerFrame){hangerFrame=targetFrame;setHangerFrame(hangerFrame)}
-  const tilt=active?Math.max(-5,Math.min(5,hangerScrollImpulse*.22)):idle*1.4;
-  clothesHanger.style.transform='translateY('+hangerCurrentY+'px) rotate('+tilt+'deg)';
+ hangerRaf=0;
+ if(menuPage!=='clothes'||document.hidden||hangerReduceMotion.matches)return;
+ hangerCurrentY+=(hangerTargetY-hangerCurrentY)*.18;
+ hangerScrollImpulse*=.88;
+ const active=Math.abs(hangerScrollImpulse)>.35;
+ const idle=Math.sin(now/650);
+ const targetFrame=active
+  ?Math.max(0,Math.min(5,Math.round(2.5+hangerScrollImpulse*.16)))
+  :Math.max(1,Math.min(4,Math.round(2.5+idle*.85)));
+ if(targetFrame!==hangerFrame&&now-hangerLastFrameTime>110){
+  hangerFrame=targetFrame;
+  hangerLastFrameTime=now;
+  setHangerFrame(hangerFrame);
  }
- requestAnimationFrame(animateClothesHanger);
+ const tilt=active?Math.max(-5,Math.min(5,hangerScrollImpulse*.22)):idle*.9;
+ clothesHanger.style.transform='translateY('+hangerCurrentY+'px) rotate('+tilt+'deg)';
+ hangerRaf=requestAnimationFrame(animateClothesHanger);
+}
+function refreshHangerAnimation(){
+ if(hangerRaf){cancelAnimationFrame(hangerRaf);hangerRaf=0}
+ if(menuPage!=='clothes'||document.hidden)return;
+ syncClothesHanger();
+ if(hangerReduceMotion.matches)return;
+ hangerRaf=requestAnimationFrame(animateClothesHanger);
 }
 menuPanel.addEventListener('scroll',syncClothesHanger,{passive:true});
 window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerFrame)});
-if(!hangerAnimationStarted){hangerAnimationStarted=true;requestAnimationFrame(animateClothesHanger)}
+document.addEventListener('visibilitychange',refreshHangerAnimation);
+hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
 function random(a,b){return a+Math.random()*(b-a)}function reset(){document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(frame)}function end(){
