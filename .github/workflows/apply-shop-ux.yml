@@ -1,0 +1,42 @@
+name: Apply shop UX polish
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-shop-ux.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch and regression test shop
+        run: |
+          set -eu
+          node --check tools/apply-shop-ux.mjs
+          node tools/apply-shop-ux.mjs
+          node tests/store-regression.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const html=fs.readFileSync('index.html','utf8');
+          assert.match(html,/AANGETROKKEN/);
+          assert.match(html,/focusTarget=updated\?\.disabled/);
+          assert.match(html,/menuPanel\.scrollTop=0/);
+          assert.match(html,/id="menuWallet" role="status" aria-live="polite"/);
+          console.log('PASS: shop status, selected card focus, tab scrolling and wallet accessibility');
+          NODE
+      - name: Commit tested UI change directly to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || (git commit -m 'ui: improve shop selection feedback and tab navigation' && git push origin HEAD:main)
