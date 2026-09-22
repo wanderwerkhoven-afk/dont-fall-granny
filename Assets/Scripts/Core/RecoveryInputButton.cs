@@ -1,14 +1,15 @@
+using DontFallGranny.Input;
 using UnityEngine;
 
 namespace DontFallGranny.Core
 {
     public sealed class RecoveryInputButton : MonoBehaviour
     {
-        [SerializeField] private RecoveryWindowController recoveryWindow;
+        [SerializeField] private GrannyInputRouter inputRouter;
 
         public void Recover()
         {
-            recoveryWindow?.AttemptRecovery();
+            inputRouter?.RequestRecovery();
         }
     }
 }
