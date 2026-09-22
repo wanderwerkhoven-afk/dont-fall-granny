@@ -89,11 +89,14 @@ namespace DontFallGranny.Core
 
         public void RestartRun()
         {
-            ResetCoreState();
-
-            if (sessionFlow != null && sessionFlow.State != GameSessionState.Playing)
+            if (sessionFlow != null &&
+                sessionFlow.State != GameSessionState.Playing)
+            {
                 sessionFlow.StartRun();
+                return;
+            }
 
+            ResetCoreState();
             RunRestarted?.Invoke();
         }
 
