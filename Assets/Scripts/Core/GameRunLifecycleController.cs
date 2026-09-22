@@ -14,6 +14,7 @@ namespace DontFallGranny.Core
         [SerializeField] private RescueWindowController rescueWindow;
         [SerializeField] private GrannyRunnerController runner;
         [SerializeField] private RunDataController runData;
+        [SerializeField] private RunWorldResetController worldReset;
         [SerializeField] private Rigidbody body;
 
         private Vector3 spawnPosition;
@@ -48,6 +49,9 @@ namespace DontFallGranny.Core
 
             if (runData == null)
                 runData = GetComponent<RunDataController>();
+
+            if (worldReset == null)
+                worldReset = FindFirstObjectByType<RunWorldResetController>();
 
             if (body == null)
                 body = GetComponent<Rigidbody>();
@@ -137,6 +141,7 @@ namespace DontFallGranny.Core
             }
 
             runData?.ResetRunData();
+            worldReset?.ResetWorld();
         }
     }
 }
