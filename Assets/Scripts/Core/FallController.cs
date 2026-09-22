@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -9,6 +8,8 @@ namespace DontFallGranny.Core
     {
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
+        [SerializeField] private GameRunStateController runState;
+        [SerializeField] private GameTimeController gameTime;
         [SerializeField] private Rigidbody body;
         [SerializeField] private Animator animator;
 
@@ -29,8 +30,6 @@ namespace DontFallGranny.Core
         [SerializeField] private UnityEvent onFallImpact;
         [SerializeField] private UnityEvent onRecovered;
 
-        private Coroutine slowMotionRoutine;
-
         public bool HasFallen { get; private set; }
 
         public event Action FallStarted;
@@ -41,6 +40,12 @@ namespace DontFallGranny.Core
         {
             if (balanceController == null)
                 balanceController = GetComponent<BalanceController>();
+
+            if (runState == null)
+                runState = GetComponent<GameRunStateController>();
+
+            if (gameTime == null)
+                gameTime = GetComponent<GameTimeController>();
 
             if (body == null)
                 body = GetComponent<Rigidbody>();
@@ -69,15 +74,8 @@ namespace DontFallGranny.Core
         public void ResetFall()
         {
             HasFallen = false;
-
-            if (slowMotionRoutine != null)
-            {
-                StopCoroutine(slowMotionRoutine);
-                slowMotionRoutine = null;
-            }
-
-            Time.timeScale = 1f;
-            Time.fixedDeltaTime = 0.02f;
+            gameTime?.CancelHitStop();
+            runState?.SetState(GameRunState.Running);
 
             animator?.ResetTrigger(fallTrigger);
             animator?.ResetTrigger(stumbleTrigger);
@@ -115,6 +113,7 @@ namespace DontFallGranny.Core
                 return;
 
             HasFallen = true;
+            runState?.SetState(GameRunState.Fallen);
             animator?.SetTrigger(fallTrigger);
 
             if (body != null)
@@ -129,28 +128,10 @@ namespace DontFallGranny.Core
             onFallStarted?.Invoke();
             FallStarted?.Invoke();
 
-            if (slowMotionRoutine != null)
-                StopCoroutine(slowMotionRoutine);
-
-            slowMotionRoutine = StartCoroutine(ImpactSlowMotion());
-        }
-
-        private IEnumerator ImpactSlowMotion()
-        {
-            float originalScale = Time.timeScale;
-            float originalFixedDelta = Time.fixedDeltaTime;
-
-            Time.timeScale = impactSlowMotionScale;
-            Time.fixedDeltaTime = originalFixedDelta * impactSlowMotionScale;
+            gameTime?.PlayHitStop(impactSlowMotionScale, impactSlowMotionDuration);
 
             onFallImpact?.Invoke();
             FallImpact?.Invoke();
-
-            yield return new WaitForSecondsRealtime(impactSlowMotionDuration);
-
-            Time.timeScale = originalScale;
-            Time.fixedDeltaTime = originalFixedDelta;
-            slowMotionRoutine = null;
         }
     }
 }
