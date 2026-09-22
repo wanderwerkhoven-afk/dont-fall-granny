@@ -1,4 +1,5 @@
 using System;
+using DontFallGranny.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,14 +7,22 @@ namespace DontFallGranny.Input
 {
     public sealed class GrannyInputRouter : MonoBehaviour
     {
+        [SerializeField] private GameSessionFlowController sessionFlow;
+
         private InputAction jumpAction;
         private InputAction recoverAction;
 
         public event Action JumpRequested;
         public event Action RecoverRequested;
 
+        private bool GameplayEnabled =>
+            sessionFlow == null || sessionFlow.State == GameSessionState.Playing;
+
         private void Awake()
         {
+            if (sessionFlow == null)
+                sessionFlow = FindFirstObjectByType<GameSessionFlowController>();
+
             jumpAction = new InputAction("Jump", InputActionType.Button);
             jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Keyboard>/upArrow");
@@ -42,24 +51,32 @@ namespace DontFallGranny.Input
             recoverAction.performed -= HandleRecover;
         }
 
+        private void OnDestroy()
+        {
+            jumpAction?.Dispose();
+            recoverAction?.Dispose();
+        }
+
         public void RequestJump()
         {
-            JumpRequested?.Invoke();
+            if (GameplayEnabled)
+                JumpRequested?.Invoke();
         }
 
         public void RequestRecovery()
         {
-            RecoverRequested?.Invoke();
+            if (GameplayEnabled)
+                RecoverRequested?.Invoke();
         }
 
         private void HandleJump(InputAction.CallbackContext _)
         {
-            JumpRequested?.Invoke();
+            RequestJump();
         }
 
         private void HandleRecover(InputAction.CallbackContext _)
         {
-            RecoverRequested?.Invoke();
+            RequestRecovery();
         }
     }
 }
