@@ -13,6 +13,7 @@ namespace DontFallGranny.Core
         [SerializeField] private RecoveryWindowController recoveryWindow;
         [SerializeField] private RescueWindowController rescueWindow;
         [SerializeField] private GrannyRunnerController runner;
+        [SerializeField] private RunDataController runData;
         [SerializeField] private Rigidbody body;
 
         private Vector3 spawnPosition;
@@ -45,6 +46,9 @@ namespace DontFallGranny.Core
             if (runner == null)
                 runner = GetComponent<GrannyRunnerController>();
 
+            if (runData == null)
+                runData = GetComponent<RunDataController>();
+
             if (body == null)
                 body = GetComponent<Rigidbody>();
 
@@ -72,11 +76,14 @@ namespace DontFallGranny.Core
 
         public void StartFreshRun()
         {
-            ResetCoreState();
-
-            if (sessionFlow != null && sessionFlow.State != GameSessionState.Playing)
+            if (sessionFlow != null &&
+                sessionFlow.State != GameSessionState.Playing)
+            {
                 sessionFlow.StartRun();
+                return;
+            }
 
+            ResetCoreState();
             RunStarted?.Invoke();
         }
 
@@ -105,6 +112,7 @@ namespace DontFallGranny.Core
                 previous != GameSessionState.Playing)
             {
                 ResetCoreState();
+                RunStarted?.Invoke();
             }
         }
 
@@ -124,6 +132,8 @@ namespace DontFallGranny.Core
                 body.linearVelocity = Vector3.zero;
                 body.angularVelocity = Vector3.zero;
             }
+
+            runData?.ResetRunData();
         }
     }
 }
