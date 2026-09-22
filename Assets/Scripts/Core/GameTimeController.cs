@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -8,14 +9,20 @@ namespace DontFallGranny.Core
         private Coroutine activeHitStop;
         private float restoreScale = 1f;
         private float restoreFixedDelta = 0.02f;
+        private bool ownsTimeOverride;
+
+        public bool IsHitStopActive => ownsTimeOverride;
+        public event Action HitStopCompleted;
 
         public void PlayHitStop(float timeScale, float durationRealtime)
         {
-            if (activeHitStop != null)
+            if (ownsTimeOverride)
                 CancelHitStop();
 
             restoreScale = Time.timeScale;
             restoreFixedDelta = Time.fixedDeltaTime;
+            ownsTimeOverride = true;
+
             activeHitStop = StartCoroutine(HitStopRoutine(
                 Mathf.Clamp(timeScale, 0.01f, 1f),
                 Mathf.Max(0f, durationRealtime)
@@ -24,13 +31,16 @@ namespace DontFallGranny.Core
 
         public void CancelHitStop()
         {
+            if (!ownsTimeOverride)
+                return;
+
             if (activeHitStop != null)
             {
                 StopCoroutine(activeHitStop);
                 activeHitStop = null;
             }
 
-            RestoreTime();
+            RestoreOwnedTime();
         }
 
         private IEnumerator HitStopRoutine(float scale, float durationRealtime)
@@ -40,20 +50,24 @@ namespace DontFallGranny.Core
 
             yield return new WaitForSecondsRealtime(durationRealtime);
 
-            RestoreTime();
+            RestoreOwnedTime();
             activeHitStop = null;
+            HitStopCompleted?.Invoke();
         }
 
-        private void RestoreTime()
+        private void RestoreOwnedTime()
         {
+            if (!ownsTimeOverride)
+                return;
+
             Time.timeScale = restoreScale;
             Time.fixedDeltaTime = restoreFixedDelta;
+            ownsTimeOverride = false;
         }
 
         private void OnDisable()
         {
-            if (activeHitStop != null)
-                CancelHitStop();
+            CancelHitStop();
         }
     }
 }
