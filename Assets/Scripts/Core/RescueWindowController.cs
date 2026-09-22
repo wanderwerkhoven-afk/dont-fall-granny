@@ -46,13 +46,13 @@ namespace DontFallGranny.Core
         private void OnEnable()
         {
             if (fallController != null)
-                fallController.FallImpact += Open;
+                fallController.RescueReady += Open;
         }
 
         private void OnDisable()
         {
             if (fallController != null)
-                fallController.FallImpact -= Open;
+                fallController.RescueReady -= Open;
         }
 
         private void Update()
@@ -104,7 +104,7 @@ namespace DontFallGranny.Core
             Expire();
         }
 
-        private void Expire()
+        public void Expire()
         {
             if (!IsOpen)
                 return;
