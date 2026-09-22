@@ -4,41 +4,62 @@ A premium stylized arcade-survival game built around one clear fantasy:
 
 > Stay upright. Survive the chaos. Never underestimate Granny.
 
-## Current direction
-
-The first production target is a polished vertical slice with:
-
-- one iconic Granny character;
-- one highly polished environment;
-- a universal balance/recovery system;
-- escalating chaos during a run;
-- short event segments such as the mobility-scooter dash;
-- responsive audiovisual feedback for near-falls and recoveries;
-- lightweight mastery progression.
-
 ## Technology
 
-Primary implementation target: **Unity + C#**.
+Primary implementation: **Phaser + TypeScript + Vite**.
 
-## Repository structure
+The game runs directly in the browser and deploys to GitHub Pages. No Unity installation, Unity account, license secret or WebGL editor build is required.
 
-- `Assets/Scripts/Core` – reusable gameplay systems
-- `Assets/Scripts/Feedback` – camera/audio/VFX feedback hooks
-- `Assets/Scripts/Progression` – mastery and progression systems
-- `docs` – game vision, design decisions and production notes
+## Current playable slice
 
-## Development workflow
+The browser version currently includes:
 
-Meaningful changes should be made on feature branches and reviewed through pull requests. Improvements must strengthen at least one of these pillars:
+- Home / Play flow;
+- responsive portrait layout;
+- stylized procedural Granny;
+- automatic running;
+- jump controls for mobile and keyboard;
+- trip, heavy and moving hazards;
+- balance system with Stable / Unstable / Critical / Fallen states;
+- recovery window with dedicated action;
+- coins and live distance score;
+- near-miss feedback;
+- fall + 10-second rescue flow;
+- Game Over with Replay / Home;
+- best-distance persistence in localStorage;
+- reduced-motion preference.
 
-1. Character-driven chaos
-2. Skillful survival
-3. Premium game feel
-4. Replayability
-5. Strong visual identity
+## Run locally
 
-## Current milestone
+```bash
+npm install
+npm run dev
+```
 
-**Milestone 0 — Core foundation**
+Production build:
 
-Build the systems required for a playable vertical-slice prototype before expanding content.
+```bash
+npm run build
+```
+
+## GitHub Pages
+
+The Pages workflow is in:
+
+`.github/workflows/pages.yml`
+
+After it is merged to `main` and GitHub Pages is configured with **Source → GitHub Actions**, the expected URL is:
+
+`https://wanderwerkhoven-afk.github.io/dont-fall-granny/`
+
+## Repository layout
+
+- `src/scenes` – Phaser scenes;
+- `src/game` – gameplay systems and shared state;
+- `src/styles.css` – browser/mobile shell;
+- `docs` – design and production notes;
+- legacy Unity folders remain temporarily for reference during the pivot and are no longer the production target.
+
+## Product direction
+
+The next milestone is a polished 15–30 second browser-native vertical slice before adding broader content such as scooter and airplane event modes.
