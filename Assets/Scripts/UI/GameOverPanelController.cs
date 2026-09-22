@@ -1,17 +1,14 @@
 using DontFallGranny.Core;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace DontFallGranny.UI
 {
     public sealed class GameOverPanelController : MonoBehaviour
     {
-        [SerializeField] private GameSessionFlowController sessionFlow;
-        [SerializeField] private GameRunStateController runState;
-        [SerializeField] private BalanceController balance;
+        [SerializeField] private GameRunLifecycleController lifecycle;
         [SerializeField] private TMP_Text resultLabel;
-        [SerializeField] private UnityEvent onReplayRequested;
+        [SerializeField] private TMP_Text rewardLabel;
 
         public void SetResultText(string result)
         {
@@ -19,18 +16,20 @@ namespace DontFallGranny.UI
                 resultLabel.text = result;
         }
 
+        public void SetRewardText(string reward)
+        {
+            if (rewardLabel != null)
+                rewardLabel.text = reward;
+        }
+
         public void OnReplayPressed()
         {
-            balance?.ResetBalance();
-            runState?.SetState(GameRunState.Running);
-            onReplayRequested?.Invoke();
+            lifecycle?.RestartRun();
         }
 
         public void OnHomePressed()
         {
-            balance?.ResetBalance();
-            runState?.SetState(GameRunState.Running);
-            sessionFlow?.OpenHome();
+            lifecycle?.ReturnHome();
         }
     }
 }
