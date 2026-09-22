@@ -34,11 +34,11 @@ namespace DontFallGranny.Gameplay
 
         private void OnTriggerExit(Collider other)
         {
-            if (!grannyInside ||
-                other.GetComponentInParent<GrannyRunnerController>() == null)
-            {
+            GrannyRunnerController runner =
+                other.GetComponentInParent<GrannyRunnerController>();
+
+            if (!grannyInside || runner == null)
                 return;
-            }
 
             grannyInside = false;
 
@@ -47,6 +47,10 @@ namespace DontFallGranny.Gameplay
                 hitRegistered = false;
                 return;
             }
+
+            RunDataController runData =
+                other.GetComponentInParent<RunDataController>();
+            runData?.RegisterNearMiss();
 
             onNearMiss?.Invoke();
             NearMiss?.Invoke();
