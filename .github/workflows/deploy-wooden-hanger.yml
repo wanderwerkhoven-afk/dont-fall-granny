@@ -28,6 +28,7 @@ jobs:
           test -s assets/hanger-spritesheet.svg
           node tests/store-regression.mjs
           node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
