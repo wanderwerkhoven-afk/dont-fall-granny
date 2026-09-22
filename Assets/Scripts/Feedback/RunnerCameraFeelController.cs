@@ -1,4 +1,5 @@
 using DontFallGranny.Core;
+using DontFallGranny.UI;
 using UnityEngine;
 
 namespace DontFallGranny.Feedback
@@ -10,10 +11,13 @@ namespace DontFallGranny.Feedback
         [SerializeField] private Transform followTarget;
         [SerializeField] private GameRunStateController runState;
         [SerializeField] private BalanceController balance;
+        [SerializeField] private ReducedMotionSettings motionSettings;
 
         [Header("Base framing")]
-        [SerializeField] private Vector3 baseOffset = new Vector3(4.6f, 2.8f, -7.5f);
-        [SerializeField] private Vector3 lookOffset = new Vector3(0f, 1.15f, 2.4f);
+        [SerializeField] private Vector3 baseOffset =
+            new Vector3(4.6f, 2.8f, -7.5f);
+        [SerializeField] private Vector3 lookOffset =
+            new Vector3(0f, 1.15f, 2.4f);
         [SerializeField] private float baseFov = 58f;
 
         [Header("Tension framing")]
@@ -26,10 +30,21 @@ namespace DontFallGranny.Feedback
         [SerializeField] private float rotationSharpness = 10f;
         [SerializeField] private float fovSharpness = 8f;
 
+        [Header("Procedural motion")]
+        [SerializeField] private float recoverySwayAmplitude = 0.08f;
+        [SerializeField] private float recoverySwayFrequency = 5.5f;
+        [SerializeField] private float fallenDip = 0.28f;
+        [SerializeField] private float fallenRollDegrees = 3.5f;
+
+        private float motionTime;
+
         private void Awake()
         {
             if (targetCamera == null)
                 targetCamera = GetComponent<Camera>();
+
+            if (motionSettings == null)
+                motionSettings = FindFirstObjectByType<ReducedMotionSettings>();
         }
 
         private void LateUpdate()
@@ -37,16 +52,45 @@ namespace DontFallGranny.Feedback
             if (targetCamera == null || followTarget == null)
                 return;
 
+            bool reduced =
+                motionSettings != null && motionSettings.ReducedMotion;
+
             float targetFov = ResolveTargetFov();
             float verticalTension =
-                runState != null && runState.State == GameRunState.Recovering
+                runState != null &&
+                runState.State == GameRunState.Recovering
                     ? recoveringHeightOffset
                     : 0f;
+
+            Vector3 proceduralOffset = Vector3.zero;
+            float roll = 0f;
+
+            if (!reduced && runState != null)
+            {
+                motionTime += Time.unscaledDeltaTime;
+
+                if (runState.State == GameRunState.Recovering)
+                {
+                    proceduralOffset.x =
+                        Mathf.Sin(
+                            motionTime *
+                            recoverySwayFrequency *
+                            Mathf.PI * 2f
+                        ) * recoverySwayAmplitude;
+                }
+                else if (runState.State == GameRunState.Fallen ||
+                         runState.State == GameRunState.Rescue)
+                {
+                    proceduralOffset.y = -fallenDip;
+                    roll = fallenRollDegrees;
+                }
+            }
 
             Vector3 desiredPosition =
                 followTarget.position +
                 baseOffset +
-                Vector3.up * verticalTension;
+                Vector3.up * verticalTension +
+                proceduralOffset;
 
             transform.position = Vector3.Lerp(
                 transform.position,
@@ -58,7 +102,7 @@ namespace DontFallGranny.Feedback
             Quaternion desiredRotation = Quaternion.LookRotation(
                 lookPoint - transform.position,
                 Vector3.up
-            );
+            ) * Quaternion.Euler(0f, 0f, roll);
 
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
