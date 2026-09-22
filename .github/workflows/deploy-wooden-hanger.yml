@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify sprites, shop, mobile boutique, outfit patterns and game syntax
+      - name: Verify sprites, shops, recovery timing, accessibility and game syntax
         run: |
           set -eu
           test -s index.html
@@ -31,6 +31,8 @@ jobs:
           node tests/shop-ux.mjs
           node tests/wardrobe-scroll-outfits.mjs
           node tests/boutique-regression.mjs
+          node tests/home-screen-regression.mjs
+          node tests/recovery-skill-check.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
