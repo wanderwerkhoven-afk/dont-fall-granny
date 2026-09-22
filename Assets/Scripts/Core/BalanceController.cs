@@ -8,6 +8,8 @@ namespace DontFallGranny.Core
         [Header("Balance")]
         [SerializeField, Range(0f, 1f)] private float balance = 1f;
         [SerializeField] private float passiveRecoveryPerSecond = 0.12f;
+        [SerializeField, Range(0f, 1f)] private float unstableRecoveryMultiplier = 0.6f;
+        [SerializeField, Range(0f, 1f)] private float criticalRecoveryMultiplier = 0.25f;
         [SerializeField] private float unstableThreshold = 0.55f;
         [SerializeField] private float criticalThreshold = 0.22f;
 
@@ -19,14 +21,19 @@ namespace DontFallGranny.Core
         public event Action RecoveredFromCritical;
         public event Action Fallen;
 
-        private BalanceState previousNonFallenState = BalanceState.Stable;
-
         private void Update()
         {
             if (State == BalanceState.Fallen)
                 return;
 
-            AddBalance(passiveRecoveryPerSecond * Time.deltaTime);
+            float multiplier = State switch
+            {
+                BalanceState.Critical => criticalRecoveryMultiplier,
+                BalanceState.Unstable => unstableRecoveryMultiplier,
+                _ => 1f
+            };
+
+            AddBalance(passiveRecoveryPerSecond * multiplier * Time.deltaTime);
         }
 
         public void ApplyImpact(float severity)
@@ -76,10 +83,6 @@ namespace DontFallGranny.Core
                 return;
 
             BalanceState oldState = State;
-
-            if (oldState != BalanceState.Fallen)
-                previousNonFallenState = oldState;
-
             SetState(nextState);
 
             if (oldState == BalanceState.Critical &&
