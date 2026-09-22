@@ -30,7 +30,8 @@ namespace DontFallGranny.Core
             if (Time.time - lastImpactTime < cooldownSeconds)
                 return;
 
-            if (!other.TryGetComponent<GrannyImpactReceiver>(out var receiver))
+            GrannyImpactReceiver receiver = other.GetComponentInParent<GrannyImpactReceiver>();
+            if (receiver == null)
                 return;
 
             lastImpactTime = Time.time;
