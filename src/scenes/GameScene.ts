@@ -599,7 +599,7 @@ export class GameScene extends Phaser.Scene {
     hazard.setData('kind', kind);
     hazard.setDepth(8);
     hazard.setImmovable(true);
-    hazard.body.allowGravity = false;
+    hazard.setAllowGravity(false);
 
     if (kind === 'moving') {
       hazard.moving = true;
@@ -655,7 +655,7 @@ export class GameScene extends Phaser.Scene {
       ) as Phaser.Physics.Arcade.Sprite;
 
       coin.setScale(0.82);
-      coin.body.allowGravity = false;
+      coin.setAllowGravity(false);
       coin.setDepth(7);
       coin.setData('phase', Phaser.Math.FloatBetween(0, Math.PI * 2));
       coin.setData('baseY', y);
