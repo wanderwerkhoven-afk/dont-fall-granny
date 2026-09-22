@@ -39,7 +39,7 @@ namespace DontFallGranny.EditorTools
             GameObject granny = BuildGrannyPrototype(materials);
             BuildStreet(materials);
             BuildLighting();
-            BuildCamera(granny);
+            BuildCamera(granny, systems);
             BuildUI(systems, granny, materials);
 
             PrefabUtility.SaveAsPrefabAssetAndConnect(
@@ -121,6 +121,8 @@ namespace DontFallGranny.EditorTools
         {
             var systems = new GameObject("GameSystems");
             systems.AddComponent<GameSessionFlowController>();
+            systems.AddComponent<RunWorldResetController>();
+            systems.AddComponent<ReducedMotionSettings>();
             return systems;
         }
 
@@ -217,9 +219,38 @@ namespace DontFallGranny.EditorTools
                 }
             }
 
-            BuildObstacle(environment.transform, new Vector3(0f, 0.5f, 18f), m.Mustard);
-            BuildObstacle(environment.transform, new Vector3(1.4f, 0.5f, 31f), m.Mint);
-            BuildObstacle(environment.transform, new Vector3(-1.3f, 0.5f, 45f), m.DustyPink);
+            BuildHazard(
+                environment.transform,
+                "TripHazard",
+                new Vector3(0f, 0.18f, 18f),
+                new Vector3(1.8f, 0.32f, 0.55f),
+                m.Mustard,
+                0.18f,
+                false,
+                false
+            );
+
+            BuildHazard(
+                environment.transform,
+                "HeavyHazard",
+                new Vector3(1.25f, 0.8f, 31f),
+                new Vector3(1.15f, 1.6f, 0.9f),
+                m.DustyPink,
+                0.55f,
+                true,
+                false
+            );
+
+            BuildHazard(
+                environment.transform,
+                "MovingHazard",
+                new Vector3(-0.8f, 0.6f, 45f),
+                new Vector3(0.9f, 1.2f, 0.8f),
+                m.Mint,
+                0.30f,
+                false,
+                true
+            );
 
             BuildCoin(environment.transform, new Vector3(0f, 0.7f, 8f), m.Mustard);
             BuildCoin(environment.transform, new Vector3(0f, 0.7f, 11f), m.Mustard);
@@ -245,15 +276,43 @@ namespace DontFallGranny.EditorTools
             roof.GetComponent<Renderer>().sharedMaterial = m.Plum;
         }
 
-        private static void BuildObstacle(Transform parent, Vector3 position, Material material)
+        private static void BuildHazard(
+            Transform parent,
+            string name,
+            Vector3 position,
+            Vector3 scale,
+            Material material,
+            float damage,
+            bool heavy,
+            bool moving
+        )
         {
             GameObject obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obstacle.name = "PrototypeObstacle";
+            obstacle.name = name;
             obstacle.transform.SetParent(parent);
             obstacle.transform.position = position;
-            obstacle.transform.localScale = new Vector3(1f, 1f, 0.8f);
+            obstacle.transform.localScale = scale;
             obstacle.GetComponent<Renderer>().sharedMaterial = material;
-            obstacle.AddComponent<ObstacleImpactSource>();
+
+            var source = obstacle.AddComponent<ObstacleImpactSource>();
+
+            GameObject nearMissObject = new GameObject($"{name}_NearMiss");
+            nearMissObject.transform.SetParent(obstacle.transform, false);
+
+            var nearMissCollider = nearMissObject.AddComponent<BoxCollider>();
+            nearMissCollider.isTrigger = true;
+            nearMissCollider.size = new Vector3(2.2f, 1.35f, 2.4f);
+
+            var nearMiss = nearMissObject.AddComponent<NearMissTrigger>();
+
+            var sourceSO = new SerializedObject(source);
+            sourceSO.FindProperty("balanceDamage").floatValue = damage;
+            sourceSO.FindProperty("heavyImpact").boolValue = heavy;
+            sourceSO.FindProperty("nearMissTrigger").objectReferenceValue = nearMiss;
+            sourceSO.ApplyModifiedPropertiesWithoutUndo();
+
+            if (moving)
+                obstacle.AddComponent<MovingHazard>();
         }
 
         private static void BuildCoin(
@@ -270,6 +329,7 @@ namespace DontFallGranny.EditorTools
             coin.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             coin.GetComponent<Renderer>().sharedMaterial = material;
             coin.AddComponent<CoinPickup>();
+            coin.AddComponent<SimpleCollectibleMotion>();
         }
 
         private static void BuildLighting()
@@ -287,7 +347,7 @@ namespace DontFallGranny.EditorTools
             RenderSettings.ambientGroundColor = new Color(0.31f, 0.31f, 0.34f);
         }
 
-        private static void BuildCamera(GameObject granny)
+        private static void BuildCamera(GameObject granny, GameObject systems)
         {
             GameObject cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
@@ -303,6 +363,8 @@ namespace DontFallGranny.EditorTools
                 granny.GetComponent<GameRunStateController>();
             so.FindProperty("balance").objectReferenceValue =
                 granny.GetComponent<BalanceController>();
+            so.FindProperty("motionSettings").objectReferenceValue =
+                systems.GetComponent<ReducedMotionSettings>();
             so.ApplyModifiedPropertiesWithoutUndo();
 
             cameraObject.transform.position =
@@ -344,6 +406,7 @@ namespace DontFallGranny.EditorTools
             var rescueWindow = granny.GetComponent<RescueWindowController>();
             var inputRouter = granny.GetComponent<GrannyInputRouter>();
             var lifecycle = granny.GetComponent<GameRunLifecycleController>();
+            var motionSettings = systems.GetComponent<ReducedMotionSettings>();
 
             var frontEnd = canvasObject.AddComponent<FrontEndUIController>();
             Wire(frontEnd, "sessionFlow", sessionFlow);
@@ -361,7 +424,7 @@ namespace DontFallGranny.EditorTools
 
             BuildHome(home.transform, lifecycle, frontEnd);
             BuildLoadout(loadout.transform, lifecycle, frontEnd);
-            BuildHUD(hud.transform, runData, balance);
+            BuildHUD(hud.transform, runData, balance, motionSettings);
             BuildRecovery(recovery, recoveryWindow, inputRouter);
             BuildRescue(rescue, rescueWindow);
             BuildGameOver(gameOver, lifecycle, runState, runData);
@@ -431,7 +494,8 @@ namespace DontFallGranny.EditorTools
         private static void BuildHUD(
             Transform parent,
             RunDataController runData,
-            BalanceController balance
+            BalanceController balance,
+            ReducedMotionSettings motionSettings
         )
         {
             TMP_Text distance = CreateText(parent, "Distance", "0 m", 38,
@@ -444,12 +508,46 @@ namespace DontFallGranny.EditorTools
                 new Vector2(0.25f, 0.86f), new Vector2(0.75f, 0.91f),
                 TextAlignmentOptions.Center, new Color32(255, 248, 236, 230));
 
+            Image balanceBackground = CreateImage(
+                parent,
+                "BalanceBarBackground",
+                new Vector2(0.25f, 0.835f),
+                new Vector2(0.75f, 0.852f),
+                new Color32(53, 43, 73, 185)
+            );
+
+            Image balanceFill = CreateImage(
+                balanceBackground.transform,
+                "Fill",
+                Vector2.zero,
+                Vector2.one,
+                new Color32(255, 204, 101, 255)
+            );
+            balanceFill.type = Image.Type.Filled;
+            balanceFill.fillMethod = Image.FillMethod.Horizontal;
+            balanceFill.fillOrigin = (int)Image.OriginHorizontal.Left;
+
+            TMP_Text nearMiss = CreateText(
+                parent,
+                "NearMiss",
+                "NEAR MISS",
+                31,
+                new Vector2(0.28f, 0.73f),
+                new Vector2(0.72f, 0.80f),
+                TextAlignmentOptions.Center,
+                new Color32(255, 204, 101, 255)
+            );
+
             var controller = parent.gameObject.AddComponent<RunHUDController>();
             Wire(controller, "runData", runData);
             Wire(controller, "balance", balance);
+            Wire(controller, "motionSettings", motionSettings);
             Wire(controller, "distanceLabel", distance);
             Wire(controller, "coinsLabel", coins);
             Wire(controller, "balanceLabel", balanceLabel);
+            Wire(controller, "nearMissLabel", nearMiss);
+            Wire(controller, "balanceFill", balanceFill);
+            Wire(controller, "coinPulseTarget", coins.rectTransform);
         }
 
         private static void BuildRecovery(
