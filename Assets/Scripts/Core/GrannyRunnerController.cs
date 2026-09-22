@@ -7,6 +7,7 @@ namespace DontFallGranny.Core
     {
         [Header("References")]
         [SerializeField] private BalanceController balanceController;
+        [SerializeField] private GameRunStateController runState;
         [SerializeField] private Transform groundProbe;
         [SerializeField] private LayerMask groundMask = ~0;
 
@@ -35,6 +36,8 @@ namespace DontFallGranny.Core
         public float CurrentSpeed { get; private set; }
         public bool IsGrounded { get; private set; }
 
+        private bool AllowsLocomotion => runState == null || runState.AllowsLocomotion;
+
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
@@ -42,10 +45,20 @@ namespace DontFallGranny.Core
 
             if (balanceController == null)
                 balanceController = GetComponent<BalanceController>();
+
+            if (runState == null)
+                runState = GetComponent<GameRunStateController>();
         }
 
         private void Update()
         {
+            if (!AllowsLocomotion)
+            {
+                previousVerticalVelocity = body.linearVelocity.y;
+                wasGrounded = IsGrounded;
+                return;
+            }
+
             elapsed += Time.deltaTime;
             CurrentSpeed = Mathf.Min(
                 maxForwardSpeed,
@@ -70,6 +83,14 @@ namespace DontFallGranny.Core
 
         private void FixedUpdate()
         {
+            if (!AllowsLocomotion)
+            {
+                Vector3 stopped = body.linearVelocity;
+                stopped.z = 0f;
+                body.linearVelocity = stopped;
+                return;
+            }
+
             Vector3 velocity = body.linearVelocity;
             velocity.z = CurrentSpeed;
             body.linearVelocity = velocity;
@@ -77,6 +98,9 @@ namespace DontFallGranny.Core
 
         public void RequestJump()
         {
+            if (!AllowsLocomotion)
+                return;
+
             lastJumpRequestTime = Time.time;
         }
 
