@@ -1,0 +1,37 @@
+name: Fix desktop home compatibility
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-desktop-home.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Apply desktop home fix and run regressions
+        run: |
+          set -eu
+          python3 tools/fix-desktop-home.py
+          node tests/home-desktop-layout.mjs
+          node tests/home-screen-regression.mjs
+          node tests/recovery-skill-check.mjs
+          node tests/store-regression.mjs
+          node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
+          node tests/wardrobe-scroll-outfits.mjs
+          node tests/boutique-regression.mjs
+          git diff --check
+      - name: Push verified desktop home fix to main
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/home-desktop-layout.mjs
+          git commit -m 'ui: keep centered home hub fully visible on desktop'
+          git pull --rebase origin main
+          git push origin HEAD:main
