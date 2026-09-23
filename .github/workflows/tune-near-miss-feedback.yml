@@ -1,0 +1,38 @@
+name: Tune near miss feedback
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tune-near-miss-feedback.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Apply near miss feedback tune
+        run: |
+          set -eu
+          python3 tools/tune-near-miss-feedback.py
+          node tests/recovery-skill-check.mjs
+          node tests/recovery-risk-loop.mjs
+          node tests/store-regression.mjs
+          node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
+          node tests/wardrobe-scroll-outfits.mjs
+          node tests/boutique-regression.mjs
+          node tests/home-screen-regression.mjs
+          node tests/home-desktop-layout.mjs
+          git diff --check
+      - name: Push verified near miss feedback to main
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/recovery-risk-loop.mjs
+          git commit -m 'ui: enlarge and stack NEAR MISS feedback'
+          git pull --rebase origin main
+          git push origin HEAD:main
