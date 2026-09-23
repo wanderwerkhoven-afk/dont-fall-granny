@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync('index.html','utf8');
+assert.ok(html.includes('/* Desktop home compatibility: keep the complete hub inside the game frame. */'));
+assert.ok(html.includes('@media(min-width:651px){'));
+assert.ok(html.includes('grid-template-columns:repeat(2,clamp(108px,14dvh,150px))'));
+assert.ok(html.includes('aspect-ratio:1 / 1'));
+assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #startBtn'));
+assert.ok(html.includes('margin-top:auto'));
+assert.ok(html.includes('@media(min-width:651px) and (max-height:650px)'));
+const script=html.split('<script>')[1]?.split('</script>')[0];
+assert.ok(script);
+new Function(script);
+console.log('PASS desktop home stays bounded, square hub tiles retained, start action visible, JS syntax');
