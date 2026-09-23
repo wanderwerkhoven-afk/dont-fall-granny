@@ -6,7 +6,7 @@ assert.ok(script);new Function(script);
 assert.ok(script.includes('class BalanceController{'));
 assert.ok(script.includes('class NearMissController{'));
 assert.ok(script.includes('nearMissController.consumeFocus()'));
-assert.ok(script.includes("recoveryFeedbackText='NICE DODGE  +FOCUS'"));
+assert.ok(script.includes("recoveryFeedback=1.35;recoveryFeedbackText='NEAR\\nMISS!'"));
 assert.ok(script.includes('clearance>=0&&clearance<=28'));
 assert.ok(script.includes("recoveryCameraSettle=result==='perfect'"));
 assert.ok(script.includes('ctx.translate(wobble*4,Math.abs(wobble)*1.5)'));
@@ -20,3 +20,6 @@ w.begin(0,0);const base=[w.safeMin,w.safeMax];
 w.begin(0,.03);assert.ok(w.safeMin<base[0]&&w.safeMax>base[1],'near miss focus widens next safe window');
 w.begin(10000,.03);assert.ok(w.safeMin<w.perfectMin&&w.safeMax>w.perfectMax,'difficulty never crushes perfect zone');
 console.log('PASS near-miss focus risk/reward, balance controller, perfect camera settle, recovery HUD suppression and syntax');
+
+assert.ok(script.includes("const nearMiss=recoveryFeedbackText==='NEAR\\nMISS!'"),'large stacked near miss feedback');
+assert.ok(script.includes("ctx.font=(nearMiss?'1000 30px':'900 19px')+' system-ui'"),'near miss uses larger text');

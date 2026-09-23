@@ -652,11 +652,18 @@ function drawRecoveryGrandma(){
 }
 function drawRecoveryFeedback(){
  if(recoveryFeedback<=0)return;
- ctx.save();ctx.globalAlpha=Math.min(1,recoveryFeedback*2);
- ctx.font='900 19px system-ui';ctx.textAlign='center';
- ctx.strokeStyle='#493e49';ctx.lineWidth=4;
- ctx.strokeText(recoveryFeedbackText,grandma.x+grandma.w/2+22,grandma.y-30);
- ctx.fillStyle='#ffcc65';ctx.fillText(recoveryFeedbackText,grandma.x+grandma.w/2+22,grandma.y-30);
+ const nearMiss=recoveryFeedbackText==='NEAR\nMISS!';
+ const x=grandma.x+grandma.w/2+(nearMiss?28:22);
+ const y=grandma.y-(nearMiss?48:30);
+ ctx.save();ctx.globalAlpha=Math.min(1,recoveryFeedback*(nearMiss?1.15:2));ctx.textAlign='center';
+ ctx.font=(nearMiss?'1000 30px':'900 19px')+' system-ui';
+ ctx.strokeStyle='#493e49';ctx.lineWidth=nearMiss?6:4;
+ ctx.fillStyle='#ffcc65';
+ const lines=recoveryFeedbackText.split('\n');
+ lines.forEach((line,i)=>{
+  const yy=y+i*(nearMiss?27:21);
+  ctx.strokeText(line,x,yy);ctx.fillText(line,x,yy);
+ });
  ctx.restore();
 }
 
@@ -981,8 +988,8 @@ for(const o of obstacles){
  if(!o.hit&&!o.nearMiss&&o.nearMissCandidate&&o.x+o.w<body.x){
   o.nearMiss=true;
   const focus=nearMissController.register();
-  recoveryFeedback=.7;recoveryFeedbackText='NICE DODGE  +FOCUS';
-  statusEl.textContent='NICE DODGE! Focus maakt je volgende recovery iets ruimer ('+Math.round(focus*100)+'%).';
+  recoveryFeedback=1.35;recoveryFeedbackText='NEAR\nMISS!';
+  statusEl.textContent='NEAR MISS! +FOCUS';
  }
 }
 for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
