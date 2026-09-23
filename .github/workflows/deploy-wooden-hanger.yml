@@ -32,6 +32,7 @@ jobs:
           node tests/wardrobe-scroll-outfits.mjs
           node tests/boutique-regression.mjs
           node tests/home-screen-regression.mjs
+          node tests/home-desktop-layout.mjs
           node tests/recovery-skill-check.mjs
 
   deploy:
