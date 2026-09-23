@@ -11,7 +11,9 @@ dont-fall-granny/
 ├── assets/
 │   └── hanger-spritesheet.svg        # Zes houten hangerframes; 720×120, cellen 120×120
 ├── tests/
-│   └── store-regression.mjs          # Node-regressietest voor winkel, sprite en JS-syntax
+│   ├── store-regression.mjs          # Winkel, sprite en JS-syntax
+│   ├── recovery-skill-check.mjs      # 0,9 s recovery timing + PERFECT/SAFE/MISS
+│   └── recovery-risk-loop.mjs        # near-miss focus + balance + camera-settle
 └── .github/workflows/
     └── deploy-wooden-hanger.yml      # CI-verificatie en GitHub Pages-publicatie
 ```
@@ -35,10 +37,12 @@ De oude `assets/hanger-spritesheet.png` is verwijderd. PR #9 (hanger-SVG en gesy
 | Hangerafbeelding | `assets/hanger-spritesheet.svg` | Zes `<use href="#hanger">`-elementen; CSS `background-image`, `background-size` |
 | Gadgets en voertuigmodi | `index.html` | `const gadgets=[`, `ownedGadgets`, `vehicle`, `modeObstacles`, `scooter-mode` |
 | Start, pauze, reset en game-over | `index.html` | `reset()`, `returnHome()`, `GAME_OVER_SECONDS`, `tickDeathTimer`, `state` |
+| Recovery skill check / balance | `index.html` | `RecoveryWindowController`, `BalanceController`, `NearMissController`, `triggerRecovery`, `finishRecovery`, `drawRecoveryMeter` |
+| Near-miss risk/reward + PERFECT camera | `index.html` | `nearMissCandidate`, `nearMissController`, `recoveryCameraSettle`, `reducedRecoveryMotion` |
 | Game-loop, snelheid en werelden | `index.html` | `frame`, `update`, `travel`, `score`, `TIERS`, `currentTier` |
 | Obstakels en schild | `index.html` | `obstacles`, `candies`, `shield`, `spawnDistance`, `coinItems` |
 | Opgeslagen voortgang | `index.html` | `localStorage`, `dont-trip-grandma-coins`, `dont-trip-grandma-best`, `grandma-clothes`, `grandma-outfit`, `grandma-gadgets` |
-| Geautomatiseerde checks | `tests/store-regression.mjs` | SVG-cellen, assetpaden, outfit-preview, aankopen, scroll, JS-parser |
+| Geautomatiseerde checks | `tests/*.mjs` | winkel/sprite, home-layout, recovery timing, near-miss risk/reward en JS-parser |
 | Deployment | `.github/workflows/deploy-wooden-hanger.yml` | `verify`, `node tests/store-regression.mjs`, `upload-pages-artifact`, `deploy-pages` |
 
 Zoek op bovenstaande ankers in plaats van vaste regelnummers: één bestand bevat veel code en CSS-selectors kunnen meermaals voorkomen. Lees voor een wijziging de omliggende HTML, CSS én JavaScript.
@@ -49,7 +53,7 @@ Zoek op bovenstaande ankers in plaats van vaste regelnummers: één bestand beva
 
 **Hanger:** `assets/hanger-spritesheet.svg` → CSS `background-image` en `background-size:576px 96px` (desktop) / `504px 84px` (mobiel) → `setHangerFrame()` → `syncClothesHanger()` → animatie. De zes cellen zijn elk 120×120 in het bronbestand; zorg dat de afbeelding en de positie per frame overeenkomen en dat `prefers-reduced-motion` gerespecteerd blijft. Controleer daadwerkelijke zichtbaarheid op mobiel en desktop, niet alleen of het bestand bestaat.
 
-**Spel:** start/reset → frame/update/render → HUD en opslag. Bij timingwijzigingen ook eerste frame, pauze, restart, botsing en game-over testen. Behoud bestaande localStorage-sleutels zodat voortgang niet verloren gaat.
+**Spel:** start/reset → frame/update/render → HUD en opslag. Gewone onbeschermde botsingen lopen nu via `RecoveryWindowController` (0,9 s) naar PERFECT/SAFE/MISS; MISS valt door naar de bestaande rescue/game-over-flow. `NearMissController` bouwt maximaal 0,03 focus op en verruimt de eerstvolgende SAFE-zone; PERFECT gebruikt `BalanceController` en een subtiele `recoveryCameraSettle`, uitgeschakeld bij `prefers-reduced-motion`. Bij timingwijzigingen ook eerste frame, pauze, restart, botsing, near-miss, recovery en game-over testen. Behoud bestaande localStorage-sleutels zodat voortgang niet verloren gaat.
 
 **Publicatie:** bij wijzigingen aan `main` hoort de Pages-workflow HTML en de volledige gebruikte `assets/`-inhoud te publiceren. Een commit of een groene syntaxcheck is geen visuele browsercontrole. Geef commit, CI-status en eventuele browsercheck afzonderlijk door.
 
