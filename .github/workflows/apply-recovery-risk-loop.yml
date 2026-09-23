@@ -1,0 +1,38 @@
+name: Apply recovery risk loop
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-recovery-risk-loop.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Apply near miss and camera settle follow-up
+        run: |
+          set -eu
+          python3 tools/apply-recovery-risk-loop.py
+          node tests/recovery-skill-check.mjs
+          node tests/recovery-risk-loop.mjs
+          node tests/store-regression.mjs
+          node tests/ui-ux-regression.mjs
+          node tests/shop-ux.mjs
+          node tests/wardrobe-scroll-outfits.mjs
+          node tests/boutique-regression.mjs
+          node tests/home-screen-regression.mjs
+          node tests/home-desktop-layout.mjs
+          git diff --check
+      - name: Push verified recovery follow-up to main
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html tests/recovery-skill-check.mjs tests/recovery-risk-loop.mjs
+          git commit -m 'gameplay: connect near misses to recovery focus and add perfect camera settle'
+          git pull --rebase origin main
+          git push origin HEAD:main
