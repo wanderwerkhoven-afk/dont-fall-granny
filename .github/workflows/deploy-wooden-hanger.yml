@@ -34,6 +34,7 @@ jobs:
           node tests/home-screen-regression.mjs
           node tests/home-desktop-layout.mjs
           node tests/recovery-skill-check.mjs
+          node tests/recovery-risk-loop.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
