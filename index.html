@@ -556,10 +556,12 @@ const allTypes=[...types,...extras];
 // deterministic window integrated with the existing collision -> rescue -> game-over flow.
 class RecoveryWindowController{
  constructor(){this.duration=.9;this.active=false;this.position=0;this.elapsed=0;this.safeMin=.38;this.safeMax=.62;this.perfectMin=.47;this.perfectMax=.53;}
- begin(distance){
+ begin(distance,focusBonus=0){
   this.active=true;this.elapsed=0;this.position=0;
   const shrink=Math.min(.065,Math.floor(distance/1000)*.008);
-  this.safeMin=.38+shrink;this.safeMax=.62-shrink;
+  const focus=Math.max(0,Math.min(.03,focusBonus));
+  this.safeMin=Math.min(this.perfectMin-.01,.38+shrink-focus);
+  this.safeMax=Math.max(this.perfectMax+.01,.62-shrink+focus);
  }
  tick(dt){
   if(!this.active)return false;
@@ -577,23 +579,39 @@ class RecoveryWindowController{
  }
  reset(){this.active=false;this.elapsed=0;this.position=0;}
 }
+class BalanceController{
+ constructor(){this.value=1;}
+ hit(){this.value=.25;}
+ recover(result){this.value=result==='perfect'?1:.65;}
+ fail(){this.value=0;}
+ reset(){this.value=1;}
+}
+class NearMissController{
+ constructor(){this.focus=0;this.streak=0;}
+ register(){this.streak=Math.min(3,this.streak+1);this.focus=Math.min(.03,this.focus+.01);return this.focus;}
+ consumeFocus(){const focus=this.focus;this.focus=0;this.streak=0;return focus;}
+ reset(){this.focus=0;this.streak=0;}
+}
 const recoveryWindow=new RecoveryWindowController();
+const balanceController=new BalanceController();
+const nearMissController=new NearMissController();
 const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
-let balance=1,recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0;
+let recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0,recoveryCameraSettle=0;
 function triggerRecovery(){
  if(state!=='playing'||vehicle)return;
- recoveryWindow.begin(score);balance=.25;state='recovery';
+ recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
 }
 function finishRecovery(result){
  document.getElementById('game').classList.remove('recovery-mode');
  recoveryWindow.reset();
- if(result==='miss'){balance=0;end();return;}
- balance=result==='perfect'?1:.65;
+ if(result==='miss'){balanceController.fail();end();return;}
+ balanceController.recover(result);
  recoveryBoost=result==='perfect'?1.5:0;
  recoverySlow=result==='safe'?1.6:0;
  recoverySettle=result==='perfect'&&!reducedRecoveryMotion.matches?.26:0;
+ recoveryCameraSettle=result==='perfect'&&!reducedRecoveryMotion.matches?.24:0;
  recoveryFeedback=1.05;
  recoveryFeedbackText=result==='perfect'?'PERFECT SAVE!':'GERED!';
  invulnerable=1.2;state='playing';
@@ -850,7 +868,7 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');balance=1;recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function random(a,b){return a+Math.random()*(b-a)}function reset(){recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(frame)}function end(){
  recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
@@ -879,7 +897,7 @@ for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementB
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){elapsed+=dt;walk+=dt*11;recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
+function update(dt){elapsed+=dt;walk+=dt*11;recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
  if(vehicle){
   vehicleTime=Math.max(0,vehicleTime-dt);modeDistance+=speed*dt;modeSpawn-=dt;
   if(vehicleTime<=0){finishVehicle();return;}
@@ -924,7 +942,7 @@ if(!vehicle&&spawnDistance>=nextDistance){
   const attacking=(type.id==='cat'&&Math.random()<.55)||(type.id==='car'&&Math.random()<.72);
   const multiplier=attacking?(type.id==='car'?1.95:1.62):1;
   obstacles.push({type,x:W+8,y:ground-type.h,w:type.w,h:type.h,attacking,
-    chargeX:W-(type.id==='car'?175:105),charging:false,multiplier,hit:false});
+    chargeX:W-(type.id==='car'?175:105),charging:false,multiplier,hit:false,nearMiss:false,nearMissCandidate:false});
   spawnDistance=0;
   // Afwisseling: soms dicht op elkaar, soms een ruim herstelmoment.
   // Het minimum groeit mee met de snelheid en de sprongduur.
@@ -946,7 +964,28 @@ for(const o of obstacles){
   if(o.attacking&&!o.charging&&o.x<=o.chargeX)o.charging=true;
   o.x-=speed*(o.charging?o.multiplier:1)*dt;
 }for(const c of candies){c.x-=speed*dt;c.t+=dt}obstacles=obstacles.filter(o=>o.x+o.w>-30);candies=candies.filter(c=>c.x+c.w>-30);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
-const body={x:grandma.x+7,y:grandma.y+7,w:grandma.w-13,h:grandma.h-9};for(const o of obstacles){if(!vehicle&&!o.hit&&rectHit(body,{x:o.x+3,y:o.y+3,w:o.w-6,h:o.h-3},7)){o.hit=true;if(invulnerable>0||boostTime>0)continue;if(shield){shield=0;invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Je bent weer kwetsbaar.'}else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery();return}}}for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
+const body={x:grandma.x+7,y:grandma.y+7,w:grandma.w-13,h:grandma.h-9};
+for(const o of obstacles){
+ const obstacleBody={x:o.x+3,y:o.y+3,w:o.w-6,h:o.h-3};
+ const horizontalOverlap=body.x<body.x+body.w&&body.x<obstacleBody.x+obstacleBody.w&&body.x+body.w>obstacleBody.x;
+ const clearance=obstacleBody.y-(body.y+body.h);
+ if(!o.hit&&horizontalOverlap&&clearance>=0&&clearance<=28)o.nearMissCandidate=true;
+ if(!vehicle&&!o.hit&&rectHit(body,obstacleBody,7)){
+  o.hit=true;
+  if(invulnerable>0||boostTime>0)continue;
+  if(shield){shield=0;invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Je bent weer kwetsbaar.'}
+  else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery();return}
+ }
+}
+for(const o of obstacles){
+ if(!o.hit&&!o.nearMiss&&o.nearMissCandidate&&o.x+o.w<body.x){
+  o.nearMiss=true;
+  const focus=nearMissController.register();
+  recoveryFeedback=.7;recoveryFeedbackText='NICE DODGE  +FOCUS';
+  statusEl.textContent='NICE DODGE! Focus maakt je volgende recovery iets ruimer ('+Math.round(focus*100)+'%).';
+ }
+}
+for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
 for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;coins++;coinsRun++;saveCoins();puff(c.x,c.y,'#ffcf49')}}
 coinItems=coinItems.filter(c=>!c.taken);
 }
@@ -1143,6 +1182,12 @@ function drawVehicleMode(){
 }
 function render(){
  if(vehicle){drawVehicleMode();return;}
+ ctx.save();
+ if(recoveryCameraSettle>0&&!reducedRecoveryMotion.matches){
+  const strength=recoveryCameraSettle/.24;
+  const wobble=Math.sin((1-strength)*Math.PI*3)*strength;
+  ctx.translate(wobble*4,Math.abs(wobble)*1.5);
+ }
  if(transition>0){
   background(previousTier);
   ctx.save();ctx.globalAlpha=1-transition/2.8;background(currentTier);ctx.restore();
@@ -1150,13 +1195,14 @@ function render(){
 
  const tier=TIERS[currentTier%TIERS.length];
  // Tier is painted inside the world, rather than outside the game frame.
- ctx.save();ctx.textAlign='center';
- if(state==='recovery')ctx.globalAlpha=0;
- ctx.font='900 23px system-ui';ctx.fillStyle=(currentTier===4||currentTier>=6)?'#fff':'#493e49';
- ctx.globalAlpha=.82;
- ctx.fillText(`TIER ${currentTier+1}`,W/2,Math.max(108,ground*.35));
- ctx.font='800 15px system-ui';ctx.fillText(tier.name.toUpperCase(),W/2,Math.max(132,ground*.35+23));
- ctx.restore();
+ if(state!=='recovery'){
+  ctx.save();ctx.textAlign='center';
+  ctx.font='900 23px system-ui';ctx.fillStyle=(currentTier===4||currentTier>=6)?'#fff':'#493e49';
+  ctx.globalAlpha=.82;
+  ctx.fillText(`TIER ${currentTier+1}`,W/2,Math.max(108,ground*.35));
+  ctx.font='800 15px system-ui';ctx.fillText(tier.name.toUpperCase(),W/2,Math.max(132,ground*.35+23));
+  ctx.restore();
+ }
  if(tierFlash>0&&state!=='recovery'){
   const alpha=Math.min(1,tierFlash/0.4,(3.3-tierFlash)/0.3);
   ctx.save();ctx.globalAlpha=Math.max(0,alpha);
@@ -1171,7 +1217,7 @@ for(const c of coinItems){
  ellipse(0,0,12,12,'#f8ad2c');ellipse(0,0,9,9,'#ffe17a');
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
-for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}}
+for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore()}
 function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;if(state==='recovery')updateRecovery(dt);else update(dt);render();if(state==='playing'||state==='recovery')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 })();
 </script></body></html>

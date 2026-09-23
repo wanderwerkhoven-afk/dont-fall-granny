@@ -18,7 +18,7 @@ w.reset();assert.equal(w.active,false);assert.equal(w.position,0);
 assert.ok(script.includes('triggerRecovery();return'), 'ordinary unshielded collision enters recovery');
 assert.ok(script.includes("if(state==='recovery')updateRecovery(dt)"),'recovery ticks in animation loop');
 assert.ok(script.includes("if(state==='recovery'){attemptRecovery();return}"),'jump input taps recovery');
-assert.ok(script.includes("if(result==='miss'){balance=0;end();return;}"),'miss delegates existing rescue flow');
+assert.ok(script.includes("if(result==='miss'){balanceController.fail();end();return;}"),'miss delegates existing rescue flow');
 assert.ok(script.includes('drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();'),'in-world meter renders');
 assert.ok(html.includes('.game.recovery-mode .scoreboard'),'HUD hidden during recovery');
 console.log('PASS recovery timing, PERFECT/SAFE/MISS, harder safe window, reset, collision/input/rescue integration, JS syntax');
