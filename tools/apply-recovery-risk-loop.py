@@ -133,7 +133,7 @@ assert.ok(script.includes("recoveryCameraSettle=result==='perfect'"));
 assert.ok(script.includes('ctx.translate(wobble*4,Math.abs(wobble)*1.5)'));
 assert.ok(script.includes("if(recoveryCameraSettle>0&&!reducedRecoveryMotion.matches)"));
 assert.ok(script.includes("if(state!=='recovery'){"),'tier label hidden during recovery');
-const rw=script.split('class RecoveryWindowController{')[1]?.split('\nconst recoveryWindow=new RecoveryWindowController();')[0];
+const rw=script.split('class RecoveryWindowController{')[1]?.split('const recoveryWindow=new RecoveryWindowController();')[0];
 assert.ok(rw);
 const C=new Function('class RecoveryWindowController{'+rw+';return RecoveryWindowController;')();
 const w=new C();
