@@ -129,7 +129,7 @@ assert.ok(script.includes('class NearMissController{'));
 assert.ok(script.includes('nearMissController.consumeFocus()'));
 assert.ok(script.includes("recoveryFeedbackText='NICE DODGE  +FOCUS'"));
 assert.ok(script.includes('clearance>=0&&clearance<=28'));
-assert.ok(script.includes('recoveryCameraSettle=result===\'perfect\''));
+assert.ok(script.includes("recoveryCameraSettle=result==='perfect'"));
 assert.ok(script.includes('ctx.translate(wobble*4,Math.abs(wobble)*1.5)'));
 assert.ok(script.includes("if(recoveryCameraSettle>0&&!reducedRecoveryMotion.matches)"));
 assert.ok(script.includes("if(state!=='recovery'){\n  ctx.save();ctx.textAlign='center';"),'tier label hidden during recovery');
