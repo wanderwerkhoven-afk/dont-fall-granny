@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 assert.ok(html.includes('/* Desktop home compatibility: keep the complete hub inside the game frame. */'));
 assert.ok(html.includes('@media(min-width:651px){'));
-assert.ok(html.includes('grid-template-columns:repeat(2,clamp(108px,14dvh,150px))'));
+assert.ok(html.includes('grid-template-columns:repeat(4,clamp(82px,11dvh,108px))'));
 assert.ok(html.includes('aspect-ratio:1 / 1'));
 assert.ok(html.includes('#overlay:not(.storepage):not(.gameover) #startBtn'));
 assert.ok(html.includes('margin-top:auto'));
