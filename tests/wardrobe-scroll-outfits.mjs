@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const html=readFileSync('index.html','utf8');
+const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 assert.match(html, /#overlay\.clothespage #menuContent\{max-height:none;overflow:visible\}/);
 assert.match(html, /#overlay\.clothespage \.panel\{overflow-y:auto;overflow-x:hidden;scrollbar-width:none/);
 assert.match(html, /#overlay\.clothespage \.clothes-scroll-rail\{pointer-events:auto;touch-action:none/);
@@ -10,7 +10,7 @@ assert.match(html, /menuPanel\.scrollTop=progress\*Math\.max/);
 for(const name of ['denim','flower','forest','disco','coral','midnight'])assert.match(html,new RegExp("id:'"+name+"',name:"));
 assert.match(html, /localStorage\.setItem\('grandma-clothes'/);
 assert.match(html, /selectedClothes=item\.id/);
-const script=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];assert.ok(script);new Function(script);
+const script=readFileSync('app.js','utf8');assert.ok(script);new Function(script);
 console.log('PASS unified wardrobe scrollbar, draggable hanger, six outfits, inventory and JS syntax');
 
 // Rail begins underneath all controls rather than covering the shop's tabs or coin badge.
