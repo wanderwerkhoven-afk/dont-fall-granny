@@ -1,6 +1,6 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-const html=readFileSync('index.html','utf8');
+const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 assert.match(html,/#overlay\.clothespage \.store-grid\{grid-template-columns:minmax\(0,1fr\)/,'Mobile wardrobe needs one column');
 assert.match(html,/function hangerFrameSize\(\)\{return window\.matchMedia\('\(max-width:650px\)'\)\.matches\?44:72\}/,'Mobile frame must match CSS');
 assert.match(html,/background-size:264px 44px/,'Mobile sprite sheet must have six matching cells');
@@ -16,5 +16,5 @@ assert.equal(prices[0],0,'Classic stays free');
 assert.ok(prices.slice(1).every(p=>p>=250),'Paid outfits must cost >= 250');
 assert.equal((clothing.match(/pattern:'/g)||[]).length,11,'Every paid outfit needs a pattern');
 assert.match(html,/localStorage\.setItem\('grandma-clothes'/,'Keep old purchases');
-const script=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];assert.ok(script);new Function(script);
+const script=readFileSync('app.js','utf8');assert.ok(script);new Function(script);
 console.log('PASS mobile boutique layout, correct hanger frames, outfit prices, patterns in all previews and gameplay, save data and syntax');
