@@ -87,38 +87,54 @@ Targeted re-check
 7. Minimale complexiteit.
 
 ## Huidige architectuur
+
+Huidige release: **V.1.0.0.1**.
+
 ```text
 dont-fall-granny/
 ├── .agents/skills/                  # Team GO agent skills
 ├── .github/workflows/               # CI + GitHub Pages
 ├── AGENTS.md                        # centrale Team GO instructie + routekaart
-├── index.html                       # game: HTML + CSS + JavaScript
+├── index.html                       # compacte HTML shell / semantische UI
+├── style.css                        # alle layout, responsive en game-UI styling
+├── app.js                           # gameplay, rendering, state en interactielogica
 ├── assets/
 │   └── hanger-spritesheet.svg
 └── tests/
+    ├── structure-regression.mjs
     ├── store-regression.mjs
+    ├── ui-ux-regression.mjs
+    ├── shop-ux.mjs
+    ├── wardrobe-scroll-outfits.mjs
+    ├── boutique-regression.mjs
+    ├── home-screen-regression.mjs
+    ├── home-desktop-layout.mjs
     ├── recovery-skill-check.mjs
     └── recovery-risk-loop.mjs
 ```
+
+### Releaseversies
+Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De versie staat in het hoofdmenu via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
 
 ## Code-routekaart
 
 | Onderdeel | Pad | Zoekankers |
 | --- | --- | --- |
-| Layout / responsive | `index.html` | `.shell`, `.game`, media queries |
-| Canvas / HUD | `index.html` | `canvas`, `tierTrack`, `scoreboard`, `coins`, `score`, `best` |
-| Menu / winkel | `index.html` | `overlay`, `menuTabs`, `menuContent`, `showMenu` |
-| Grandma preview | `index.html` | `menuGrandma`, `updateGrandmaOutfitPreview` |
-| Clothing | `index.html` | `const clothing`, `selectedClothes`, `ownedClothes` |
-| Shop / kopen | `index.html` | `data-buy`, `saveInventory`, `saveCoins` |
-| Gadgets / vehicles | `index.html` | `const gadgets`, `ownedGadgets`, `vehicle`, `modeObstacles` |
-| Start / pause / reset | `index.html` | `reset()`, `returnHome()`, `state` |
-| Recovery | `index.html` | `RecoveryWindowController`, `triggerRecovery`, `finishRecovery` |
-| Near miss / balance | `index.html` | `NearMissController`, `BalanceController`, `nearMissCandidate` |
-| Game loop | `index.html` | `frame`, `update`, `travel`, `TIERS`, `currentTier` |
-| Obstacles / pickups | `index.html` | `obstacles`, `candies`, `shield`, `coinItems` |
-| Persistence | `index.html` | `localStorage`, `dont-trip-grandma-`, `grandma-` |
-| Tests | `tests/*.mjs` | store, recovery, risk/reward, syntax |
+| HTML shell / semantiek | `index.html` | `canvas`, `overlay`, `menuContent`, `appVersion` |
+| Layout / responsive | `style.css` | `.shell`, `.game`, media queries |
+| Canvas / HUD styling | `style.css` | `.scoreboard`, `.tier-track`, `.controls` |
+| Menu / winkel styling | `style.css` | `#overlay`, `.menu-tabs`, `.store-grid` |
+| Menu / winkel logica | `app.js` | `showMenu`, `data-buy`, `saveInventory`, `saveCoins` |
+| Grandma preview | `app.js` | `updateGrandmaOutfitPreview` |
+| Clothing | `app.js` | `const clothing`, `selectedClothes`, `ownedClothes` |
+| Gadgets / vehicles | `app.js` | `const gadgets`, `ownedGadgets`, `vehicle`, `modeObstacles` |
+| Start / pause / reset | `app.js` | `reset()`, `returnHome()`, `state` |
+| Recovery | `app.js` | `RecoveryWindowController`, `triggerRecovery`, `finishRecovery` |
+| Near miss / balance | `app.js` | `NearMissController`, `BalanceController`, `nearMissCandidate` |
+| Game loop | `app.js` | `frame`, `update`, `travel`, `TIERS`, `currentTier` |
+| Obstacles / pickups | `app.js` | `obstacles`, `candies`, `shield`, `coinItems` |
+| Persistence | `app.js` | `localStorage`, `dont-trip-grandma-`, `grandma-` |
+| Tests | `tests/*.mjs` | structure, store, UI, shop, recovery, risk/reward, syntax |
 | Deployment | `.github/workflows/` | Pages + test steps |
 
 ## Kritieke afhankelijkheden
