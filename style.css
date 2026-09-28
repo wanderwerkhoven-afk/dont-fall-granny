@@ -61,7 +61,7 @@ header{align-items:center;gap:6px;margin:0;flex-wrap:wrap}h1{font-size:clamp(21p
 .store-item b{font-size:13px}.store-item small{font-size:11px;color:#65546b}
 .store-item button{width:100%;border:2px solid #493e49;background:#ffcd66;border-radius:8px;padding:7px 3px;font:800 12px system-ui;color:#392d44}
 .store-item button:disabled{opacity:.5;background:#ddd}
-#menuContent{max-height:min(43dvh,330px);overflow:auto}
+#menuContent{max-height:min(43dvh,330px);overflow:auto}\n#shop{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 #overlay.storepage #overlayTitle,#overlay.storepage #overlayText,#overlay.storepage #shop,#overlay.storepage #startBtn{display:none!important}#menuWallet{font-weight:900;color:#624b26}
 @media(max-width:650px){#overlay .panel{max-height:calc(100% - 55px);overflow:auto;padding:13px}.menu-grandma{height:95px}.menu-grandma svg{height:92px}.menu-grandma:before{height:70px}}
 /* Countdown traces the entire perimeter of the game-over card. */
@@ -225,16 +225,16 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 .clothes-hanger{
   position:absolute;
   top:0;
-  left:-38px;
-  width:96px;
-  height:96px;
+  left:-26px;
+  width:72px;
+  height:72px;
   transform:translateY(0);
   transform-origin:50% 12%;
   will-change:transform,background-position;
   pointer-events:none;
   background-image:url('./assets/hanger-spritesheet.svg');
   background-repeat:no-repeat;
-  background-size:576px 96px;
+  background-size:432px 72px;
   background-position:0 0;
   filter:drop-shadow(0 3px 3px rgba(41,30,45,.2));
 }
@@ -247,10 +247,10 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
     transform-origin:top right;
   }
   .clothes-hanger{
-    left:-32px;
-    width:84px;
-    height:84px;
-    background-size:504px 84px;
+    left:-19px;
+    width:58px;
+    height:58px;
+    background-size:348px 58px;
   }
 }
 @media(prefers-reduced-motion:reduce){.menu-grandma,.hero-orbit,.hero-spark{animation:none}}
@@ -280,9 +280,7 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 @media(max-width:650px){#overlay.storepage .menu-tabs button{min-height:44px}#overlay.storepage .store-item{padding:9px 7px;gap:6px}#overlay.storepage .store-item button{font-size:12px;padding:7px 4px}}
 @media(prefers-reduced-motion:reduce){#overlay.storepage .menu-tabs{scroll-behavior:auto}}
 
-/* Shop hanger: compact decorative indicator; sprite frames match JS sizes. */
-.clothes-hanger{width:72px;height:72px;left:-26px;background-size:432px 72px}
-@media(max-width:650px){.clothes-hanger{width:58px;height:58px;left:-19px;background-size:348px 58px}}
+/* Shop hanger: compact decorative indicator; canonical sizes live in the base blocks above. */
 /* One scroll container for wardrobe: no nested scroll conflicting with the hanger. */
 #overlay.clothespage #menuContent{max-height:none;overflow:visible}
 #overlay.clothespage .panel{overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
