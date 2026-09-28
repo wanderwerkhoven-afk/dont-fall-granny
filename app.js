@@ -1,5 +1,6 @@
 (()=>{'use strict';
-const APP_VERSION='V.1.0.0.2';
+const META=window.GrannyMeta||{version:'V.1.1.0.0',achievements:[],missionPool:[],weeklyPool:[],unlocks:[],cosmetics:[],worldRules:[]};
+const APP_VERSION=META.version;
 const appVersionEl=document.getElementById('appVersion');
 if(appVersionEl)appVersionEl.textContent=APP_VERSION;
 const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),title=document.getElementById('overlayTitle'),text=document.getElementById('overlayText'),startBtn=document.getElementById('startBtn'),pauseBtn=document.getElementById('pauseBtn'),scoreEl=document.getElementById('score'),bestEl=document.getElementById('best'),statusEl=document.getElementById('status'),coinsEl=document.getElementById('coins'),shop=document.getElementById('shop'),reviveBtn=document.getElementById('reviveBtn'),boostBtn=document.getElementById('boostBtn');
@@ -13,6 +14,7 @@ const TIERS=[
  {name:'De ruimte',sky:['#10152f','#26224d','#4b376e'],hill:'#443c73',near:'#62518b',road:['#71618c','#9b83ac','#50456e'],building:'#3e3c71',tree:'#7771b0',sun:'#f1e4ff',icon:'🚀'}
 ];
 let currentTier=0,tierFlash=0,transition=0,previousTier=0,coins=0,coinsRun=0,coinItems=[],coinDistance=420,boostTime=0,revives=0;
+let combo=0,comboPeak=0,perfectRun=0,safeRun=0,nearMissRun=0,landingPulse=0,rewardPopups=[],tutorialActive=false,tutorialStep=-1;
 let W=900,H=390,ground=313;const grandma={x:105,y:0,vy:0,w:43,h:70};let state='ready',score=0,best=0,shield=0,speed=270,obstacles=[],candies=[],particles=[],clouds=[{x:80,y:67,s:1},{x:410,y:110,s:.7},{x:740,y:52,s:1.15}],last=0,spawnDistance=0,nextDistance=450,candyDistance=1200,elapsed=0,invulnerable=0,walk=0,flash=0,travel=0,lastGap=0;
 try{best=Number(localStorage.getItem('dont-trip-grandma-best'))||0;coins=Number(localStorage.getItem('dont-trip-grandma-coins'))||0}catch(e){}bestEl.textContent=best+' m';coinsEl.textContent='🪙 '+coins;
 function resizeGame(){
@@ -106,8 +108,10 @@ function triggerRecovery(){
 function finishRecovery(result){
  document.getElementById('game').classList.remove('recovery-mode');
  recoveryWindow.reset();
- if(result==='miss'){balanceController.fail();end();return;}
+ if(result==='miss'){balanceController.fail();resetCombo();end();return;}
  balanceController.recover(result);
+ if(result==='perfect'){perfectRun++;metaState.stats.perfects++;incrementMission('perfect');registerCombo(2,'PERFECT · COMBO +2')}else{safeRun++;metaState.stats.safes++;resetCombo()}
+ evaluateAchievements();
  recoveryBoost=result==='perfect'?1.5:0;
  recoverySlow=result==='safe'?1.6:0;
  recoverySettle=result==='perfect'&&!reducedRecoveryMotion.matches?.26:0;
@@ -187,8 +191,98 @@ const gadgets=[
  {id:'booster',name:'Scootmobiel',cost:35,description:'Zeldzame 3D-renmodus · wissel van baan · 10 sec.'}
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
+let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
+let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1},achievements:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},onboardingSeen:false};
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
+try{
+ const savedMeta=JSON.parse(localStorage.getItem('grandma-meta-v1')||'null');
+ if(savedMeta&&savedMeta.stats){
+  metaState={...metaState,...savedMeta,stats:{...metaState.stats,...savedMeta.stats},daily:{...metaState.daily,...(savedMeta.daily||{})},weekly:{...metaState.weekly,...(savedMeta.weekly||{})}};
+  ownedAccessories=Array.isArray(savedMeta.ownedAccessories)&&savedMeta.ownedAccessories.length?savedMeta.ownedAccessories:['cane-classic'];
+  selectedAccessories={...selectedAccessories,...(savedMeta.selectedAccessories||{})};
+ }
+}catch(e){}
+
 function saveInventory(){try{localStorage.setItem('grandma-clothes',JSON.stringify(ownedClothes));localStorage.setItem('grandma-outfit',selectedClothes);localStorage.setItem('grandma-gadgets',JSON.stringify(ownedGadgets))}catch(e){}}
+
+const comboEl=document.getElementById('combo'),onboardingEl=document.getElementById('onboarding'),runSummaryEl=document.getElementById('runSummary');
+function dayKey(){return new Date().toISOString().slice(0,10)}
+function weekKey(){const d=new Date(),start=new Date(Date.UTC(d.getUTCFullYear(),0,1)),day=Math.floor((d-start)/86400000);return d.getUTCFullYear()+'-W'+String(Math.ceil((day+start.getUTCDay()+1)/7)).padStart(2,'0')}
+function seedValue(key){return [...key].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7)}
+function activeMissions(pool,count,key){if(!pool.length)return[];const seed=seedValue(key);return Array.from({length:Math.min(count,pool.length)},(_,i)=>pool[(seed+i*2)%pool.length])}
+function ensureMissionPeriods(){
+ const d=dayKey(),w=weekKey();
+ if(metaState.daily.key!==d)metaState.daily={key:d,progress:{},claimed:[]};
+ if(metaState.weekly.key!==w)metaState.weekly={key:w,progress:{},claimed:[]};
+}
+function saveMetaState(){
+ metaState.stats.accessoriesOwned=ownedAccessories.length;
+ try{localStorage.setItem('grandma-meta-v1',JSON.stringify({...metaState,ownedAccessories,selectedAccessories}))}catch(e){}
+}
+function comboMultiplier(){return Math.min(2,1+Math.floor(combo/5)*.25)}
+function updateComboHud(){
+ if(!comboEl)return;
+ comboEl.textContent=combo>1?'🔥 '+combo+' · x'+comboMultiplier().toFixed(2):'🔥 0';
+ comboEl.closest('.pill')?.classList.toggle('combo-hot',combo>=5);
+}
+function resetCombo(){combo=0;updateComboHud()}
+function registerCombo(points=1,labelText=''){
+ combo=Math.min(99,combo+points);comboPeak=Math.max(comboPeak,combo);metaState.stats.bestCombo=Math.max(metaState.stats.bestCombo,combo);
+ updateComboHud();
+ if(labelText)rewardPopups.push({text:labelText,x:grandma.x+35,y:grandma.y-8,life:1});
+}
+function incrementMission(event,amount=1){
+ ensureMissionPeriods();
+ const sets=[['daily',activeMissions(META.missionPool,3,metaState.daily.key)],['weekly',activeMissions(META.weeklyPool,2,metaState.weekly.key)]];
+ for(const [kind,list] of sets){
+  const box=metaState[kind];
+  for(const m of list){
+   if(m.event!==event||box.claimed.includes(m.id))continue;
+   box.progress[m.id]=Math.min(m.goal,(box.progress[m.id]||0)+amount);
+   if(box.progress[m.id]>=m.goal){
+    box.claimed.push(m.id);coins+=m.reward;saveCoins();
+    rewardPopups.push({text:'MISSIE +'+m.reward+' 🪙',x:W*.5,y:95,life:1.8});
+   }
+  }
+ }
+ saveMetaState();
+}
+function evaluateAchievements(){
+ metaState.stats.accessoriesOwned=ownedAccessories.length;
+ for(const a of META.achievements){
+  if(metaState.achievements.includes(a.id)||!a.check(metaState.stats))continue;
+  metaState.achievements.push(a.id);coins+=a.reward;saveCoins();
+  rewardPopups.push({text:a.icon+' '+a.name+' +'+a.reward+' 🪙',x:W*.5,y:78,life:2.1});
+ }
+ saveMetaState();
+}
+function achievementProgress(a){
+ const s=metaState.stats;
+ if(a.id==='first-run')return Math.min(1,s.runs)+'/1';
+ if(a.id==='perfect-10')return Math.min(10,s.perfects)+'/10';
+ if(a.id==='near-25')return Math.min(25,s.nearMisses)+'/25';
+ if(a.id==='coin-250')return Math.min(250,s.coinsCollected)+'/250';
+ if(a.id==='tier-5')return Math.min(5,s.maxTier)+'/5';
+ if(a.id==='combo-10')return Math.min(10,s.bestCombo)+'/10';
+ if(a.id==='distance-5000')return Math.min(5000,s.totalDistance)+'/5000';
+ if(a.id==='collector-3')return Math.min(3,s.accessoriesOwned)+'/3';
+ return '';
+}
+function currentWorldRule(){return META.worldRules[currentTier%Math.max(1,META.worldRules.length)]||{speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0}}
+function updateTutorial(){
+ if(!tutorialActive||!onboardingEl)return;
+ const next=elapsed<3?0:elapsed<7?1:elapsed<11?2:3;
+ if(next===tutorialStep)return;
+ tutorialStep=next;
+ if(next===0)onboardingEl.textContent='TIK / SPATIE · spring over het eerste obstakel';
+ else if(next===1)onboardingEl.textContent='BOTSING? · tik in het geel om oma te redden';
+ else if(next===2)onboardingEl.textContent='MUNTEN + PERFECTS · bouw je combo en multiplier';
+ else{tutorialActive=false;onboardingEl.classList.remove('show');metaState.onboardingSeen=true;saveMetaState();return}
+ onboardingEl.classList.add('show');
+}
+ensureMissionPeriods();
+updateComboHud();
+
 function outfitPatternSvg(outfit,id,coatPath){
  if(!outfit.pattern)return '';
  const c=outfit.patternColor||'#fff5df';
@@ -235,25 +329,39 @@ const menuContent=document.getElementById('menuContent'),menuWallet=document.get
 const GAME_OVER_SECONDS=10;let deathDeadline=0,deathTimerFrame=0;
 function stopDeathTimer(){deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
 function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){returnHome();return}deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
-function returnHome(){stopDeathTimer();state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='▶ START RUN';overlay.classList.remove('hidden');render()}
+function returnHome(){stopDeathTimer();if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='▶ START RUN';overlay.classList.remove('hidden');render()}
 
 function showMenu(page='home'){
  updateGrandmaOutfitPreview();
- menuPage=page;overlay.classList.toggle('storepage',page!=='home');overlay.classList.toggle('clothespage',page==='clothes');overlay.classList.toggle('gadgetspage',page==='gadgets');
+ ensureMissionPeriods();
+ menuPage=page;overlay.classList.toggle('storepage',page!=='home');overlay.classList.toggle('clothespage',page==='clothes');overlay.classList.toggle('gadgetspage',page==='gadgets');overlay.classList.toggle('progresspage',page==='progress');overlay.classList.toggle('collectionpage',page==='collection');
  menuWallet.textContent='🪙 '+coins+' munten';
  menuTabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
  if(page==='home'){
+  const nextUnlock=META.unlocks.find(u=>best<u.distance);
   document.getElementById('menuKicker').textContent='OMA’S GROTE ONTSNAPPING  ✦  SEIZOEN 01';
   document.getElementById('menuRecord').textContent='🏁 RECORD '+best+' M';
-  menuContent.innerHTML='<div class="home-hub"><button class="home-hub-tile" type="button" data-open-page="clothes" aria-label="Open outfits"><span class="tile-icon" aria-hidden="true">👗</span><b>Outfits</b></button><button class="home-hub-tile" type="button" data-open-page="gadgets" aria-label="Open gadgets"><span class="tile-icon" aria-hidden="true">🛠</span><b>Gadgets</b></button><div class="home-achievement" role="status" aria-label="Persoonlijk afstandsrecord"><small>🏆 JOUW PRESTATIE</small><strong>🏁 '+best+' m</strong></div></div>';return
+  menuContent.innerHTML='<div class="home-hub"><button class="home-hub-tile" type="button" data-open-page="clothes"><span class="tile-icon">👗</span><b>Outfits</b></button><button class="home-hub-tile" type="button" data-open-page="gadgets"><span class="tile-icon">🛠</span><b>Gadgets</b></button><button class="home-hub-tile" type="button" data-open-page="progress"><span class="tile-icon">🏆</span><b>Progressie</b></button><button class="home-hub-tile" type="button" data-open-page="collection"><span class="tile-icon">✨</span><b>Extra’s</b></button><div class="home-achievement"><small>🏆 '+metaState.achievements.length+'/'+META.achievements.length+' ACHIEVEMENTS</small><strong>🏁 '+best+' m</strong></div>'+(nextUnlock?'<div class="home-next-unlock">VOLGENDE: '+nextUnlock.icon+' '+nextUnlock.label+' · '+nextUnlock.distance+' m</div>':'<div class="home-next-unlock">🌟 ALLE WERELDEN BEREIKT</div>')+'</div>';return
+ }
+ if(page==='progress'){
+  document.getElementById('menuKicker').textContent='OMA’S TROFEEËNKAST  ✦  MISSIES & MIJLPALEN';
+  const daily=activeMissions(META.missionPool,3,metaState.daily.key),weekly=activeMissions(META.weeklyPool,2,metaState.weekly.key);
+  const missionCard=(m,kind)=>{const box=metaState[kind],p=Math.min(m.goal,box.progress[m.id]||0),done=box.claimed.includes(m.id);return '<div class="mission-card '+(done?'done':'')+'"><span>'+m.icon+'</span><div><b>'+m.label+'</b><small>'+p+' / '+m.goal+(done?' · VOLTOOID':'')+'</small></div><strong>+'+m.reward+' 🪙</strong></div>'};
+  menuContent.innerHTML='<section class="progress-section"><h3>Vandaag</h3>'+daily.map(m=>missionCard(m,'daily')).join('')+'<h3>Deze week</h3>'+weekly.map(m=>missionCard(m,'weekly')).join('')+'<h3>Achievements</h3><div class="achievement-grid">'+META.achievements.map(a=>'<div class="achievement-card '+(metaState.achievements.includes(a.id)?'done':'')+'"><span>'+a.icon+'</span><b>'+a.name+'</b><small>'+a.description+'</small><strong>'+achievementProgress(a)+' · +'+a.reward+' 🪙</strong></div>').join('')+'</div><h3>Wereld-roadmap</h3><div class="unlock-roadmap">'+META.unlocks.map(u=>'<div class="unlock-step '+(best>=u.distance?'done':'')+'"><span>'+u.icon+'</span><div><b>'+u.distance+' m · '+u.label+'</b><small>'+u.detail+'</small></div></div>').join('')+'</div></section>';return
+ }
+ if(page==='collection'){
+  document.getElementById('menuKicker').textContent='OMA’S EXTRA’S  ✦  ACCESSOIRES';
+  menuContent.innerHTML='<div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id;return '<div class="store-item '+(selected?'selected':'')+'"><div class="preview accessory-preview">'+item.icon+'</div><b>'+item.name+'</b><small>'+item.type+'</small><button data-accessory="'+item.id+'" '+(selected||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div>';
+  menuContent.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{const item=META.cosmetics.find(x=>x.id===btn.dataset.accessory);if(!item)return;if(!ownedAccessories.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedAccessories.push(item.id);saveCoins()}selectedAccessories[item.type]=item.id;saveMetaState();evaluateAchievements();showMenu('collection')}));
+  return
  }
  document.getElementById('menuKicker').textContent=page==='clothes'?'OMA’S KLEDINGKAST  ✦  PAS JE LOOK AAN':'GADGET GARAGE  ✦  SPECIALE SPELMODI';
  const items=page==='clothes'?clothing:gadgets;
  menuContent.innerHTML='<div class="store-grid">'+items.map(item=>{
  const owned=page==='clothes'?ownedClothes.includes(item.id):ownedGadgets.includes(item.id);
  const selected=page==='clothes'&&selectedClothes===item.id;
- const symbol=page==='clothes'?`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>`:(item.id==='plane'?'✈️':'🛵');
- return `<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>`
+ const symbol=page==='clothes'?\`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>\`:(item.id==='plane'?'✈️':'🛵');
+ return \`<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>\`
  }).join('')+'</div>';
  menuContent.querySelectorAll('[data-buy]').forEach(btn=>btn.addEventListener('click',()=>{
  const item=items.find(x=>x.id===btn.dataset.buy);if(!item)return;
@@ -265,7 +373,6 @@ function showMenu(page='home'){
   menuPanel.scrollTop=previousScroll;
   requestAnimationFrame(syncClothesHanger);
   const updated=menuContent.querySelector('[data-buy="'+item.id+'"]');
-  // Disabled ACTIEF buttons cannot receive focus: focus their selected card instead.
   const focusTarget=updated?.disabled?updated.closest('.store-item'):updated;
   if(focusTarget){if(focusTarget!==updated)focusTarget.tabIndex=-1;focusTarget.focus({preventScroll:true})}
  }
@@ -375,13 +482,14 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
-function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');last=performance.now();requestAnimationFrame(frame)}function end(){
+function random(a,b){return a+Math.random()*(b-a)}function reset(){recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;currentTier=0;previousTier=0;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='TIER 1 · DE RUSTIGE BUURT';document.getElementById('tierNext').textContent='VOLGENDE WERELD · 500 M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');tutorialActive=!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
  recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
- state='over';showMenu('home');overlay.classList.add('gameover');deathDeadline=performance.now()+GAME_OVER_SECONDS*1000;deathTimerFrame=requestAnimationFrame(tickDeathTimer);if(score>best){best=score;bestEl.textContent=best+' m';try{localStorage.setItem('dont-trip-grandma-best',best)}catch(e){}}
+ state='over';metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);evaluateAchievements();saveMetaState();showMenu('home');overlay.classList.add('gameover');deathDeadline=performance.now()+GAME_OVER_SECONDS*1000;deathTimerFrame=requestAnimationFrame(tickDeathTimer);if(score>best){best=score;bestEl.textContent=best+' m';try{localStorage.setItem('dont-trip-grandma-best',best)}catch(e){}}
  title.textContent='RUN VOORBIJ!';
  text.textContent=`${score} M AFGELEGD  ·  +${coinsRun} MUNTEN. Kies snel: red oma of ga terug naar het startscherm.`;
+ if(runSummaryEl){runSummaryEl.innerHTML='<div><small>AFSTAND</small><b>'+score+' m</b></div><div><small>MUNTEN</small><b>+'+coinsRun+'</b></div><div><small>PERFECT</small><b>'+perfectRun+'</b></div><div><small>NEAR MISS</small><b>'+nearMissRun+'</b></div><div><small>BESTE COMBO</small><b>🔥 '+comboPeak+'</b></div><div><small>HOOGSTE TIER</small><b>'+ (currentTier+1) +'</b></div>'}
  reviveBtn.disabled=coins<10;boostBtn.disabled=coins<6;
  shop.style.display='flex';startBtn.textContent='⌂ TERUG NAAR MENU';overlay.classList.remove('hidden');pauseBtn.textContent='⏸ Pauze'
 }
@@ -397,14 +505,14 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=-690;grandma.y-=1}}function activate(){if(state==='over')returnHome();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1}}function activate(){if(state==='over')returnHome();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){elapsed+=dt;walk+=dt*11;recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
+function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind;travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);
  if(vehicle){
   vehicleTime=Math.max(0,vehicleTime-dt);modeDistance+=speed*dt;modeSpawn-=dt;
   if(vehicleTime<=0){finishVehicle();return;}
@@ -437,16 +545,16 @@ function update(dt){elapsed+=dt;walk+=dt*11;recoveryBoost=Math.max(0,recoveryBoo
  const tierNow=document.getElementById('tierNow'),tierNext=document.getElementById('tierNext');
  if(tierNow)tierNow.textContent='TIER '+(newTier+1)+' · '+TIERS[newTier%TIERS.length].name.toUpperCase();
  if(tierNext)tierNext.textContent='VOLGENDE WERELD · '+(500-score%500)+' M';
- if(newTier!==currentTier){previousTier=currentTier;currentTier=newTier;transition=2.8;tierFlash=3.3;puff(W*.65,ground-110,'#fff3a0');}
+ if(newTier!==currentTier){previousTier=currentTier;currentTier=newTier;transition=2.8;tierFlash=3.3;puff(W*.65,ground-110,'#fff3a0');metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);incrementMission('tier',currentTier+1);evaluateAchievements();statusEl.textContent=(TIERS[currentTier%TIERS.length].icon||'🌍')+' '+currentWorldRule().label;}
  tierFlash=Math.max(0,tierFlash-dt);transition=Math.max(0,transition-dt);
- if(!vehicle){grandma.vy+=1850*dt;grandma.y=Math.min(ground-grandma.h,grandma.y+grandma.vy*dt);if(grandma.y>=ground-grandma.h)grandma.vy=0;}invulnerable=Math.max(0,invulnerable-dt);flash=Math.max(0,flash-dt);for(const c of clouds){c.x-=speed*.045*dt;if(c.x< -110)c.x=W+80}
+ if(!vehicle){const wasAirborne=grandma.y<ground-grandma.h-2;grandma.vy+=(currentWorldRule().gravity||1850)*dt;grandma.y=Math.min(ground-grandma.h,grandma.y+grandma.vy*dt);if(grandma.y>=ground-grandma.h){if(wasAirborne&&grandma.vy>260)landingPulse=1;grandma.vy=0;}}invulnerable=Math.max(0,invulnerable-dt);flash=Math.max(0,flash-dt);for(const c of clouds){c.x-=speed*.045*dt;if(c.x< -110)c.x=W+80}
 if(vehicle){for(const p of particles){p.life-=dt}particles=particles.filter(p=>p.life>0);return;}spawnDistance+=speed*dt;candyDistance-=speed*dt;coinDistance-=speed*dt;
 // Elke hindernis heeft een eigen tempo. Een kat kondigt zijn sprint eerst aan
 // en versnelt daarna richting oma; het gat wordt op basis van die sprint bewaakt.
 if(!vehicle&&spawnDistance>=nextDistance){
   const pool=allTypes.filter(t=>zoneTypes[currentTier%zoneTypes.length].includes(t.id)&&(elapsed>12||t.id!=='walker'));
   const type=(pool.length?pool:types)[Math.floor(Math.random()*(pool.length?pool:types).length)];
-  const attacking=(type.id==='cat'&&Math.random()<.55)||(type.id==='car'&&Math.random()<.72);
+  const attackBonus=currentWorldRule().attackBonus||0;const attacking=(type.id==='cat'&&Math.random()<Math.min(.88,.55+attackBonus))||(type.id==='car'&&Math.random()<Math.min(.94,.72+attackBonus));
   const multiplier=attacking?(type.id==='car'?1.95:1.62):1;
   obstacles.push({type,x:W+8,y:ground-type.h,w:type.w,h:type.h,attacking,
     chargeX:W-(type.id==='car'?175:105),charging:false,multiplier,hit:false,nearMiss:false,nearMissCandidate:false});
@@ -465,7 +573,7 @@ if(coinDistance<=0){
  for(let i=0;i<count;i++)coinItems.push({x:W+35+i*43,y:ground-height-Math.sin(i/(count-1)*Math.PI)*25,height:height+Math.sin(i/(count-1)*Math.PI)*25,t:0,taken:false});
  coinDistance=random(1000,1700);
 }
-if(candyDistance<=0){candies.push({x:W+40,y:ground-115,w:29,h:29,t:0});candyDistance=random(1550,2350)}
+if(candyDistance<=0){candies.push({x:W+40,y:ground-115,w:29,h:29,t:0});candyDistance=random(1550,2350)*(currentWorldRule().candyRate||1)}
 for(const c of coinItems){c.x-=speed*dt;c.t+=dt}coinItems=coinItems.filter(c=>c.x>-35&&!c.taken);
 for(const o of obstacles){
   if(o.attacking&&!o.charging&&o.x<=o.chargeX)o.charging=true;
@@ -480,20 +588,21 @@ for(const o of obstacles){
  if(!vehicle&&!o.hit&&rectHit(body,obstacleBody,7)){
   o.hit=true;
   if(invulnerable>0||boostTime>0)continue;
-  if(shield){shield=0;invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Je bent weer kwetsbaar.'}
+  if(shield){shield=0;resetCombo();invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Combo gereset.'}
   else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery();return}
  }
 }
 for(const o of obstacles){
  if(!o.hit&&!o.nearMiss&&o.nearMissCandidate&&o.x+o.w<body.x){
   o.nearMiss=true;
-  const focus=nearMissController.register();
+  const focus=nearMissController.register();if(currentWorldRule().focusBonus)nearMissController.focus=Math.min(.03,nearMissController.focus+currentWorldRule().focusBonus);
+  nearMissRun++;metaState.stats.nearMisses++;incrementMission('near');registerCombo(1,'NEAR MISS · COMBO +1');evaluateAchievements();
   recoveryFeedback=1.35;recoveryFeedbackText='NEAR\nMISS!';
-  statusEl.textContent='NEAR MISS! +FOCUS';
+  statusEl.textContent='NEAR MISS! +FOCUS · 🔥 '+combo;
  }
 }
 for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
-for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;coins++;coinsRun++;saveCoins();puff(c.x,c.y,'#ffcf49')}}
+for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;const gain=Math.max(1,Math.round((currentWorldRule().coinValue||1)*comboMultiplier()));coins+=gain;coinsRun+=gain;metaState.stats.coinsCollected+=gain;incrementMission('coins',gain);registerCombo(1,'+'+gain+' 🪙');saveCoins();evaluateAchievements();puff(c.x,c.y,'#ffcf49')}}
 coinItems=coinItems.filter(c=>!c.taken);
 }
 function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}function line(x1,y1,x2,y2,color,width=3){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}function label(s,x,y,size=28){ctx.font=`${size}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s,x,y)}
@@ -571,9 +680,15 @@ function background(tierIndex=currentTier){
   rounded(x,ground+29,43,4,2,zone===4||zone===6?'#d5c6e3':'#edbb94');
  ctx.restore();
 }
-function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0)return;ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);drawOutfitPattern(outfit,x,y,bob);line(x+8,y+36+bob,x-1,y+50+bob,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);ellipse(x+24,y+27+bob,5,2,'#a86f77');
+function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;const squash=landingPulse&&!reducedRecoveryMotion.matches?Math.sin(landingPulse*Math.PI)*.08:0;if(squash){ctx.save();ctx.translate(x+grandma.w/2,y+grandma.h);ctx.scale(1+squash,1-squash);ctx.translate(-(x+grandma.w/2),-(y+grandma.h));}if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0)return;ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);drawOutfitPattern(outfit,x,y,bob);line(x+8,y+36+bob,x-1,y+50+bob,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);ellipse(x+24,y+27+bob,5,2,'#a86f77');
  if(vehicle==='plane'){ctx.save();ctx.translate(x-37,y+37);rounded(0,0,128,24,12,'#d8e9f0');rounded(40,-17,44,20,8,'#6ea4c6');rounded(18,13,87,11,5,'#e49b60');ellipse(10,10,11,11,'#f6cb69');ctx.restore()}
+ if(selectedAccessories.cane==='cane-gold')line(x+48,y+43+bob,x+50,y+70,'#d7a634',5);
+ if(selectedAccessories.glasses==='glasses-heart'){label('💗',x+17,y+18+bob,11);label('💗',x+31,y+18+bob,11)}
+ if(selectedAccessories.glasses==='glasses-star'){label('⭐',x+17,y+18+bob,10);label('⭐',x+31,y+18+bob,10)}
+ if(selectedAccessories.companion==='companion-duck')label('🐥',x-20,ground-12,20);
+ if(selectedAccessories.companion==='companion-cat')label('🐈',x-23,ground-13,21);
  if(vehicle==='booster'){ctx.save();ctx.translate(x-20,y+35);rounded(0,0,86,30,12,'#6655a5');rounded(9,5,68,13,6,'#a2bce1');ellipse(5,15,10,10,'#33364e');ellipse(82,15,10,10,'#33364e');for(let i=0;i<3;i++)line(-8-i*13,10,0-i*13,20,'#f6b353',4);ctx.restore()}
+ if(squash)ctx.restore();
  }
 function drawObstacle(o){
  const x=o.x,y=o.y,t=o.type.id,w=o.w,h=o.h;
@@ -724,6 +839,6 @@ for(const c of coinItems){
  ellipse(0,0,12,12,'#f8ad2c');ellipse(0,0,9,9,'#ffe17a');
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
-for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore()}
+for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore()}
 function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;if(state==='recovery')updateRecovery(dt);else update(dt);render();if(state==='playing'||state==='recovery')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 })();
