@@ -547,3 +547,70 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 }
 @media(max-width:380px){.game .combo-pill{display:none}.onboarding-toast{top:66px}}
 @media(prefers-reduced-motion:reduce){.combo-pill,.onboarding-toast{transition:none}}
+
+
+/* V.1.2.0.0 Run Identity */
+.rank-pill{min-width:82px}
+.mission-pin{
+ position:absolute;left:14px;top:72px;z-index:3;max-width:min(52%,310px);
+ padding:7px 10px;border:2px solid #493e49;border-radius:999px;background:#fff9e9e8;
+ color:#493e49;font:900 10px/1.15 system-ui;box-shadow:0 3px 0 #493e49
+}
+.event-banner{
+ position:absolute;left:50%;top:115px;z-index:5;transform:translate(-50%,-8px) scale(.96);
+ max-width:82%;padding:10px 16px;border:3px solid #493e49;border-radius:14px;
+ background:#fff2b8;color:#493e49;font:1000 14px/1 system-ui;text-align:center;
+ box-shadow:0 5px 0 #493e49;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease
+}
+.event-banner.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.pre-run-card{
+ grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;
+ padding:9px 10px;border:2px solid #493e49;border-radius:14px;background:#fffaf0;text-align:left
+}
+.pre-run-card>div:first-child{display:grid;gap:2px}
+.pre-run-card small{font:900 8px/1 system-ui;letter-spacing:.7px;color:#88778b}
+.pre-run-card b{font:1000 12px/1.2 system-ui;color:#392f43}
+.pre-run-card span{font:800 9px/1.2 system-ui;color:#756679}
+.pre-run-settings{display:flex;gap:5px;align-items:end;flex-wrap:wrap;justify-content:flex-end}
+.pre-run-settings label{display:grid;gap:2px;font:800 8px/1 system-ui;color:#746579}
+.pre-run-settings select,.pre-run-settings button{
+ min-height:28px;border:2px solid #493e49;border-radius:8px;background:#fff;color:#493e49;
+ font:900 9px/1 system-ui;padding:4px 6px
+}
+.progress-section .mission-card{width:100%;color:inherit;text-align:left;cursor:pointer}
+.mission-card.pinned{outline:3px solid #f1bc49;outline-offset:1px}
+.rank-card{
+ padding:10px;border:2px solid #493e49;border-radius:12px;background:linear-gradient(145deg,#fff3c5,#fffdf7);
+ display:flex;justify-content:space-between;gap:10px;align-items:center
+}
+.rank-card b{font:1000 12px/1 system-ui}.rank-card small{font:900 10px/1 system-ui;color:#786778}
+.records-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.records-grid span{padding:8px;border:2px solid #c7bac8;border-radius:10px;background:#fff;font:900 10px/1 system-ui}
+.mastery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.mastery-grid>div{display:grid;grid-template-columns:28px 1fr;gap:2px 6px;padding:8px;border:2px solid #d1c4cf;border-radius:10px;background:#fff}
+.mastery-grid>div>span{grid-row:1/3;font-size:21px}.mastery-grid b{font-size:10px}.mastery-grid small{font-size:8px;color:#756779}
+.collection-preview{margin-bottom:8px;padding:10px;border:2px solid #493e49;border-radius:13px;background:#fff8e9;display:flex;justify-content:space-between;gap:10px}
+.collection-preview b{font-size:11px}.collection-preview span{font-size:9px;color:#746579}
+.set-bonuses{display:grid;gap:6px;margin-top:10px}
+.set-bonuses>div{padding:8px;border:2px dashed #ad9cad;border-radius:10px;background:#f5efea;display:flex;justify-content:space-between;gap:8px}
+.set-bonuses>div.done{border-style:solid;border-color:#b58b3e;background:#fff4c9}
+.set-bonuses b{font-size:10px}.set-bonuses small{font-size:8px;color:#756779}
+.run-highlights{grid-column:1/-1;margin:0;padding:8px;border-radius:10px;background:#fff1b9;font:900 9px/1.3 system-ui;color:#493e49}
+@media(max-width:650px){
+ .game .scoreboard{max-width:80%}
+ .rank-pill{min-width:64px}
+ .mission-pin{left:8px;top:67px;max-width:46%;font-size:8px;padding:6px 8px}
+ .event-banner{top:105px;font-size:11px;padding:8px 11px}
+ .pre-run-card{grid-template-columns:1fr;gap:7px}
+ .pre-run-settings{justify-content:flex-start}
+ .pre-run-settings label{flex:1 1 42%}
+ .pre-run-settings select{width:100%}
+ .pre-run-settings button{flex:1}
+ .mastery-grid{grid-template-columns:1fr}
+}
+@media(max-width:410px){
+ .rank-pill{display:none}
+ .mission-pin{max-width:58%}
+ .pre-run-settings label{flex-basis:100%}
+}
+@media(prefers-reduced-motion:reduce){.event-banner{transition:none}}
