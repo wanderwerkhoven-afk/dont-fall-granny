@@ -88,7 +88,7 @@ Targeted re-check
 
 ## Huidige architectuur
 
-Huidige release: **V.1.0.0.2**.
+Huidige release: **V.1.1.0.0**.
 
 ```text
 dont-fall-granny/
@@ -97,11 +97,13 @@ dont-fall-granny/
 ├── AGENTS.md                        # centrale Team GO instructie + routekaart
 ├── index.html                       # compacte HTML shell / semantische UI
 ├── style.css                        # alle layout, responsive en game-UI styling
-├── app.js                           # gameplay, rendering, state en interactielogica
+├── game-meta.js                     # progression, achievements, missions, cosmetics en wereldregels
+├── app.js                           # runtime gameplay, rendering, state en interactielogica
 ├── assets/
 │   └── hanger-spritesheet.svg
 └── tests/
     ├── structure-regression.mjs
+    ├── progression-regression.mjs
     ├── store-regression.mjs
     ├── ui-ux-regression.mjs
     ├── shop-ux.mjs
@@ -114,13 +116,14 @@ dont-fall-granny/
 ```
 
 ### Releaseversies
-Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke versie staat als `APP_VERSION` in `app.js` en wordt in het hoofdmenu gemount via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
+Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke versie staat in `game-meta.js`; `app.js` leest deze via `META.version` en mount hem in het hoofdmenu via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
 
 ## Code-routekaart
 
 | Onderdeel | Pad | Zoekankers |
 | --- | --- | --- |
-| HTML shell / semantiek | `index.html` | `canvas`, `overlay`, `menuContent`, `appVersion` |
+| HTML shell / semantiek | `index.html` | `canvas`, `overlay`, `menuContent`, `appVersion`, `combo`, `runSummary`, `onboarding` |
+| Meta progression | `game-meta.js` | `achievements`, `missionPool`, `weeklyPool`, `unlocks`, `cosmetics`, `worldRules` |
 | Layout / responsive | `style.css` | `.shell`, `.game`, media queries |
 | Canvas / HUD styling | `style.css` | `.scoreboard`, `.tier-track`, `.controls` |
 | Menu / winkel styling | `style.css` | `#overlay`, `.menu-tabs`, `.store-grid` |
@@ -133,7 +136,8 @@ Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke 
 | Near miss / balance | `app.js` | `NearMissController`, `BalanceController`, `nearMissCandidate` |
 | Game loop | `app.js` | `frame`, `update`, `travel`, `TIERS`, `currentTier` |
 | Obstacles / pickups | `app.js` | `obstacles`, `candies`, `shield`, `coinItems` |
-| Persistence | `app.js` | `localStorage`, `dont-trip-grandma-`, `grandma-` |
+| Persistence | `app.js` | `localStorage`, `dont-trip-grandma-`, `grandma-`, `grandma-meta-v1` |
+| Progression runtime | `app.js` | `evaluateAchievements`, `incrementMission`, `registerCombo`, `showMenu('progress')`, `showMenu('collection')` |
 | Tests | `tests/*.mjs` | structure, store, UI, shop, recovery, risk/reward, syntax |
 | Deployment | `.github/workflows/` | Pages + test steps |
 
@@ -142,7 +146,7 @@ Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke 
 
 **Recovery:** collision → recovery window → PERFECT/SAFE/MISS → balance/near-miss/camera → vervolg gameplay of rescue/game-over. Test timing, pauze, repeat collisions en restart.
 
-**Persistence:** wijzigingen aan coins, highscore, outfits of gadgets mogen bestaande opgeslagen data niet stil verliezen. Voeg migraties toe als een schema echt verandert.
+**Persistence:** wijzigingen aan coins, highscore, outfits of gadgets mogen bestaande opgeslagen data niet stil verliezen. Nieuwe progression-data gebruikt `grandma-meta-v1`; bestaande keys blijven backwards compatible. Voeg migraties toe als een schema echt verandert.
 
 **Publicatie:** een commit is niet hetzelfde als een visueel bewezen fix. Rapporteer commit, teststatus en browsercontrole afzonderlijk wanneer die beschikbaar zijn.
 
