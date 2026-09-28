@@ -28,6 +28,7 @@ jobs:
           test -s style.css
           test -s app.js
           test -s game-meta.js
+          test -s progression.js
           test -s assets/hanger-spritesheet.svg
           node tests/structure-regression.mjs
           node tests/progression-regression.mjs
@@ -55,15 +56,17 @@ jobs:
           set -eu
           mkdir -p _site/assets
           cp index.html _site/index.html
-          cp style.css app.js game-meta.js _site/
+          cp style.css app.js game-meta.js progression.js _site/
           cp -R assets/. _site/assets/
           test -s _site/assets/hanger-spritesheet.svg
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/game-meta.js
+          test -s _site/progression.js
           grep -q 'href="style.css"' _site/index.html
           grep -q 'src="game-meta.js"' _site/index.html
+          grep -q 'src="progression.js"' _site/index.html
           grep -q 'src="app.js"' _site/index.html
           grep -q 'assets/hanger-spritesheet.svg' _site/style.css
       - uses: actions/upload-pages-artifact@v4
