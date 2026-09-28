@@ -88,7 +88,7 @@ Targeted re-check
 
 ## Huidige architectuur
 
-Huidige release: **V.1.1.0.0**.
+Huidige release: **V.1.2.0.0**.
 
 ```text
 dont-fall-granny/
@@ -97,7 +97,8 @@ dont-fall-granny/
 ├── AGENTS.md                        # centrale Team GO instructie + routekaart
 ├── index.html                       # compacte HTML shell / semantische UI
 ├── style.css                        # alle layout, responsive en game-UI styling
-├── game-meta.js                     # progression, achievements, missions, cosmetics en wereldregels
+├── game-meta.js                     # progression-config: achievements, ranks, difficulty, worlds en collections
+├── progression.js                   # pure progression helpers: periods, ranks, tiers en collection checks
 ├── app.js                           # runtime gameplay, rendering, state en interactielogica
 ├── assets/
 │   └── hanger-spritesheet.svg
@@ -116,14 +117,15 @@ dont-fall-granny/
 ```
 
 ### Releaseversies
-Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke versie staat in `game-meta.js`; `app.js` leest deze via `META.version` en mount hem in het hoofdmenu via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
+Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke versie staat in `game-meta.js` (`V.1.2.0.0`); `app.js` leest deze via `META.version` en mount hem in het hoofdmenu via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
 
 ## Code-routekaart
 
 | Onderdeel | Pad | Zoekankers |
 | --- | --- | --- |
 | HTML shell / semantiek | `index.html` | `canvas`, `overlay`, `menuContent`, `appVersion`, `combo`, `runSummary`, `onboarding` |
-| Meta progression | `game-meta.js` | `achievements`, `missionPool`, `weeklyPool`, `unlocks`, `cosmetics`, `worldRules` |
+| Meta progression | `game-meta.js` | `tieredAchievements`, `difficultyModes`, `rankLevels`, `worldChallenges`, `collectionSets` |
+| Progression helpers | `progression.js` | `activeMissions`, `achievementTier`, `rankForXp`, `collectionStatus` |
 | Layout / responsive | `style.css` | `.shell`, `.game`, media queries |
 | Canvas / HUD styling | `style.css` | `.scoreboard`, `.tier-track`, `.controls` |
 | Menu / winkel styling | `style.css` | `#overlay`, `.menu-tabs`, `.store-grid` |
@@ -137,7 +139,7 @@ Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke 
 | Game loop | `app.js` | `frame`, `update`, `travel`, `TIERS`, `currentTier` |
 | Obstacles / pickups | `app.js` | `obstacles`, `candies`, `shield`, `coinItems` |
 | Persistence | `app.js` | `localStorage`, `dont-trip-grandma-`, `grandma-`, `grandma-meta-v1` |
-| Progression runtime | `app.js` | `evaluateAchievements`, `incrementMission`, `registerCombo`, `showMenu('progress')`, `showMenu('collection')` |
+| Progression runtime | `app.js` | `evaluateAchievements`, `incrementMission`, `registerCombo`, `pinnedMission`, `gainXp`, `addWorldMastery` |
 | Tests | `tests/*.mjs` | structure, store, UI, shop, recovery, risk/reward, syntax |
 | Deployment | `.github/workflows/` | Pages + test steps |
 
