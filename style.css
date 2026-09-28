@@ -61,7 +61,8 @@ header{align-items:center;gap:6px;margin:0;flex-wrap:wrap}h1{font-size:clamp(21p
 .store-item b{font-size:13px}.store-item small{font-size:11px;color:#65546b}
 .store-item button{width:100%;border:2px solid #493e49;background:#ffcd66;border-radius:8px;padding:7px 3px;font:800 12px system-ui;color:#392d44}
 .store-item button:disabled{opacity:.5;background:#ddd}
-#menuContent{max-height:min(43dvh,330px);overflow:auto}\n#shop{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
+#menuContent{max-height:min(43dvh,330px);overflow:auto}
+#shop{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0}
 #overlay.storepage #overlayTitle,#overlay.storepage #overlayText,#overlay.storepage #shop,#overlay.storepage #startBtn{display:none!important}#menuWallet{font-weight:900;color:#624b26}
 @media(max-width:650px){#overlay .panel{max-height:calc(100% - 55px);overflow:auto;padding:13px}.menu-grandma{height:95px}.menu-grandma svg{height:92px}.menu-grandma:before{height:70px}}
 /* Countdown traces the entire perimeter of the game-over card. */
