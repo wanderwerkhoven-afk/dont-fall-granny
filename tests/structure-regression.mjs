@@ -9,7 +9,11 @@ assert.match(html, /<link rel="stylesheet" href="style\.css">/, 'External styles
 assert.match(html, /<script src="app\.js" defer><\/script>/, 'External app script missing');
 assert.doesNotMatch(html, /<style>/, 'Inline stylesheet should stay extracted');
 assert.doesNotMatch(html, /<script>\s*\(\(\)=>/, 'Game logic should stay extracted');
-assert.match(html, /id="appVersion"[^>]*><\/div>/, 'Version mount point missing');\nassert.doesNotMatch(html, /id="shop"[^>]*style=/, 'Shop presentation should live in CSS');\nassert.match(css, /#shop\{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0\}/, 'Shop base styling missing');\nassert.match(script, /const APP_VERSION='V\.1\.0\.0\.2';/, 'Canonical release version missing');\nassert.match(script, /appVersionEl\.textContent=APP_VERSION/, 'Version is not mounted into the UI');
+assert.match(html, /id="appVersion"[^>]*><\/div>/, 'Version mount point missing');
+assert.doesNotMatch(html, /id="shop"[^>]*style=/, 'Shop presentation should live in CSS');
+assert.match(css, /#shop\{display:none;gap:8px;flex-wrap:wrap;justify-content:center;margin:12px 0\}/, 'Shop base styling missing');
+assert.match(script, /const APP_VERSION='V\.1\.0\.0\.2';/, 'Canonical release version missing');
+assert.match(script, /appVersionEl\.textContent=APP_VERSION/, 'Version is not mounted into the UI');
 assert.match(css, /assets\/hanger-spritesheet\.svg/, 'Sprite reference moved out of deployable CSS');
 assert.match(css, /Release marker: mirrors the visible version workflow used in DONE/);
 assert.match(script, /class RecoveryWindowController/);
