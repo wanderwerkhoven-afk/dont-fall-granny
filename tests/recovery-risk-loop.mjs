@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const html=readFileSync('index.html','utf8');
-const script=html.split('<script>')[1]?.split('</script>')[0];
+const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
+const script=readFileSync('app.js','utf8');
 assert.ok(script);new Function(script);
 assert.ok(script.includes('class BalanceController{'));
 assert.ok(script.includes('class NearMissController{'));
