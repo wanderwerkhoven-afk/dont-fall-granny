@@ -1,68 +1,134 @@
-# AGENTS.md — Don't Trip Grandma: routekaart voor AI-agents
+# Team GO — Don't Fall Granny
 
-Lees dit bestand vóór iedere wijziging. Het beschrijft vindplaatsen, geen vervanging voor inspectie van de actuele GitHub-code. Repository: `wanderwerkhoven-afk/dont-fall-granny`; live spel: https://wanderwerkhoven-afk.github.io/dont-fall-granny/.
+Team GO is het standaard implementatieteam voor productwerk in deze repository.
 
-## Architectuur en mapstructuur op main (22 september 2026)
+Repository: `wanderwerkhoven-afk/dont-fall-granny`  
+Live game: https://wanderwerkhoven-afk.github.io/dont-fall-granny/
+
+## Missie
+Zet een gevraagde game-, UI- of productverbetering direct om in werkende productiecode. Team GO stopt niet bij advies: agents inspecteren de actuele implementatie, voeren wijzigingen uit, organiseren bestanden en assets, testen de relevante flows en controleren regressies.
+
+## Agents
+- **UI/UX Agent** — menu’s, HUD, shop, responsive layout, toegankelijkheid, visuele hiërarchie en consistentie.
+- **Gameplay Agent** — core loop, difficulty, obstacles, recovery, near-miss, rewards, coins, progression en balancing.
+- **Animation Agent** — character motion, feedback, transitions, camera response, sprites en reduced-motion gedrag.
+- **State & Persistence Agent** — game state, inventory, equipped items, best score, coins, localStorage, migraties en reload-herstel.
+- **Folder Manager Agent** — repositorystructuur, assets, naamgeving, veilige verplaatsingen en referentie-integriteit.
+- **QA Agent** — start/pause/restart/game-over, collisions, recovery, shop, reloads, mobile flows en edge cases.
+- **Review Agent** — regressiecontrole, duplicatie, integratiekwaliteit, performance en maintainability.
+- **Verbeter Agent** — productaudit, nieuwe gameplaykansen, UX-verbeteringen en briefs voor nieuwe assets.
+
+Agent-instructies:
+- `.agents/skills/ui-ux-agent/SKILL.md`
+- `.agents/skills/gameplay-agent/SKILL.md`
+- `.agents/skills/animation-agent/SKILL.md`
+- `.agents/skills/state-persistence-agent/SKILL.md`
+- `.agents/skills/folder-manager-agent/SKILL.md`
+- `.agents/skills/qa-agent/SKILL.md`
+- `.agents/skills/review-agent/SKILL.md`
+- `.agents/skills/verbeter-agent/SKILL.md`
+
+## Operating mode: GO
+Wanneer de gebruiker **Team GO**, **team go**, **agents go** zegt of Team GO opdracht geeft:
+
+1. Inspecteer eerst de actuele relevante bestanden op `main`.
+2. UI/UX, Gameplay, Animation en State & Persistence beoordelen de opdracht vanuit hun eigen scope en implementeren wat van toepassing is.
+3. Folder Manager controleert alle geraakte en nieuwe bestanden/assets en ruimt structuur of naamgeving op wanneer dat veilig en logisch is.
+4. Agents wijzigen de repository direct; ze stoppen niet bij aanbevelingen als de gevraagde verandering duidelijk implementeerbaar is.
+5. QA test systematisch de complete geraakte flow, inclusief herhaalde interactie, reload/state recovery, mobiel en relevante edge cases.
+6. Review controleert daarna de gecombineerde implementatie en repareert duidelijke regressies, dubbele logica of integratieproblemen.
+7. Als QA of Review een betekenisvolle fix uitvoert, wordt die flow opnieuw gecontroleerd.
+8. Verbeter Agent-voorstellen blijven voorstellen totdat de gebruiker ze expliciet laat uitvoeren.
+9. Bestaand werkend gedrag blijft behouden tenzij de opdracht het expliciet vervangt.
+10. Geef de voorkeur aan één coherente oplossing boven extra overrides, dubbele CSS, dubbele game-state of tijdelijke hacks.
+11. Hergebruik bestaande stijlen, assets, gameplay-systemen en persisted state voordat nieuwe systemen worden toegevoegd.
+12. Mobile is first-class. Controleer smalle schermen en korte viewporthoogtes.
+13. Bestaande localStorage-sleutels blijven backwards compatible waar praktisch.
+14. Nieuwe assets krijgen beschrijvende lowercase kebab-case namen en een logische map.
+15. Motion mag essentiële acties niet blokkeren en moet `prefers-reduced-motion` respecteren.
+16. Werk direct op `main`, tenzij de gebruiker expliciet anders vraagt.
+17. Controleer vlak vóór iedere schrijfactie de actuele blob-SHA van het bestand.
+18. Sluit af met een korte samenvatting van implementatie, QA/review-fixes en eventuele echte onzekerheden.
+
+## Execution flow
 
 ```text
-dont-fall-granny/
-├── AGENTS.md                         # Deze AI-routekaart
-├── index.html                        # V11: volledige HTML, CSS en JavaScript in één bestand
-├── assets/
-│   └── hanger-spritesheet.svg        # Zes houten hangerframes; 720×120, cellen 120×120
-├── tests/
-│   ├── store-regression.mjs          # Winkel, sprite en JS-syntax
-│   ├── recovery-skill-check.mjs      # 0,9 s recovery timing + PERFECT/SAFE/MISS
-│   └── recovery-risk-loop.mjs        # near-miss focus + balance + camera-settle
-└── .github/workflows/
-    └── deploy-wooden-hanger.yml      # CI-verificatie en GitHub Pages-publicatie
+UI/UX ─────────┐
+Gameplay ──────┤
+Animation ─────┼─> geïntegreerde implementatie
+State ─────────┘
+       │
+Folder Manager ─> bestands- en assetcontrole
+       │
+QA ─────────────> flowtests + fixes
+       │
+Review ─────────> integratie- en regressiecheck
+       │
+Targeted re-check
 ```
 
-De oude `assets/hanger-spritesheet.png` is verwijderd. PR #9 (hanger-SVG en gesynchroniseerde voorbeeldoma) is gemerged in `main`, mergecommit `6af2b9a5a55ab0e1a44b12c3710469706e259dc1`; de Pages-workflow voor deze commit slaagde. Controleer bij elke nieuwe opdracht opnieuw de huidige toestand in plaats van deze historische status blind over te nemen. De routekaart moet worden bijgewerkt als bestanden of functies veranderen.
+## Ownership
+- UI/UX beheert visuele hiërarchie en interactielayout, niet gameplay-balancing.
+- Gameplay beheert mechanics en progression, niet opslagarchitectuur.
+- Animation beheert motion en feedback, niet de onderliggende mechanic.
+- State & Persistence beheert opgeslagen data en state-integriteit.
+- Folder Manager beheert structuur en referenties.
+- QA beheert reproduceerbare gedragsverificatie.
+- Review bewaakt totale integratiekwaliteit en mag duidelijke cross-scope defects repareren.
+- Verbeter Agent ontdekt verbeterkansen maar implementeert ze niet automatisch.
 
-## Snel naar het juiste onderdeel
+## Conflictvolgorde
+1. Correctheid en state/data-integriteit.
+2. Expliciet gevraagd gedrag.
+3. Gameplayduidelijkheid en fairness.
+4. Visuele consistentie.
+5. File/reference integrity.
+6. Performance en motion clarity.
+7. Minimale complexiteit.
 
-| Taak | Pad | Zoekankers in de code |
+## Huidige architectuur
+```text
+dont-fall-granny/
+├── .agents/skills/                  # Team GO agent skills
+├── .github/workflows/               # CI + GitHub Pages
+├── AGENTS.md                        # centrale Team GO instructie + routekaart
+├── index.html                       # game: HTML + CSS + JavaScript
+├── assets/
+│   └── hanger-spritesheet.svg
+└── tests/
+    ├── store-regression.mjs
+    ├── recovery-skill-check.mjs
+    └── recovery-risk-loop.mjs
+```
+
+## Code-routekaart
+
+| Onderdeel | Pad | Zoekankers |
 | --- | --- | --- |
-| Algemene layout en responsive gedrag | `index.html` | `.shell`, `.game`, `@media(max-width:650px)`, `@media(min-width:651px)` |
-| Spelcanvas en HUD | `index.html` | `id="canvas"`, `tierTrack`, `tierFill`, `scoreboard`, `coins`, `score`, `best` |
-| Hoofdmenu / winkel / navigatie | `index.html` | `id="overlay"`, `menuTabs`, `menuContent`, `function showMenu` |
-| Voorbeeldoma bovenin menu | `index.html` | `id="menuGrandma"`, `data-preview-coat`, `data-preview-hair`, `updateGrandmaOutfitPreview()` |
-| Kledingassortiment, prijzen, kleuren | `index.html` | `const clothing=[`, `selectedClothes`, `ownedClothes` |
-| Kopen, aantrekken, munten | `index.html` | `data-buy`, `saveInventory()`, `saveCoins()`, `menuPanel.scrollTop` |
-| Kleine outfitvoorbeelden in kaarten | `index.html` | `const symbol=page==='clothes'` |
-| Gameplay-oma en speler | `index.html` | `grandma`, `selectedClothes`, zoek naar tekenfunctie die deze gebruikt |
-| Kledinghanger en kledingstang | `index.html` | `clothes-scroll-rail`, `clothes-pole`, `clothes-hanger`, `clothesHanger` |
-| Hangerframes en scrollanimatie | `index.html` | `setHangerFrame`, `syncClothesHanger`, `refreshHangerAnimation`, `hangerReduceMotion` |
-| Hangerafbeelding | `assets/hanger-spritesheet.svg` | Zes `<use href="#hanger">`-elementen; CSS `background-image`, `background-size` |
-| Gadgets en voertuigmodi | `index.html` | `const gadgets=[`, `ownedGadgets`, `vehicle`, `modeObstacles`, `scooter-mode` |
-| Start, pauze, reset en game-over | `index.html` | `reset()`, `returnHome()`, `GAME_OVER_SECONDS`, `tickDeathTimer`, `state` |
-| Recovery skill check / balance | `index.html` | `RecoveryWindowController`, `BalanceController`, `NearMissController`, `triggerRecovery`, `finishRecovery`, `drawRecoveryMeter` |
-| Near-miss risk/reward + PERFECT camera | `index.html` | `nearMissCandidate`, `nearMissController`, `recoveryCameraSettle`, `reducedRecoveryMotion` |
-| Game-loop, snelheid en werelden | `index.html` | `frame`, `update`, `travel`, `score`, `TIERS`, `currentTier` |
-| Obstakels en schild | `index.html` | `obstacles`, `candies`, `shield`, `spawnDistance`, `coinItems` |
-| Opgeslagen voortgang | `index.html` | `localStorage`, `dont-trip-grandma-coins`, `dont-trip-grandma-best`, `grandma-clothes`, `grandma-outfit`, `grandma-gadgets` |
-| Geautomatiseerde checks | `tests/*.mjs` | winkel/sprite, home-layout, recovery timing, near-miss risk/reward en JS-parser |
-| Deployment | `.github/workflows/deploy-wooden-hanger.yml` | `verify`, `node tests/store-regression.mjs`, `upload-pages-artifact`, `deploy-pages` |
+| Layout / responsive | `index.html` | `.shell`, `.game`, media queries |
+| Canvas / HUD | `index.html` | `canvas`, `tierTrack`, `scoreboard`, `coins`, `score`, `best` |
+| Menu / winkel | `index.html` | `overlay`, `menuTabs`, `menuContent`, `showMenu` |
+| Grandma preview | `index.html` | `menuGrandma`, `updateGrandmaOutfitPreview` |
+| Clothing | `index.html` | `const clothing`, `selectedClothes`, `ownedClothes` |
+| Shop / kopen | `index.html` | `data-buy`, `saveInventory`, `saveCoins` |
+| Gadgets / vehicles | `index.html` | `const gadgets`, `ownedGadgets`, `vehicle`, `modeObstacles` |
+| Start / pause / reset | `index.html` | `reset()`, `returnHome()`, `state` |
+| Recovery | `index.html` | `RecoveryWindowController`, `triggerRecovery`, `finishRecovery` |
+| Near miss / balance | `index.html` | `NearMissController`, `BalanceController`, `nearMissCandidate` |
+| Game loop | `index.html` | `frame`, `update`, `travel`, `TIERS`, `currentTier` |
+| Obstacles / pickups | `index.html` | `obstacles`, `candies`, `shield`, `coinItems` |
+| Persistence | `index.html` | `localStorage`, `dont-trip-grandma-`, `grandma-` |
+| Tests | `tests/*.mjs` | store, recovery, risk/reward, syntax |
+| Deployment | `.github/workflows/` | Pages + test steps |
 
-Zoek op bovenstaande ankers in plaats van vaste regelnummers: één bestand bevat veel code en CSS-selectors kunnen meermaals voorkomen. Lees voor een wijziging de omliggende HTML, CSS én JavaScript.
+## Kritieke afhankelijkheden
+**Shop/outfits:** data → aankoop → ownership → equipped state → save → menu preview → gameplay rendering. Test aankoop, onvoldoende coins, equip, reload en terugkeer naar menu.
 
-## Afhankelijkheden en controle
+**Recovery:** collision → recovery window → PERFECT/SAFE/MISS → balance/near-miss/camera → vervolg gameplay of rescue/game-over. Test timing, pauze, repeat collisions en restart.
 
-**Outfits:** `clothing` → `data-buy` → `selectedClothes` → `saveInventory()` → `showMenu()` → `updateGrandmaOutfitPreview()` → gameplay-oma. Controleer geselecteerde kleuren, haar, actieve knop, munten, terugkeer naar menu en pagina herladen. De grote preview wordt momenteel bij `showMenu()` bijgewerkt; wijzig niet slechts de vaste SVG-kleur.
+**Persistence:** wijzigingen aan coins, highscore, outfits of gadgets mogen bestaande opgeslagen data niet stil verliezen. Voeg migraties toe als een schema echt verandert.
 
-**Hanger:** `assets/hanger-spritesheet.svg` → CSS `background-image` en `background-size:576px 96px` (desktop) / `504px 84px` (mobiel) → `setHangerFrame()` → `syncClothesHanger()` → animatie. De zes cellen zijn elk 120×120 in het bronbestand; zorg dat de afbeelding en de positie per frame overeenkomen en dat `prefers-reduced-motion` gerespecteerd blijft. Controleer daadwerkelijke zichtbaarheid op mobiel en desktop, niet alleen of het bestand bestaat.
+**Publicatie:** een commit is niet hetzelfde als een visueel bewezen fix. Rapporteer commit, teststatus en browsercontrole afzonderlijk wanneer die beschikbaar zijn.
 
-**Spel:** start/reset → frame/update/render → HUD en opslag. Gewone onbeschermde botsingen lopen nu via `RecoveryWindowController` (0,9 s) naar PERFECT/SAFE/MISS; MISS valt door naar de bestaande rescue/game-over-flow. `NearMissController` bouwt maximaal 0,03 focus op en verruimt de eerstvolgende SAFE-zone; PERFECT gebruikt `BalanceController` en een subtiele `recoveryCameraSettle`, uitgeschakeld bij `prefers-reduced-motion`. Bij timingwijzigingen ook eerste frame, pauze, restart, botsing, near-miss, recovery en game-over testen. Behoud bestaande localStorage-sleutels zodat voortgang niet verloren gaat.
-
-**Publicatie:** bij wijzigingen aan `main` hoort de Pages-workflow HTML en de volledige gebruikte `assets/`-inhoud te publiceren. Een commit of een groene syntaxcheck is geen visuele browsercontrole. Geef commit, CI-status en eventuele browsercheck afzonderlijk door.
-
-## Agent-werkwijze
-
-1. Lees deze kaart, daarna de actuele repositoryboom, relevante bestanden en GitHub Actions-status.
-2. Kies het kleinste bewezen probleem; geen ongevraagde redesign of overstap naar Unity/Phaser. V11 blijft de bron.
-3. De gebruiker wil wijzigingen **direct op `main`**. Controleer de huidige blob-SHA vlak voor elke schrijfactie; gebruik geen force-push. Stop bij conflicten en verifieer opnieuw.
-4. Controleer code en assets vóór het pushen; voer `node tests/store-regression.mjs` uit wanneer de bestanden lokaal beschikbaar zijn. Test game-interacties in een browser als die beschikbaar is. Rapporteer eerlijk wat niet getest is.
-5. Houd deze routekaart synchroon met de actuele mapstructuur, de bestandsnamen en de functies.
-
-**Snelle links:** [repository](https://github.com/wanderwerkhoven-afk/dont-fall-granny) · [index.html](https://github.com/wanderwerkhoven-afk/dont-fall-granny/blob/main/index.html) · [spritesheet](https://github.com/wanderwerkhoven-afk/dont-fall-granny/blob/main/assets/hanger-spritesheet.svg) · [tests](https://github.com/wanderwerkhoven-afk/dont-fall-granny/blob/main/tests/store-regression.mjs) · [Actions](https://github.com/wanderwerkhoven-afk/dont-fall-granny/actions).
+## Productkarakter
+Don't Fall Granny is een compacte, humoristische arcadegame. Verbeteringen mogen speels, expressief en belonend zijn, maar gameplay moet leesbaar blijven en feedback mag het spel niet visueel verstoppen.
