@@ -42,7 +42,8 @@ assert.match(html, /prefers-reduced-motion/);
 
 // A green build must ship the sprite, not only index.html.
 assert.match(workflow, /node tests\/store-regression\.mjs/);
-assert.match(workflow, /cp -R assets\/\. _site\/assets\//);\nassert.match(workflow, /cp style\.css app\.js _site\//);
+assert.match(workflow, /cp -R assets\/\. _site\/assets\//);
+assert.match(workflow, /cp style\.css app\.js _site\//);
 assert.match(workflow, /test -s _site\/assets\/hanger-spritesheet\.svg/);
 assert.match(workflow, /deploy-pages@v4/);
 
