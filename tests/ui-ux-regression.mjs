@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-const html=readFileSync('index.html','utf8');
+const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 assert.equal((html.match(/Agent UI\/UX review 2026-09-22/g)||[]).length,1,'UI patch should be applied once');
 assert.match(html,/#overlay\.storepage \.store-item small\{flex:1/,'Descriptions align shop actions');
 assert.match(html,/#overlay\.storepage \.store-item button\{margin-top:auto;min-height:44px/,'Purchase buttons are aligned and touch sized');
@@ -11,7 +11,7 @@ assert.match(html,/setAttribute\('aria-pressed',String\(active\)\)/,'Menu tabs e
 assert.match(html,/const focusTarget=updated\?\.disabled\?updated\.closest\('\.store-item'\):updated/,'Focus falls back to card for disabled active button');
 assert.match(html,/focusTarget\.focus\(\{preventScroll:true\}\)/,'Focus restores after equipping without jumping scroll');
 assert.match(html,/menuPanel\.scrollTop=previousScroll/,'Scroll remains in place after purchase');
-const script=html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
+const script=readFileSync('app.js','utf8');
 assert.ok(script);
 new Function(script);
 console.log('PASS: UI/UX shop alignment, navigation, accessible card focus, scroll and JS syntax');
