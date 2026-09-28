@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
-const html = readFileSync('index.html', 'utf8');
+const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 const sprite = readFileSync('assets/hanger-spritesheet.svg', 'utf8');
 const workflow = readFileSync('.github/workflows/deploy-wooden-hanger.yml', 'utf8');
 
@@ -42,12 +42,12 @@ assert.match(html, /prefers-reduced-motion/);
 
 // A green build must ship the sprite, not only index.html.
 assert.match(workflow, /node tests\/store-regression\.mjs/);
-assert.match(workflow, /cp -R assets\/\. _site\/assets\//);
+assert.match(workflow, /cp -R assets\/\. _site\/assets\//);\nassert.match(workflow, /cp style\.css app\.js _site\//);
 assert.match(workflow, /test -s _site\/assets\/hanger-spritesheet\.svg/);
 assert.match(workflow, /deploy-pages@v4/);
 
 // Catch game-breaking parser errors without executing browser-only DOM code.
-const script = html.match(/<script>\s*([\s\S]*?)\s*<\/script>/)?.[1];
-assert.ok(script, 'Inline game script not found');
+const script = readFileSync('app.js','utf8');
+assert.ok(script, 'External game script not found');
 new Function(script);
 console.log('PASS: six correctly centered sprite frames, asset deployment, clothing preview, shop state and JS syntax');
