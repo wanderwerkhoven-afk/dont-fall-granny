@@ -317,6 +317,19 @@ function masteryFor(tier=currentTier){const id=tier%TIERS.length;return metaStat
 function addWorldMastery(key,amount){const m=masteryFor();m[key]=(m[key]||0)+amount;m.bestCombo=Math.max(m.bestCombo||0,combo)}
 function currentWorldRule(){return META.worldRules[currentTier%Math.max(1,META.worldRules.length)]||{speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0}}
 function eventLabel(){return META.worldChallenges?.[currentTier%Math.max(1,META.worldChallenges.length)]||{icon:'⚡',label:'Wereldevent'}}
+function worldEventSpeed(){
+ if(worldEventTime<=0)return 1;
+ const zone=currentTier%7;
+ if(zone===2)return 1.18;
+ if(zone===3)return 1+Math.sin(elapsed*2.1)*.1;
+ if(zone===5)return 1.1;
+ return 1.04
+}
+function worldEventGravity(){
+ if(worldEventTime<=0)return 1;
+ return currentTier%7===6?.72:1
+}
+function worldEventCoinMultiplier(){return worldEventTime>0&&currentTier%7===5?1.5:1}
 function showEvent(text,duration=2){
  if(!eventBannerEl)return;eventBannerEl.textContent=text;eventBannerEl.classList.add('show');setTimeout(()=>eventBannerEl.classList.remove('show'),duration*1000)
 }
@@ -581,7 +594,7 @@ for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementB
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*(worldEventTime>0?1.08:1)*(challengeTime>0?1.12:1);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}if(worldEventCooldown<=0&&worldEventTime<=0){worldEventTime=5;worldEventCooldown=24+Math.random()*10;const ev=eventLabel();showEvent(ev.icon+' WERELDEVENT · '+ev.label,2.4)}
+function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}if(worldEventCooldown<=0&&worldEventTime<=0){worldEventTime=5;worldEventCooldown=24+Math.random()*10;const zone=currentTier%7;if(zone===0)magnetTime=Math.max(magnetTime,3);if(zone===1)candyDistance=Math.min(candyDistance,180);if(zone===5)magnetTime=Math.max(magnetTime,5);const ev=eventLabel();showEvent(ev.icon+' WERELDEVENT · '+ev.label,2.4)}
  if(vehicle){
   vehicleTime=Math.max(0,vehicleTime-dt);modeDistance+=speed*dt;modeSpawn-=dt;
   if(vehicleTime<=0){finishVehicle();return;}
@@ -616,7 +629,7 @@ function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.m
  if(tierNext)tierNext.textContent='VOLGENDE WERELD · '+(500-score%500)+' M';
  if(newTier!==currentTier){if(challengeTier===currentTier&&challengeTime>0){const bonus=Math.round(15*difficultyRule().reward);coins+=bonus;coinsRun+=bonus;saveCoins();rewardPopups.push({text:'CHALLENGE +'+bonus+' 🪙',x:W*.5,y:82,life:2});challengeTime=0}previousTier=currentTier;currentTier=newTier;transition=2.8;tierFlash=3.3;puff(W*.65,ground-110,'#fff3a0');metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);incrementMission('tier',currentTier+1);evaluateAchievements();playFeedback('tier');haptic([15,20,15]);statusEl.textContent=(TIERS[currentTier%TIERS.length].icon||'🌍')+' '+currentWorldRule().label;}
  tierFlash=Math.max(0,tierFlash-dt);transition=Math.max(0,transition-dt);
- if(!vehicle){const wasAirborne=grandma.y<ground-grandma.h-2;grandma.vy+=(currentWorldRule().gravity||1850)*dt;grandma.y=Math.min(ground-grandma.h,grandma.y+grandma.vy*dt);if(grandma.y>=ground-grandma.h){if(wasAirborne&&grandma.vy>260)landingPulse=1;grandma.vy=0;}}invulnerable=Math.max(0,invulnerable-dt);flash=Math.max(0,flash-dt);for(const c of clouds){c.x-=speed*.045*dt;if(c.x< -110)c.x=W+80}
+ if(!vehicle){const wasAirborne=grandma.y<ground-grandma.h-2;grandma.vy+=(currentWorldRule().gravity||1850)*worldEventGravity()*dt;grandma.y=Math.min(ground-grandma.h,grandma.y+grandma.vy*dt);if(grandma.y>=ground-grandma.h){if(wasAirborne&&grandma.vy>260)landingPulse=1;grandma.vy=0;}}invulnerable=Math.max(0,invulnerable-dt);flash=Math.max(0,flash-dt);for(const c of clouds){c.x-=speed*.045*dt;if(c.x< -110)c.x=W+80}
 if(vehicle){for(const p of particles){p.life-=dt}particles=particles.filter(p=>p.life>0);return;}spawnDistance+=speed*dt;candyDistance-=speed*dt;coinDistance-=speed*dt;
 // Elke hindernis heeft een eigen tempo. Een kat kondigt zijn sprint eerst aan
 // en versnelt daarna richting oma; het gat wordt op basis van die sprint bewaakt.
@@ -664,14 +677,14 @@ for(const o of obstacles){
 for(const o of obstacles){
  if(!o.hit&&!o.nearMiss&&o.nearMissCandidate&&o.x+o.w<body.x){
   o.nearMiss=true;
-  const focus=nearMissController.register();if(currentWorldRule().focusBonus)nearMissController.focus=Math.min(.03,nearMissController.focus+currentWorldRule().focusBonus);
+  const focus=nearMissController.register();if(currentWorldRule().focusBonus)nearMissController.focus=Math.min(.04,nearMissController.focus+currentWorldRule().focusBonus+(worldEventTime>0&&currentTier%7===4?.01:0));
   nearMissRun++;metaState.stats.nearMisses++;incrementMission('near');registerCombo(comebackTime>0?2:1,'NEAR MISS · COMBO '+(comebackTime>0?'+2':'+1'));addWorldMastery('nearMisses',1);evaluateAchievements();
   recoveryFeedback=1.35;recoveryFeedbackText='NEAR\nMISS!';
   statusEl.textContent='NEAR MISS! +FOCUS · 🔥 '+combo;
  }
 }
 for(const c of candies){if(!c.taken&&rectHit(body,{x:c.x,y:c.y+Math.sin(c.t*5)*6,w:c.w,h:c.h},0)){c.taken=true;shield=1;puff(c.x,c.y,'#e89acc');statusEl.textContent='🍬 Snoepje gepakt! Eén botsing wordt opgevangen.'}}candies=candies.filter(c=>!c.taken);
-for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;const gain=Math.max(1,Math.round((currentWorldRule().coinValue||1)*comboMultiplier()*difficultyRule().reward*(comebackTime>0?1.25:1)));coins+=gain;coinsRun+=gain;metaState.stats.coinsCollected+=gain;incrementMission('coins',gain);registerCombo(1,'+'+gain+' 🪙');saveCoins();evaluateAchievements();playFeedback('coin');puff(c.x,c.y,'#ffcf49')}}
+for(const c of coinItems){if(rectHit(body,{x:c.x-10,y:c.y-12,w:24,h:24},0)){c.taken=true;const gain=Math.max(1,Math.round((currentWorldRule().coinValue||1)*worldEventCoinMultiplier()*comboMultiplier()*difficultyRule().reward*(comebackTime>0?1.25:1)));coins+=gain;coinsRun+=gain;metaState.stats.coinsCollected+=gain;incrementMission('coins',gain);registerCombo(1,'+'+gain+' 🪙');saveCoins();evaluateAchievements();playFeedback('coin');puff(c.x,c.y,'#ffcf49')}}
 coinItems=coinItems.filter(c=>!c.taken);
 }
 function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill()}function line(x1,y1,x2,y2,color,width=3){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke()}function label(s,x,y,size=28){ctx.font=`${size}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s,x,y)}
