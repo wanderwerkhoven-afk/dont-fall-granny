@@ -1,0 +1,506 @@
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#332d3b;background:#f7eadd}*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:14px;overflow-x:hidden}.shell{width:min(100%,980px)}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}h1{font-size:clamp(24px,5vw,42px);margin:0;letter-spacing:-1.5px}.subtitle{margin:4px 0 0;color:#796775;font-size:13px}.scoreboard{display:flex;gap:8px}.pill{background:white;border:2px solid #493e49;border-radius:14px;padding:8px 12px;min-width:74px;text-align:center;font-weight:800}.pill small{display:block;font-size:10px;color:#7e7180;text-transform:uppercase;letter-spacing:1px}.game{position:relative;border:4px solid #493e49;border-radius:22px;overflow:hidden;background:#d7f1f1;box-shadow:0 9px 0 #d3c3b8;touch-action:none;user-select:none;-webkit-user-select:none}canvas{display:block;width:100%;height:auto;aspect-ratio:900/390}.overlay{position:absolute;inset:0;display:grid;place-items:center;background:#f7eaddb8;backdrop-filter:blur(3px);padding:12px;text-align:center;overflow-y:auto}.overlay.hidden{display:none}.panel{background:#fffaf2;border:3px solid #493e49;border-radius:22px;box-shadow:6px 6px 0 #493e49;padding:22px;max-width:440px;width:100%}.panel h2{font-size:clamp(25px,5vw,37px);margin:0 0 8px}.panel p{line-height:1.45;margin:8px 0 18px}.button{border:3px solid #493e49;border-radius:13px;background:#ffcc65;color:#302633;font:800 17px system-ui;padding:12px 24px;cursor:pointer;box-shadow:0 4px 0 #493e49}.button:active{transform:translateY(3px);box-shadow:0 1px 0 #493e49}.footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}.hint{font-size:13px;color:#655967}.controls{display:flex;gap:9px}.controls .button{font-size:14px;padding:10px 16px;background:#fffaf2}#jumpBtn{background:#f9b6bc;min-width:130px}.status{font-size:13px;font-weight:800;min-height:20px;margin-top:12px;color:#655967}@media(max-width:650px){
+body{padding:max(8px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom));display:block}
+.shell{min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px);display:flex;flex-direction:column;gap:10px}
+header{align-items:center;gap:6px;margin:0;flex-wrap:wrap}h1{font-size:clamp(21px,6vw,30px);letter-spacing:-1px}.subtitle{font-size:11px;max-width:230px;margin-top:2px}.scoreboard{gap:5px;margin-left:auto}.pill{min-width:56px;padding:5px 7px;border-radius:11px;font-size:15px}.pill small{font-size:9px;letter-spacing:.3px}
+.game{width:100%;border-width:3px;border-radius:17px;box-shadow:0 5px 0 #d3c3b8;flex:0 0 auto}canvas{aspect-ratio:560/390;width:100%;height:auto}
+.footer{margin-top:auto;display:flex;flex-direction:column-reverse;gap:10px}.controls{width:100%;display:grid;grid-template-columns:1fr 2fr;gap:10px}.controls .button{width:100%;min-width:0;min-height:64px;font-size:18px;padding:12px 8px;touch-action:manipulation}#jumpBtn{font-size:23px;background:#f9b6bc}.hint{font-size:11px;text-align:center;line-height:1.35}.status{text-align:center;margin:0;font-size:12px;min-height:18px}.panel{padding:clamp(12px,3vw,20px);max-width:340px;border-radius:16px;box-shadow:4px 4px 0 #493e49}.panel h2{font-size:clamp(22px,6vw,30px)}.panel p{font-size:clamp(12px,3.4vw,15px);margin:6px 0 12px}.panel .button{min-height:48px;font-size:16px}
+}
+@media(max-width:650px) and (max-height:700px){.shell{gap:5px}.subtitle{display:none}.controls .button{min-height:48px}.hint{display:none}.panel p{line-height:1.25;margin:4px 0 8px}}
+@media(max-width:650px) and (orientation:landscape){body{padding:5px 10px}.shell{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:5px}header{grid-column:1/-1}.game{grid-column:1;grid-row:2/4;max-width:calc((100dvh - 55px)*560/390)}.footer{grid-column:2;grid-row:2;margin:0}.controls{display:flex;flex-direction:column-reverse;gap:6px}.controls .button{min-height:46px}.hint{display:none}.status{grid-column:2;grid-row:3;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.overlay{backdrop-filter:none}}
+
+/* Full-height mobile playfield: only the title remains outside the frame. */
+.game .scoreboard{position:absolute;top:14px;right:14px;z-index:2;pointer-events:none}
+.game .footer{position:absolute;bottom:36px;left:16px;right:16px;z-index:2;margin:0}
+.game .status{position:absolute;bottom:10px;left:16px;right:16px;z-index:2;margin:0;text-align:center}
+.game .overlay{z-index:5}
+@media(max-width:650px){
+ html,body{height:100%;overflow:hidden}
+ body{height:100dvh;min-height:0;padding:max(6px,env(safe-area-inset-top)) 8px max(7px,env(safe-area-inset-bottom));display:block}
+ .shell{height:100%;min-height:0;display:flex;flex-direction:column;gap:6px}
+ header{flex:0 0 auto;display:block;margin:0;padding:0 3px}
+ header h1{font-size:clamp(21px,6vw,30px)}
+ .subtitle{display:none}
+ .game{flex:1 1 auto;min-height:0;width:100%;border-radius:18px;box-shadow:none}
+ .game canvas{width:100%;height:100%;aspect-ratio:auto}
+ .game .scoreboard{top:12px;right:10px;gap:6px}
+ .game .pill{background:#fffaf2eb;min-width:65px;padding:6px 9px;font-size:17px}
+ .game .footer{position:absolute;left:10px;right:10px;bottom:42px;display:flex;flex-direction:column-reverse;gap:6px;margin:0}
+ .game .controls{width:100%;display:grid;grid-template-columns:1fr 2fr;gap:9px}
+ .game .controls .button{min-height:62px;touch-action:manipulation}
+ .game .hint{display:none}
+ .game .status{bottom:12px;left:8px;right:8px;font-size:11px;min-height:16px;background:#fffaf2c9;border-radius:8px;padding:2px}
+ .game .overlay{padding:12px;align-items:center}
+ .game .panel{max-height:calc(100% - 130px);overflow:auto}
+}
+@media(max-width:650px) and (max-height:700px){
+ .game .footer{bottom:32px}.game .controls .button{min-height:49px}
+ .game .status{bottom:7px}.game .panel{max-height:calc(100% - 110px)}
+}
+@media(max-width:650px) and (orientation:landscape){
+ body{padding:3px 6px}.shell{display:flex;flex-direction:column;gap:3px}
+ header{grid-column:auto}.game{grid-column:auto;grid-row:auto;max-width:none}
+ .game .footer{left:auto;right:9px;bottom:28px;width:120px}
+ .game .controls{display:flex;flex-direction:column-reverse;gap:5px}
+ .game .controls .button{min-height:43px;font-size:14px}
+ .game .status{bottom:5px;left:8px;right:140px;text-align:left}
+ .game .scoreboard{top:8px;right:8px}
+}
+#overlay{background:linear-gradient(145deg,#241f42ed,#473454e8);backdrop-filter:blur(7px)}
+#overlay .panel{max-width:490px;background:#fff8ec;border:4px solid #352b49;box-shadow:0 12px 0 #251d37}
+#overlay .panel h2{color:#30263f}
+.menu-grandma{height:125px;display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto 10px}
+.menu-grandma svg{width:112px;height:125px;filter:drop-shadow(0 7px 0 #362a4033)}
+.menu-grandma:before{content:'';position:absolute;width:155px;height:95px;background:#ffe2a0;border-radius:50%;z-index:-1}
+.menu-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.menu-tabs button{font:800 13px system-ui;padding:10px 4px;border:2px solid #493e49;border-radius:11px;background:#fff;color:#392d44}
+.menu-tabs button.active{background:#ffcc65;box-shadow:0 3px 0 #493e49}
+.store-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.store-item{padding:10px 6px;border:2px solid #493e49;border-radius:13px;background:#fff;display:flex;align-items:center;flex-direction:column;gap:5px}
+.store-item .preview{width:64px;height:64px;border-radius:14px;background:#e8f2e8;display:grid;place-items:center;font-size:33px}
+.store-item b{font-size:13px}.store-item small{font-size:11px;color:#65546b}
+.store-item button{width:100%;border:2px solid #493e49;background:#ffcd66;border-radius:8px;padding:7px 3px;font:800 12px system-ui;color:#392d44}
+.store-item button:disabled{opacity:.5;background:#ddd}
+#menuContent{max-height:min(43dvh,330px);overflow:auto}
+#overlay.storepage #overlayTitle,#overlay.storepage #overlayText,#overlay.storepage #shop,#overlay.storepage #startBtn{display:none!important}#menuWallet{font-weight:900;color:#624b26}
+@media(max-width:650px){#overlay .panel{max-height:calc(100% - 55px);overflow:auto;padding:13px}.menu-grandma{height:95px}.menu-grandma svg{height:92px}.menu-grandma:before{height:70px}}
+/* Countdown traces the entire perimeter of the game-over card. */
+#overlay.gameover .panel{position:relative;isolation:isolate;border-color:transparent;box-shadow:0 12px 0 #251d37}
+#overlay.gameover .panel::before{content:"";position:absolute;inset:-5px;border-radius:25px;padding:6px;background:conic-gradient(from -90deg,#ffca60 0deg,#f07865 var(--timer-angle,360deg),#4b3b5a var(--timer-angle,360deg),#4b3b5a 360deg);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;z-index:2}
+#overlay.gameover .menu-grandma,#overlay.gameover .menu-tabs,#overlay.gameover #menuContent{display:none}
+#overlay.gameover #overlayTitle{margin-top:8px}
+#countdown{display:none;margin:10px auto 14px;padding:8px 13px;width:max-content;max-width:100%;border:2px solid #493e49;border-radius:100px;background:#fff0d7;color:#493e49;font-weight:900;font-size:15px}
+#overlay.gameover #countdown{display:block}
+#overlay.gameover #startBtn{background:#fff8eb}
+@media(prefers-reduced-motion:reduce){#overlay.gameover .panel::before{transition:none}}
+.scooter-control{display:none!important;background:#ffcf72!important;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.game.scooter-mode .scooter-control{display:block!important}
+.game.scooter-mode #jumpBtn{display:none!important}
+.game.scooter-mode .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}
+.game.scooter-mode #pauseBtn{grid-column:2;grid-row:1}
+.game.scooter-mode #leftBtn{grid-column:1;grid-row:1}
+.game.scooter-mode #rightBtn{grid-column:3;grid-row:1}
+@media(max-width:650px){.game.scooter-mode .controls .button{font-size:clamp(12px,3.7vw,19px);padding:9px 3px;min-height:70px}}
+
+/* V11: cohesive mobile-first game interface */
+:root{font-family:ui-rounded,system-ui,-apple-system,sans-serif;color:#29243a;background:#161526}
+body{background:radial-gradient(ellipse at 50% 0,#55456c 0,#222037 48%,#141321 100%)}
+.shell{background:#f8eddf;border-radius:24px;padding:12px;box-shadow:0 24px 70px #08071588;max-width:930px}
+header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);letter-spacing:-1.2px;font-weight:1000;color:#29243a}
+.game{border:4px solid #29243a;border-radius:22px;box-shadow:0 8px 0 #151323,0 14px 25px #1711263d}
+.game .scoreboard{top:15px;right:13px;gap:6px;z-index:3}
+.game .pill{background:#fff9ecf2;border:2px solid #30263f;border-radius:11px;box-shadow:0 3px 0 #30263f;min-width:72px;padding:7px 10px;font-size:17px;font-variant-numeric:tabular-nums}
+.game .pill small{font-size:9px;color:#675873;letter-spacing:.8px}
+.tier-track{position:absolute;top:16px;left:15px;z-index:3;width:min(29%,210px);pointer-events:none;color:#30263f;text-shadow:0 1px #fff9}
+.tier-track-label{display:flex;flex-direction:column;gap:2px;font-size:10px;font-weight:1000;letter-spacing:.5px}
+#tierNext{font-size:8px;opacity:.8}.tier-track-rail{margin-top:7px;height:10px;background:#30263f;border:2px solid #30263f;border-radius:20px;overflow:hidden;box-shadow:0 2px 0 #fff8}
+#tierFill{width:0;height:100%;background:linear-gradient(90deg,#f5b85d,#fce37c);border-radius:20px;transition:width .14s linear}
+#overlay{background:linear-gradient(145deg,#161527e9,#40314de8);backdrop-filter:blur(12px)}
+#overlay .panel{max-width:460px;max-height:min(96%,780px);padding:18px 18px 22px;background:linear-gradient(165deg,#fff9e9,#fff1db);border:3px solid #2d263f;border-radius:26px;box-shadow:0 8px 0 #171426,0 25px 55px #0d0b1c8a;overflow:auto;scrollbar-width:thin}
+.menu-hero{height:128px;position:relative;display:grid;place-items:center;isolation:isolate;overflow:hidden;border-radius:17px;background:radial-gradient(circle at 50% 35%,#fff2bf 0 25%,#c9e6d5 26% 65%,#a9d3c5 66%);border:2px solid #30263f}
+.menu-grandma{height:122px;margin:0;z-index:2;animation:heroBob 2.1s ease-in-out infinite}
+.menu-grandma:before{display:none}.menu-grandma svg{height:116px;width:105px;filter:drop-shadow(0 5px 0 #30263f35)}
+.hero-orbit{position:absolute;border:2px dashed #ffffffb9;border-radius:50%;width:200px;height:200px;left:calc(50% - 100px);top:-65px;animation:orbit 22s linear infinite}.orbit-b{width:260px;height:260px;left:calc(50% - 130px);top:-95px;animation-direction:reverse}
+.hero-spark{position:absolute;font-size:29px;color:#f8b64e;z-index:3;animation:heroBob 2.3s ease-in-out infinite}.spark-a{left:16%;top:17%}.spark-b{right:17%;bottom:17%}.hero-shadow{position:absolute;bottom:4px;left:calc(50% - 50px);width:100px;height:12px;border-radius:50%;background:#30263f35}
+@keyframes heroBob{50%{transform:translateY(-5px)}}@keyframes orbit{to{transform:rotate(360deg)}}
+.menu-kicker{font-size:10px;letter-spacing:1.9px;font-weight:1000;margin:12px 0 8px;color:#846174;text-transform:uppercase}
+.menu-kicker span{color:#d99445}.menu-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0 11px}
+.menu-tabs button{background:#fff;border:2px solid #30263f;border-radius:12px;padding:11px 3px;box-shadow:0 3px 0 #30263f;color:#30263f;font-weight:950;font-size:12px;transition:transform .12s}
+.menu-tabs button.active{background:#ffcf68;box-shadow:0 3px 0 #30263f}.menu-tabs button:active{transform:translateY(2px)}
+.menu-meta{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0;font-size:11px;font-weight:950;color:#30263f}
+.menu-record,#menuWallet{background:#fff;border:2px solid #30263f;border-radius:999px;padding:7px 10px;white-space:nowrap}
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.home-card{background:#fff;border:2px solid #30263f;border-radius:13px;padding:10px 8px;text-align:left;min-height:100px;box-shadow:0 3px 0 #30263f}
+.home-card-icon{display:block;font-size:20px;margin-bottom:3px}.home-card b{display:block;font-size:10px;letter-spacing:.35px}.home-card small{display:block;font-size:10px;line-height:1.3;margin-top:4px;color:#706274}
+.menu-guide{font-size:9px;font-weight:900;letter-spacing:.3px;color:#857584;margin:10px 0 6px}.menu-guide span{color:#e6a64e}
+#overlay .panel h2{font-size:clamp(20px,4.4vw,28px);letter-spacing:-.8px;margin:9px 0 4px}
+#overlay .panel p{font-size:12px;line-height:1.4;margin:4px 0 11px;color:#675873}
+#startBtn{width:100%;background:linear-gradient(#ffd976,#ffb94e);font-size:19px;letter-spacing:.4px;min-height:57px;border-radius:13px;box-shadow:0 5px 0 #30263f}
+#startBtn:active{transform:translateY(4px);box-shadow:0 1px 0 #30263f}
+.store-grid{gap:9px;margin:12px 0}.store-item{border:2px solid #30263f;border-radius:15px;background:#fff;padding:10px 7px;box-shadow:0 3px 0 #30263f;min-height:172px}.store-item.selected{background:#fff3d1;outline:2px solid #f0b94c;outline-offset:-5px}
+.store-item .preview{width:70px;height:68px;background:radial-gradient(circle,#fff9e6,#d8ebe3);border:1px solid #d5d5ce;border-radius:13px}
+.store-item b{font-size:12px}.store-item small{font-size:10px;line-height:1.3;min-height:25px}.store-item button{margin-top:auto;border:2px solid #30263f;background:#ffcf68;font-size:11px;min-height:33px}
+#overlay.storepage .menu-hero{height:80px}#overlay.storepage .menu-grandma{height:76px}#overlay.storepage .menu-grandma svg{height:74px}#overlay.storepage #menuGuide{display:none}
+#overlay.gameover .menu-hero,#overlay.gameover .menu-kicker,#overlay.gameover .menu-meta,#overlay.gameover #menuGuide{display:none}
+#overlay.gameover .panel{padding:23px 18px}#overlay.gameover .panel h2{font-size:clamp(24px,6vw,36px);color:#30263f}
+#overlay.gameover #shop{display:grid!important;grid-template-columns:1fr 1fr;gap:9px;margin:13px 0!important}
+#overlay.gameover #shop .button{padding:10px 4px;min-width:0;font-size:13px;min-height:53px}
+#overlay.gameover #shop .button:disabled{opacity:.5}#overlay.gameover #startBtn{background:#fff;min-height:48px;font-size:14px}
+.game .controls .button{border:3px solid #30263f;border-radius:14px;box-shadow:0 5px 0 #30263f;background:#fff9eb;font-weight:1000}
+.game .controls #jumpBtn{background:linear-gradient(#ffc1c7,#ff9ea9)}
+.game .status{background:#fff9e9e8;border:1px solid #fff;border-radius:999px;padding:4px 8px;color:#42384d}
+
+@media(min-width:651px){
+  #overlay{
+    background:#fff3df;
+    backdrop-filter:none;
+    padding:18px 28px;
+    overflow:hidden;
+  }
+  #overlay .panel{
+    width:min(100%,760px);
+    max-width:760px;
+    max-height:100%;
+    overflow:hidden;
+    padding:10px 18px 14px;
+    background:transparent;
+    border:0;
+    border-radius:0;
+    box-shadow:none;
+  }
+  .menu-hero{
+    width:min(100%,620px);
+    height:108px;
+    margin:0 auto 6px;
+    border-radius:16px;
+  }
+  .menu-grandma{height:104px;margin:0}
+  .menu-grandma svg{height:100px}
+  .menu-kicker{margin:7px 0 5px}
+  .menu-tabs{margin:5px 0 7px}
+  .menu-tabs button{padding:8px 3px}
+  .menu-meta{margin:5px 0}
+  .home-cards{margin:7px 0;gap:7px}
+  .home-card{min-height:68px;padding:7px 8px}
+  .home-card-icon{margin-bottom:1px}
+  .home-card small{font-size:9px;margin-top:2px}
+  .menu-guide{margin:6px 0 4px}
+  #menuContent{max-height:none;overflow:visible}
+  #overlay.storepage .panel{
+    touch-action:pan-y;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  #overlay .panel h2{margin:5px 0 2px}
+  #overlay .panel p{margin:3px 0 7px}
+  #startBtn{min-height:48px;font-size:17px}
+}
+@media(max-width:650px){body{background:#f8eddf;padding:max(5px,env(safe-area-inset-top)) 5px max(5px,env(safe-area-inset-bottom))}.shell{background:transparent;padding:0;box-shadow:none;gap:7px}.game{border-width:3px;border-radius:18px}.game .scoreboard{top:10px;right:8px;gap:4px}.game .pill{padding:5px 6px;min-width:59px;font-size:13px}.game .pill small{font-size:8px}.tier-track{left:9px;top:11px;width:24%}.tier-track-label{font-size:8px}#tierNext{font-size:7px}.tier-track-rail{height:8px;margin-top:4px}.game .footer{bottom:43px}.game .controls .button{min-height:59px}#overlay{padding:8px}#overlay .panel{max-height:calc(100% - 18px);padding:12px;border-radius:21px}.menu-hero{height:100px}.menu-grandma{height:98px}.menu-grandma svg{height:93px}.home-card{min-height:80px;padding:8px}.home-card small{font-size:9px}.menu-kicker{margin:9px 0 6px}.menu-tabs{margin:6px 0}.menu-tabs button{padding:9px 2px}.store-item{min-height:151px}.store-item .preview{height:50px}.store-item .preview svg{height:47px}.menu-guide{font-size:8px}}
+@media(max-width:380px){.tier-track{top:69px;width:42%;background:#fff9e6c9;border-radius:8px;padding:4px}.game .pill{min-width:54px;font-size:12px;padding:4px}.game .scoreboard{gap:3px}.home-card small{display:none}.home-card{min-height:60px}.menu-hero{height:85px}.menu-grandma svg{height:80px}}
+
+/* Clothing store scrollbar: animated wardrobe rail + hanger. */
+#overlay .clothes-scroll-rail{
+  display:none;
+  position:absolute;
+  z-index:12;
+  pointer-events:none;
+  width:34px;
+}
+#overlay.clothespage .clothes-scroll-rail{display:block}
+#overlay.clothespage .panel{
+  touch-action:pan-y;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+#overlay.clothespage .panel::-webkit-scrollbar{width:0;height:0}
+.clothes-scroll-rail{
+  top:23%;
+  bottom:7%;
+  right:max(8px,calc(50% - 405px));
+}
+.clothes-pole{
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:16px;
+  width:4px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#241f32,#6f6478 45%,#241f32);
+  box-shadow:1px 0 0 #fff5;
+}
+.clothes-pole:before,
+.clothes-pole:after{
+  content:"";
+  position:absolute;
+  left:50%;
+  width:15px;
+  height:5px;
+  border-radius:999px;
+  background:#30263f;
+  transform:translateX(-50%);
+}
+.clothes-pole:before{top:-2px}
+.clothes-pole:after{bottom:-2px}
+.clothes-hanger{
+  position:absolute;
+  top:0;
+  left:-38px;
+  width:96px;
+  height:96px;
+  transform:translateY(0);
+  transform-origin:50% 12%;
+  will-change:transform,background-position;
+  pointer-events:none;
+  background-image:url('./assets/hanger-spritesheet.svg');
+  background-repeat:no-repeat;
+  background-size:576px 96px;
+  background-position:0 0;
+  filter:drop-shadow(0 3px 3px rgba(41,30,45,.2));
+}
+@media(max-width:650px){
+  .clothes-scroll-rail{
+    top:27%;
+    bottom:6%;
+    right:3px;
+    transform:scale(.88);
+    transform-origin:top right;
+  }
+  .clothes-hanger{
+    left:-32px;
+    width:84px;
+    height:84px;
+    background-size:504px 84px;
+  }
+}
+@media(prefers-reduced-motion:reduce){.menu-grandma,.hero-orbit,.hero-spark{animation:none}}
+
+/* Agent UI/UX review 2026-09-22: accessible and aligned store */
+/* Shop Agent Team: selected item, clear cost and responsive card actions. */
+#overlay.storepage .store-item{position:relative;transition:border-color .12s ease,box-shadow .12s ease}
+#overlay.storepage .store-item.selected{border-color:#2e7664;background:linear-gradient(180deg,#edfff1,#fff9ec);box-shadow:0 0 0 2px #2e766433}
+#overlay.storepage .store-item.selected::before{content:'AANGETROKKEN';position:absolute;top:5px;right:5px;font:900 8px system-ui;letter-spacing:.45px;color:#205a49;background:#cdf0d7;border:1px solid #2e7664;border-radius:7px;padding:3px 4px}
+#overlay.storepage .store-item:focus{outline:3px solid #256f9e;outline-offset:3px}
+#overlay.storepage .store-item button:disabled{opacity:1;color:#544759;background:#e9e1dd}
+#overlay.storepage .store-item.selected button:disabled{color:#205a49;background:#cdf0d7;border-color:#2e7664}
+#overlay.storepage .store-item .preview{flex-shrink:0}
+@media(prefers-reduced-motion:reduce){#overlay.storepage .store-item{transition:none}}
+/* Store cards have aligned actions; buttons remain easy to tap. */
+#overlay.storepage .store-item{min-width:0;justify-content:flex-start;text-align:center}
+#overlay.storepage .store-item b{line-height:1.25;overflow-wrap:anywhere}
+#overlay.storepage .store-item small{flex:1;line-height:1.35;overflow-wrap:anywhere}
+#overlay.storepage .store-item button{margin-top:auto;min-height:44px;cursor:pointer;line-height:1.2}
+#overlay.storepage .store-item button:disabled{cursor:default}
+/* Keep navigation discoverable as the wardrobe panel scrolls. */
+#overlay.storepage .menu-tabs{position:sticky;top:0;z-index:11;background:#fff8ec;padding:5px 0;border-radius:12px}
+#overlay.storepage .panel{scroll-padding-top:62px;overscroll-behavior:contain}
+/* Visible keyboard focus must not be hidden by the decorative rail. */
+#overlay button:focus-visible,#overlay .panel:focus-visible{outline:3px solid #256f9e;outline-offset:3px}
+#overlay.storepage .store-item:focus-within{border-color:#256f9e;box-shadow:0 0 0 2px #256f9e44}
+@media(max-width:650px){#overlay.storepage .menu-tabs button{min-height:44px}#overlay.storepage .store-item{padding:9px 7px;gap:6px}#overlay.storepage .store-item button{font-size:12px;padding:7px 4px}}
+@media(prefers-reduced-motion:reduce){#overlay.storepage .menu-tabs{scroll-behavior:auto}}
+
+/* Shop hanger: compact decorative indicator; sprite frames match JS sizes. */
+.clothes-hanger{width:72px;height:72px;left:-26px;background-size:432px 72px}
+@media(max-width:650px){.clothes-hanger{width:58px;height:58px;left:-19px;background-size:348px 58px}}
+/* One scroll container for wardrobe: no nested scroll conflicting with the hanger. */
+#overlay.clothespage #menuContent{max-height:none;overflow:visible}
+#overlay.clothespage .panel{overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#overlay.clothespage .panel::-webkit-scrollbar{display:none;width:0;height:0}
+#overlay.clothespage .clothes-scroll-rail{pointer-events:auto;touch-action:none;cursor:grab;width:44px;user-select:none;-webkit-user-select:none}
+#overlay.clothespage .clothes-scroll-rail:active{cursor:grabbing}
+@media(max-width:650px){#overlay.clothespage .clothes-scroll-rail{right:3px;transform:none;top:27%;bottom:6%}#overlay.clothespage .panel{max-height:calc(100% - 18px)}}
+
+/* Boutique mobile: one scroll surface and a clear rail gutter; no cards under hanger. */
+@media(max-width:650px){
+ #overlay.clothespage .panel{padding:12px 12px 18px;overflow-y:auto;overflow-x:hidden}
+ #overlay.clothespage .store-grid{grid-template-columns:minmax(0,1fr);gap:10px;margin:10px 49px 18px 0}
+ #overlay.clothespage .store-item{display:grid;grid-template-columns:72px minmax(0,1fr);grid-template-areas:'preview name' 'preview details' 'preview action';column-gap:10px;row-gap:4px;min-height:112px;padding:10px;text-align:left;align-items:center}
+ #overlay.clothespage .store-item .preview{grid-area:preview;width:72px;height:76px;align-self:center}
+ #overlay.clothespage .store-item b{grid-area:name;font-size:13px;line-height:1.2;padding-right:2px}
+ #overlay.clothespage .store-item small{grid-area:details;min-height:0;font-size:10px;line-height:1.2;flex:none}
+ #overlay.clothespage .store-item button{grid-area:action;min-height:44px;margin:0;font-size:11px}
+ #overlay.clothespage .store-item.selected::before{top:3px;right:3px;font-size:7px;padding:2px 3px}
+ #overlay.clothespage .clothes-scroll-rail{right:5px;width:44px;top:var(--wardrobe-rail-top,45%);bottom:6%;transform:none}
+ #overlay.clothespage .clothes-pole{left:21px}
+ #overlay.clothespage .clothes-hanger{left:0;width:44px;height:44px;background-size:264px 44px}
+ #overlay.clothespage .menu-tabs{background:#fff8ec;isolation:isolate}
+}
+
+/* Home screen: hero first, no redundant explanations. Preserve store and game-over UI. */
+#overlay:not(.storepage):not(.gameover) #menuContent,
+#overlay:not(.storepage):not(.gameover) #menuGuide,
+#overlay:not(.storepage):not(.gameover) #overlayTitle,
+#overlay:not(.storepage):not(.gameover) #overlayText{display:none!important}
+#overlay:not(.storepage):not(.gameover) #startBtn{display:block;margin:20px 0 2px;min-height:60px}
+#overlay:not(.storepage):not(.gameover) .menu-hero{display:grid}
+@media(max-width:650px){
+ #overlay:not(.storepage):not(.gameover){align-items:start}
+ #overlay:not(.storepage):not(.gameover) .panel{margin-top:clamp(8px,2dvh,24px);max-height:calc(100% - 24px);overflow-y:auto}
+ #overlay:not(.storepage):not(.gameover) #startBtn{margin-top:18px;min-height:60px}
+}
+
+/* Mobile viewport: use available screen space without covering controls. */
+@media(max-width:650px) and (orientation:portrait){
+ body{padding:max(3px,env(safe-area-inset-top)) 3px max(3px,env(safe-area-inset-bottom))}
+ .shell{gap:3px}
+ header{padding:0 5px;margin:0}
+ header h1{font-size:clamp(19px,5vw,25px);line-height:1.12}
+ .game{border-width:2px;border-radius:14px}
+ #overlay{padding:4px;overflow:hidden}
+ #overlay .panel{width:100%;max-width:none;max-height:100%;height:100%;padding:10px 12px 14px;border-width:2px;border-radius:15px;box-shadow:none;min-height:0}
+ #overlay:not(.storepage):not(.gameover){align-items:stretch}
+ #overlay:not(.storepage):not(.gameover) .panel{display:flex;flex-direction:column;margin:0;max-height:100%;overflow-y:auto}
+ #overlay:not(.storepage):not(.gameover) .menu-hero{height:clamp(122px,24dvh,205px);flex:0 0 auto}
+ #overlay:not(.storepage):not(.gameover) .menu-grandma{height:100%;display:grid;place-items:center}
+ #overlay:not(.storepage):not(.gameover) .menu-grandma svg{height:min(95%,174px);width:auto}
+ #overlay:not(.storepage):not(.gameover) .menu-kicker{margin:10px 0 6px}
+ #overlay:not(.storepage):not(.gameover) .menu-tabs{margin:5px 0 8px}
+ #overlay:not(.storepage):not(.gameover) .menu-meta{margin:5px 0}
+ #overlay:not(.storepage):not(.gameover) #startBtn{margin-top:auto;margin-bottom:4px;min-height:60px;flex:0 0 auto}
+ #overlay.storepage .panel{padding:8px 9px 12px;overflow-y:auto;overflow-x:hidden}
+ #overlay.storepage .menu-hero{height:66px}
+ #overlay.storepage .menu-grandma{height:64px}
+ #overlay.storepage .menu-grandma svg{height:62px}
+ #overlay.storepage .menu-kicker{margin:5px 0 3px;font-size:9px}
+ #overlay.storepage .menu-tabs{margin:4px 0 6px}
+ #overlay.storepage .menu-meta{margin:5px 0}
+ #overlay.clothespage .store-grid{margin:8px 48px 12px 0;gap:8px}
+ #overlay.clothespage .store-item{min-height:100px;padding:8px;grid-template-columns:62px minmax(0,1fr);column-gap:8px;row-gap:3px}
+ #overlay.clothespage .store-item .preview{width:62px;height:65px}
+ #overlay.clothespage .store-item .preview svg{max-width:100%;height:53px}
+ #overlay.clothespage .store-item button{min-height:44px}
+ #overlay.clothespage .clothes-scroll-rail{right:3px;top:var(--wardrobe-rail-top,45%);bottom:4%}
+}
+@media(max-width:650px) and (orientation:portrait) and (max-height:620px){
+ #overlay:not(.storepage):not(.gameover) .menu-hero{height:100px}
+ #overlay:not(.storepage):not(.gameover) #startBtn{margin-top:12px}
+}
+
+/* Centered home hub with square shop destinations. */
+#overlay:not(.storepage):not(.gameover) .menu-hero{display:grid;place-items:center;justify-items:center;width:100%;margin-inline:auto}
+#overlay:not(.storepage):not(.gameover) .menu-grandma{width:100%;margin:0 auto;display:grid;place-items:center}
+#overlay:not(.storepage):not(.gameover) .menu-grandma svg{display:block;margin:auto}
+#overlay:not(.storepage):not(.gameover) .hero-shadow{left:50%;transform:translateX(-50%)}
+#overlay:not(.storepage):not(.gameover) #menuTabs{display:none!important}
+#overlay:not(.storepage):not(.gameover) #menuContent{display:block!important;max-height:none;overflow:visible;width:100%;margin:12px 0 0;flex:0 0 auto}
+#overlay:not(.storepage):not(.gameover) .menu-meta #menuRecord{display:none}
+#overlay:not(.storepage):not(.gameover) .menu-meta{justify-content:center}
+.home-hub{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.home-hub-tile{aspect-ratio:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;border:3px solid #493e49;border-radius:18px;background:linear-gradient(155deg,#fff4d6,#e8edff);box-shadow:0 4px 0 #493e49;color:#302633;font:inherit;cursor:pointer;touch-action:manipulation}
+.home-hub-tile:nth-child(2){background:linear-gradient(155deg,#e1f4ec,#e0eaff)}
+.home-hub-tile .tile-icon{font-size:clamp(36px,9vw,55px);line-height:1.1}
+.home-hub-tile b{font-size:clamp(16px,4vw,21px);line-height:1.1}
+.home-hub-tile:active{transform:translateY(3px);box-shadow:0 1px 0 #493e49}
+.home-hub-tile:focus-visible{outline:3px solid #256f9e;outline-offset:3px}
+.home-achievement{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;border:2px solid #493e49;border-radius:14px;background:#fffaf2;padding:12px 15px;color:#30263f}
+.home-achievement small{font:900 11px system-ui;letter-spacing:.5px}
+.home-achievement strong{font:900 20px system-ui;white-space:nowrap}
+#overlay.storepage #menuTabs .menu-back{background:#fff8ec;font-size:12px}
+@media(max-width:650px) and (orientation:portrait){
+ #overlay:not(.storepage):not(.gameover) .menu-hero{flex:1 1 auto;min-height:105px;max-height:260px;height:auto}
+ #overlay:not(.storepage):not(.gameover) .menu-kicker{margin:5px 0}
+ #overlay:not(.storepage):not(.gameover) #menuContent{margin:9px 0 0}
+ .home-hub{gap:10px}
+ .home-hub-tile{border-radius:16px;gap:5px;padding:6px;max-height:185px}
+ .home-hub-tile .tile-icon{font-size:clamp(34px,9vw,47px)}
+ .home-hub-tile b{font-size:16px}
+ .home-achievement{padding:10px 12px}
+ .home-achievement small{font-size:10px}
+ .home-achievement strong{font-size:18px}
+ #overlay:not(.storepage):not(.gameover) #startBtn{margin-top:auto;min-height:58px}
+}
+@media(max-width:650px) and (orientation:portrait) and (max-height:620px){
+ #overlay:not(.storepage):not(.gameover) .menu-hero{min-height:70px;max-height:100px}
+ .home-hub{gap:6px}
+ .home-hub-tile{max-height:120px}
+ .home-achievement{padding:6px 10px}
+}
+@media(prefers-reduced-motion:reduce){.home-hub-tile{transition:none}}
+
+
+/* Desktop home compatibility: keep the complete hub inside the game frame. */
+@media(min-width:651px){
+ #overlay:not(.storepage):not(.gameover) .panel{
+   height:100%;
+   max-height:100%;
+   display:flex;
+   flex-direction:column;
+   overflow:hidden;
+   padding:8px 18px 10px;
+ }
+ #overlay:not(.storepage):not(.gameover) .menu-hero{
+   width:min(100%,620px);
+   height:clamp(88px,14dvh,112px);
+   min-height:88px;
+   flex:0 0 clamp(88px,14dvh,112px);
+   margin:0 auto 3px;
+ }
+ #overlay:not(.storepage):not(.gameover) .menu-grandma{
+   height:100%;
+ }
+ #overlay:not(.storepage):not(.gameover) .menu-grandma svg{
+   height:min(96%,104px);
+ }
+ #overlay:not(.storepage):not(.gameover) .menu-kicker{
+   margin:3px 0 2px;
+   line-height:1.1;
+ }
+ #overlay:not(.storepage):not(.gameover) .menu-meta{
+   margin:2px 0 4px;
+   flex:0 0 auto;
+ }
+ #overlay:not(.storepage):not(.gameover) #menuContent{
+   margin:3px 0 5px;
+   flex:0 0 auto;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub{
+   width:auto;
+   max-width:none;
+   grid-template-columns:repeat(2,clamp(108px,14dvh,150px));
+   justify-content:center;
+   gap:8px 10px;
+   margin:0 auto;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub-tile{
+   width:100%;
+   aspect-ratio:1 / 1;
+   max-height:none;
+   border-radius:16px;
+   gap:5px;
+   padding:8px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub-tile .tile-icon{
+   font-size:clamp(30px,5dvh,44px);
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub-tile b{
+   font-size:15px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-achievement{
+   padding:7px 11px;
+   min-height:38px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-achievement small{
+   font-size:9px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-achievement strong{
+   font-size:16px;
+ }
+ #overlay:not(.storepage):not(.gameover) #startBtn{
+   margin-top:auto;
+   margin-bottom:0;
+   min-height:44px;
+   flex:0 0 44px;
+ }
+}
+@media(min-width:651px) and (max-height:650px){
+ #overlay:not(.storepage):not(.gameover) .menu-hero{
+   height:82px;
+   min-height:82px;
+   flex-basis:82px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub{
+   grid-template-columns:repeat(2,104px);
+   gap:6px 9px;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-achievement{
+   min-height:34px;
+   padding:5px 10px;
+ }
+}
+
+/* In-world recovery: the balance arc replaces the ordinary score HUD, never a popup. */
+.game.recovery-mode .scoreboard,.game.recovery-mode .tier-track{visibility:hidden}
+
+/* Release marker: mirrors the visible version workflow used in DONE. */
+.app-version{
+  margin:10px auto 0;
+  width:max-content;
+  max-width:100%;
+  font:800 9px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.7px;
+  color:#857584;
+  opacity:.82;
+}
+#overlay.gameover .app-version{display:none}
+@media(max-width:650px){.app-version{margin-top:7px;font-size:8px}}
