@@ -88,7 +88,7 @@ Targeted re-check
 
 ## Huidige architectuur
 
-Huidige release: **V.1.0.0.1**.
+Huidige release: **V.1.0.0.2**.
 
 ```text
 dont-fall-granny/
@@ -114,7 +114,7 @@ dont-fall-granny/
 ```
 
 ### Releaseversies
-Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De versie staat in het hoofdmenu via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
+Net als bij DONE is de zichtbare versie onderdeel van de werkflow. De canonieke versie staat als `APP_VERSION` in `app.js` en wordt in het hoofdmenu gemount via `#appVersion`. Verhoog die bij een afgeronde, betekenisvolle Team GO-wijziging en neem dezelfde versie op in de commitboodschap van de releasewijziging. Refactors zonder functionele wijziging mogen binnen dezelfde releasebundel vallen.
 
 ## Code-routekaart
 
