@@ -360,8 +360,8 @@ function showMenu(page='home'){
  menuContent.innerHTML='<div class="store-grid">'+items.map(item=>{
  const owned=page==='clothes'?ownedClothes.includes(item.id):ownedGadgets.includes(item.id);
  const selected=page==='clothes'&&selectedClothes===item.id;
- const symbol=page==='clothes'?\`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>\`:(item.id==='plane'?'✈️':'🛵');
- return \`<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>\`
+ const symbol=page==='clothes'?`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>`:(item.id==='plane'?'✈️':'🛵');
+ return `<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>`
  }).join('')+'</div>';
  menuContent.querySelectorAll('[data-buy]').forEach(btn=>btn.addEventListener('click',()=>{
  const item=items.find(x=>x.id===btn.dataset.buy);if(!item)return;
