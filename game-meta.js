@@ -47,5 +47,33 @@ const worldRules=[
  {id:'candy',label:'Sugar rush · dubbele munten',speed:1.04,gravity:1850,jump:-700,coinValue:2,candyRate:.9,attackBonus:.05},
  {id:'space',label:'Lage zwaartekracht',speed:1.03,gravity:1320,jump:-585,coinValue:1,candyRate:1.1,attackBonus:.08}
 ];
-window.GrannyMeta={version:'V.1.1.0.0',achievements,missionPool,weeklyPool,unlocks,cosmetics,worldRules};
+const tieredAchievements=[
+ {id:'perfects',icon:'✨',name:'Stalen zenuwen',stat:'perfects',tiers:[10,50,150,500]},
+ {id:'near-misses',icon:'⚡',name:'Rakelings',stat:'nearMisses',tiers:[25,100,300,750]},
+ {id:'coins',icon:'🪙',name:'Muntenmagneet',stat:'coinsCollected',tiers:[250,1000,3000,7500]},
+ {id:'distance',icon:'🏁',name:'Lange adem',stat:'totalDistance',tiers:[5000,20000,50000,100000]}
+];
+const difficultyModes={
+ calm:{id:'calm',label:'Rustig',speed:.9,recovery:.12,reward:.85},
+ normal:{id:'normal',label:'Normaal',speed:1,recovery:0,reward:1},
+ chaos:{id:'chaos',label:'Chaos',speed:1.13,recovery:-.06,reward:1.35}
+};
+const rankLevels=[
+ {level:1,name:'Buurtwandelaar',xp:0},{level:2,name:'Stoepheld',xp:250},{level:3,name:'Parkpro',xp:700},
+ {level:4,name:'Stadsstapper',xp:1500},{level:5,name:'Wereldoma',xp:2800},{level:6,name:'Kosmische Granny',xp:5000}
+];
+const worldChallenges=[
+ {id:'neighborhood-rush',label:'Hindernissenregen',icon:'🏡'},
+ {id:'park-sprint',label:'Park sprint',icon:'🌳'},
+ {id:'city-rush',label:'Spitsgolf',icon:'🏙️'},
+ {id:'desert-storm',label:'Zandstorm',icon:'🌵'},
+ {id:'night-scare',label:'Nachtvlucht',icon:'🌙'},
+ {id:'sugar-rush',label:'Sugar Rush',icon:'🍬'},
+ {id:'meteor-rain',label:'Meteorenregen',icon:'🚀'}
+];
+const collectionSets=[
+ {id:'golden-granny',name:'Gouden Granny',requires:['gold','cane-gold'],reward:'gold-trail'},
+ {id:'star-style',name:'Sterrenstijl',requires:['midnight','glasses-star'],reward:'star-frame'}
+];
+window.GrannyMeta={version:'V.1.2.0.0',achievements,missionPool,weeklyPool,unlocks,cosmetics,worldRules,tieredAchievements,difficultyModes,rankLevels,worldChallenges,collectionSets};
 })();
