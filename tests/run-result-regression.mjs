@@ -48,7 +48,7 @@ assert.match(app,/finalizeRun\(\);[\s\S]*?RunSummaryBuilder\.build\(/);
 assert.match(app,/postRun\.showRescue\(/);
 assert.match(app,/postRun\.showResult\(/);
 assert.match(app,/if\(remaining<=0\)\{showRunResult\(\);return\}/);
-assert.ok(html.indexOf('game-state.js?v=16')<html.indexOf('run-results.js?v=16'));
+assert.ok(html.indexOf('game-state.js?v=16')<html.indexOf('run-results.js?v=17'));
 assert.ok(html.indexOf('run-results.js?v=16')<html.indexOf('app.js?v=16'));
 assert.match(workflow,/node tests\/run-result-regression\.mjs/);
 assert.match(workflow,/cp style\.css app\.js[^\n]+game-state\.js run-results\.js sw\.js _site\//);
