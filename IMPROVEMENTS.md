@@ -14,6 +14,7 @@ Dit bestand is de **bron van waarheid** voor welke verbeteringsrondes de gebruik
 | Nummer | Onderwerp | Ontvangen | Status | Opmerkingen |
 | --- | --- | --- | --- | --- |
 | **8** | Technische polish — centrale `GameStateController` met legale transities, state-aware input, debug-HUD (`?debug=1`) en regressietests | 2026-11-16 | **In uitvoering** | `game-state.js` is aangemaakt op `main`. Integratie met `app.js`, debug-HUD, testen en deployment zijn **nog niet** voltooid. Niet als afgerond presenteren. |
+| **9** | Gameplay — Granny Combo Routes: vaardigheid en vrijwillig risico belonen via een centrale `ComboController` | 2026-11-16 | **Ontvangen** | Near Miss verhoogt combo; succesvolle Granny Situation verhoogt combo; SAFE/PERFECT Recovery behoudt of verhoogt combo; vallen of mislukte Recovery beëindigt combo. Veilige route blijft altijd beschikbaar zonder straf. Combo-events alleen in toegestane toestanden van `GameStateController` (#8). Eerste gameplayverbetering na technische polish. Nog niet als geïmplementeerd of getest bevestigd. |
 
 > Van verbeteringen 1 t/m 7 worden de exacte oorspronkelijke genummerde omschrijvingen nog niet als bevestigd beschouwd. Vul deze pas in als het nummer ondubbelzinnig is herleid tot de oorspronkelijke opdracht. Zo voorkomen we verkeerde dubbele registraties.
 
