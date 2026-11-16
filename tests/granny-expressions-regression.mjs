@@ -32,9 +32,9 @@ assert.ok(c.pose(Expression.RECOVERY,false).tilt>0);
 const methods=['beginPath','arc','fill','moveTo','quadraticCurveTo','stroke','save','restore','ellipse'];
 const ctx={};for(const m of methods)ctx[m]=()=>{};c.drawFace(ctx,100,200,0,Expression.DANGER);
 c.drawFace(ctx,100,200,0,Expression.PERFECT,true);
-for(const label of ['near_miss','perfect','safe','fall']){
- assert.match(app,new RegExp("grandmaExpressions\\.react\\('"+label+"'"));
-}
+assert.match(app,/grandmaExpressions\.react\('near_miss'/);
+assert.match(app,/grandmaExpressions\.react\('fall'/);
+assert.match(app,/grandmaExpressions\.react\(result==='perfect'\?'perfect':'safe'\)/);
 assert.match(app,/grandmaExpressions\.drawFace\(ctx,x,y,bob,mood/);
 assert.match(app,/grandmaExpressions\.resolve\(/);
 assert.ok(html.indexOf('granny-expressions.js?v=14')<html.indexOf('app.js?v=14'),'Expressions must load before main game');
