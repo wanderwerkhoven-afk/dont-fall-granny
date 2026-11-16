@@ -614,3 +614,36 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .pre-run-settings label{flex-basis:100%}
 }
 @media(prefers-reduced-motion:reduce){.event-banner{transition:none}}
+
+/* Storybook world-map: always above the pause/start menu, never blocking the playfield when closed. */
+.world-map-button{position:absolute;right:12px;top:12px;z-index:12;display:flex;align-items:center;gap:7px;background:#fff8e9;color:#352b49;border:2px solid #352b49;border-radius:11px;padding:8px 11px;box-shadow:3px 3px 0 #352b49;font:900 12px/1 system-ui;cursor:pointer;touch-action:manipulation}
+.world-map-button span:first-child{font-size:19px;line-height:1}
+.world-map-button:focus-visible,.world-map-close:focus-visible{outline:3px solid #f8ba63;outline-offset:3px}
+.world-map-overlay[hidden]{display:none!important}
+.world-map-overlay{position:absolute;inset:0;z-index:200;display:grid;place-items:center;background:rgba(34,24,49,.82);padding:12px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.world-map-panel{width:min(100%,670px);max-height:calc(100% - 6px);overflow:auto;overscroll-behavior:contain;background:#fff8eb;color:#352b49;border:3px solid #352b49;border-radius:18px;box-shadow:5px 5px 0 #241b34;padding:clamp(12px,2.8vw,22px);text-align:left;touch-action:pan-y}
+.world-map-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.world-map-heading small{font:900 10px system-ui;letter-spacing:1.4px;color:#b07586}
+.world-map-heading h2{font:1000 clamp(20px,3vw,29px)/1.1 system-ui;margin:5px 0}
+.world-map-heading p{font:600 12px system-ui;margin:5px 0;color:#766879}
+.world-map-close{background:#f7c5ca;border:2px solid #352b49;border-radius:9px;min-width:36px;min-height:36px;font-size:18px;font-weight:900;cursor:pointer;touch-action:manipulation}
+.world-map-progress-label{display:flex;justify-content:space-between;gap:8px;font:900 10px system-ui}
+.world-map-progress-track{height:12px;border-radius:12px;border:2px solid #352b49;background:#eadbdb;margin:7px 0 15px;overflow:hidden}
+.world-map-progress-track>div{height:100%;width:0;background:#f5b768;transition:width .25s}
+.world-map-route{list-style:none;margin:0;padding:0 0 0 4px;display:grid;gap:6px}
+.world-map-stop{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:9px;padding:8px 9px;border:2px solid #d7c4c4;border-radius:12px;background:#fffdf6}
+.world-map-stop::before{content:"";position:absolute;top:100%;left:21px;height:11px;width:3px;background:#b7a7b9}
+.world-map-stop:last-child::before{display:none}
+.world-map-stop.is-current{background:#ffe8b2;border-color:#352b49;box-shadow:2px 2px 0 #352b49}
+.world-map-stop.is-locked{opacity:.58}
+.world-map-marker{display:grid;place-items:center;width:26px;height:26px;border:2px solid #352b49;border-radius:50%;background:#e8dcef;color:#352b49;font-weight:900;font-size:14px}
+.world-map-stop.is-current .world-map-marker{background:#f4ae58}
+.world-map-stop.is-unlocked:not(.is-current) .world-map-marker{background:#b3dfc1}
+.world-map-stop-copy{display:grid;gap:2px;min-width:0}
+.world-map-stop-copy strong{font:900 12px system-ui}
+.world-map-stop-copy span{font:500 10px system-ui;color:#6b6070;white-space:normal}
+.world-map-distance{font:900 10px system-ui;white-space:nowrap}
+.world-map-footnote{font:600 10px/1.4 system-ui;color:#77687c;margin:10px 0 0}
+@media(max-width:650px){.world-map-button{top:9px;right:9px;padding:6px 8px;font-size:10px}.world-map-button span:first-child{font-size:16px}.world-map-panel{max-height:100%;padding:11px}.world-map-overlay{padding:6px}.world-map-stop{padding:6px;gap:6px;grid-template-columns:24px minmax(0,1fr) auto}.world-map-stop-copy span{font-size:9px}.world-map-distance{font-size:9px}.world-map-marker{width:23px;height:23px}}
+@media(max-width:430px){.world-map-button span:last-child{display:none}.world-map-button{width:36px;height:36px;justify-content:center}.world-map-progress-label{font-size:9px}.world-map-stop-copy strong{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.world-map-progress-track>div{transition:none}}
