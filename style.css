@@ -1095,3 +1095,260 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .home-main-tile{min-height:66px;font-size:15px;border-radius:12px;padding:8px;gap:6px}
  .home-main-icon{font-size:29px;width:32px;height:32px}
 }
+
+/* Granny Storybook System — consistent visual treatment across game functions. */
+:root{
+ --granny-ink:#29243a;
+ --granny-paper:#fff9ee;
+ --granny-mint:#cce7d9;
+ --granny-gold:#ffcf68;
+ --granny-shadow:4px 5px 0 var(--granny-ink);
+}
+#overlay .store-brand{display:none}
+@media(min-width:651px){
+ body:has(#overlay.storepage:not(.hidden)) .shell>header{display:none}
+ body:has(#overlay.storepage:not(.hidden)) .shell{padding:clamp(12px,1vw,22px)}
+ body:has(#overlay.storepage:not(.hidden)) .game{
+  border:clamp(3px,.22vw,5px) solid var(--granny-ink);
+  border-radius:clamp(20px,2.5vw,40px)
+ }
+ #overlay.storepage:not(.hidden){
+  background:var(--granny-paper);backdrop-filter:none;
+  padding:clamp(14px,2.3vw,44px);overflow:hidden;align-items:stretch
+ }
+ #overlay.storepage:not(.hidden)>.panel{
+  display:grid;grid-template-columns:minmax(260px,.38fr) minmax(0,1fr);
+  grid-template-rows:auto auto auto minmax(0,1fr);
+  column-gap:clamp(22px,3vw,56px);row-gap:clamp(12px,2vh,24px);
+  width:100%;max-width:1700px;height:100%;max-height:100%;
+  margin:auto;padding:0;background:transparent;border:0;box-shadow:none;
+  border-radius:0;overflow:hidden;touch-action:auto;
+  text-align:left
+ }
+ #overlay.storepage .store-brand{
+  display:block;grid-column:1;grid-row:1;align-self:end;min-width:0
+ }
+ #overlay.storepage .store-brand h2{
+  margin:0 0 10px!important;color:var(--granny-ink);
+  font:1000 clamp(29px,2.5vw,48px)/1.08 ui-rounded,system-ui,sans-serif;
+  letter-spacing:-.035em;text-wrap:balance
+ }
+ #overlay.storepage .store-brand p{
+  margin:0!important;color:#8c758d;
+  font:600 clamp(13px,1vw,18px)/1.5 system-ui
+ }
+ #overlay.storepage .menu-hero{
+  grid-column:1;grid-row:2;justify-self:stretch;align-self:stretch;
+  height:clamp(145px,30vh,310px)!important;min-height:145px;
+  max-height:none;width:100%;margin:0!important;
+  border:3px solid var(--granny-ink);
+  border-radius:clamp(18px,2vw,27px);
+  background:radial-gradient(circle at 50% 50%,#ffefb7 0 30%,#d8eddd 31% 66%,#afd7ca 67%);
+  overflow:hidden
+ }
+ #overlay.storepage .menu-grandma{height:83%;display:flex;align-items:center;justify-content:center}
+ #overlay.storepage .menu-grandma svg{height:92%;width:auto;max-width:90%}
+ #overlay.storepage .hero-orbit{width:44%;height:75%;left:28%;top:12%}
+ #overlay.storepage .orbit-b{width:57%;height:87%;left:21.5%;top:6%}
+ #overlay.storepage .menu-meta{
+  grid-column:1;grid-row:3;margin:0;gap:8px;flex-wrap:wrap;
+  display:flex;justify-content:flex-start
+ }
+ #overlay.storepage #menuWallet,#overlay.storepage .menu-record{
+  background:#fffdf7;border:2px solid var(--granny-ink);
+  box-shadow:2px 3px 0 var(--granny-ink);
+  padding:9px 12px;border-radius:999px;
+  font:900 clamp(11px,.85vw,15px) system-ui
+ }
+ #overlay.storepage .menu-kicker{display:none}
+ #overlay.storepage .menu-tabs{
+  grid-column:1;grid-row:4;display:flex;flex-direction:column;
+  gap:clamp(7px,1vh,13px);align-self:start;position:static;
+  padding:0;background:transparent;margin:0;
+  overflow:visible;z-index:2
+ }
+ #overlay.storepage .menu-tabs button{
+  width:100%;min-height:clamp(48px,7vh,68px);
+  padding:10px 16px;border:3px solid var(--granny-ink);
+  border-radius:clamp(12px,1vw,17px);
+  background:#fffdf7;box-shadow:3px 4px 0 var(--granny-ink);
+  font:900 clamp(14px,1vw,20px) ui-rounded,system-ui,sans-serif;
+  color:var(--granny-ink);text-align:left;cursor:pointer
+ }
+ #overlay.storepage .menu-tabs button.active{
+  background:#ffda83;box-shadow:3px 4px 0 var(--granny-ink)
+ }
+ #overlay.storepage .menu-tabs button:hover{background:#fff1d3}
+ #overlay.storepage .menu-tabs button.active:hover{background:#ffda83}
+ #overlay.storepage #menuContent{
+  grid-column:2;grid-row:1 / 5;align-self:stretch;
+  min-width:0;max-width:none;width:100%;max-height:100%;
+  overflow:auto!important;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#c9b3c3 transparent;
+  padding:clamp(12px,2vw,30px);margin:0!important;
+  border:3px solid var(--granny-ink);
+  border-radius:clamp(20px,2vw,30px);
+  background:#fffdf6;
+  box-shadow:4px 5px 0 var(--granny-ink);
+  scroll-padding-top:20px
+ }
+ #overlay.storepage .menu-guide,#overlay.storepage #overlayTitle,
+ #overlay.storepage #overlayText,#overlay.storepage #countdown,
+ #overlay.storepage #shop,#overlay.storepage #startBtn,
+ #overlay.storepage #runSummary,#overlay.storepage .app-version,
+ #overlay.storepage .home-brand,#overlay.storepage .home-main-nav{
+  display:none!important
+ }
+ #overlay.storepage .store-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(13px,1.5vw,23px);margin:0;max-width:none
+ }
+ #overlay.storepage .store-item{
+  min-width:0;min-height:245px;padding:clamp(12px,1.5vw,22px);
+  border:3px solid var(--granny-ink);border-radius:19px;
+  background:#fff9ef;box-shadow:3px 4px 0 var(--granny-ink);
+  display:flex;flex-direction:column;gap:9px;text-align:center;
+  justify-content:flex-start;align-items:center
+ }
+ #overlay.storepage .store-item .preview{
+  width:clamp(75px,7vw,116px);height:clamp(75px,7vw,116px);
+  flex-shrink:0;border:2px solid #b9d7c8;border-radius:17px;
+  background:radial-gradient(circle,#fff5d9,#c7e5d5);
+  font-size:clamp(36px,4vw,63px)
+ }
+ #overlay.storepage .store-item .preview svg{width:85%;height:85%}
+ #overlay.storepage .store-item b{
+  font:1000 clamp(15px,1.1vw,20px)/1.25 system-ui;
+  color:var(--granny-ink)
+ }
+ #overlay.storepage .store-item small{
+  flex:1;font:600 clamp(11px,.8vw,15px)/1.4 system-ui;
+  color:#796b7e
+ }
+ #overlay.storepage .store-item button{
+  width:100%;min-height:46px;margin-top:auto;padding:9px;
+  border:2px solid var(--granny-ink);border-radius:12px;
+  background:var(--granny-gold);color:var(--granny-ink);
+  font:900 clamp(11px,.83vw,15px) system-ui;cursor:pointer
+ }
+ #overlay.storepage .store-item.selected{
+  background:#eff9ef;border-color:#327365;
+  box-shadow:3px 4px 0 #327365
+ }
+ #overlay.storepage .store-item.selected button{background:#bde5c4}
+ #overlay.storepage .collection-preview,#overlay.storepage .rank-card{
+  border:3px solid var(--granny-ink);border-radius:18px;
+  padding:clamp(15px,2vw,26px);background:#fff0c4;
+  box-shadow:3px 4px 0 var(--granny-ink);margin:0 0 20px
+ }
+ #overlay.storepage .collection-preview b,#overlay.storepage .rank-card b{
+  font:1000 clamp(16px,1.4vw,25px) system-ui
+ }
+ #overlay.storepage .collection-preview span,#overlay.storepage .rank-card small{
+  font:700 clamp(12px,.9vw,16px) system-ui;color:#77677b
+ }
+ #overlay.storepage .progress-section h3{
+  font:1000 clamp(16px,1.15vw,22px) system-ui;
+  letter-spacing:.2px;color:var(--granny-ink);
+  margin:26px 0 12px
+ }
+ #overlay.storepage .mission-card,#overlay.storepage .achievement-card,
+ #overlay.storepage .mastery-grid>div,#overlay.storepage .unlock-step,
+ #overlay.storepage .records-grid>span,#overlay.storepage .set-bonuses>div{
+  background:#fff9ef;border:2px solid var(--granny-ink);
+  border-radius:15px;padding:15px;
+  box-shadow:2px 3px 0 var(--granny-ink)
+ }
+ #overlay.storepage .mission-card{gap:14px;margin:10px 0}
+ #overlay.storepage .mission-card b{font-size:15px}
+ #overlay.storepage .mission-card small{font-size:12px}
+ #overlay.storepage .mission-card strong{font-size:13px}
+ #overlay.storepage .achievement-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+ #overlay.storepage .achievement-card b{font-size:14px}
+ #overlay.storepage .achievement-card small,#overlay.storepage .achievement-card strong{font-size:11px}
+ #overlay.storepage .records-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+ #overlay.storepage .records-grid>span{font-size:14px}
+ #overlay.storepage .mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #overlay.storepage .mastery-grid b{font-size:14px}
+ #overlay.storepage .mastery-grid small{font-size:11px}
+ #overlay.storepage .collection-preview{display:flex;align-items:center;flex-wrap:wrap}
+ #overlay.storepage .set-bonuses{gap:12px}
+ #overlay.storepage .set-bonuses b{font-size:14px}
+ #overlay.storepage .set-bonuses small{font-size:11px}
+ #overlay.clothespage .clothes-scroll-rail{display:none!important}
+ #overlay.clothespage .store-grid{margin:0;gap:clamp(13px,1.5vw,23px);grid-template-columns:repeat(3,minmax(0,1fr))}
+ #overlay.clothespage .store-item{
+  display:flex;flex-direction:column;min-height:245px;
+  text-align:center;gap:9px;padding:clamp(12px,1.5vw,22px)
+ }
+ #overlay.clothespage .store-item .preview{
+  width:clamp(75px,7vw,116px);height:clamp(75px,7vw,116px)
+ }
+ #overlay.clothespage .store-item button{min-height:46px}
+}
+@media(min-width:651px) and (max-width:1200px){
+ #overlay.storepage:not(.hidden)>.panel{grid-template-columns:minmax(210px,.38fr) minmax(0,1fr);gap:18px}
+ #overlay.storepage .store-grid,#overlay.clothespage .store-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #overlay.storepage .achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #overlay.storepage .menu-tabs button{min-height:43px;font-size:14px}
+ #overlay.storepage .menu-hero{height:clamp(130px,23vh,220px)!important}
+}
+@media(max-width:650px){
+ #overlay.storepage:not(.hidden){background:#fff9ee;backdrop-filter:none}
+ #overlay.storepage:not(.hidden)>.panel{
+  width:100%;height:100%;max-height:100%;background:#fff9ee;
+  border:2px solid var(--granny-ink);border-radius:16px;
+  overflow-y:auto;overflow-x:hidden;padding:12px;
+  scrollbar-width:none
+ }
+ #overlay.storepage .store-brand{display:block;padding:6px 2px 8px;text-align:left}
+ #overlay.storepage .store-brand h2{margin:0!important;font:1000 clamp(24px,5.5vw,32px)/1.1 system-ui;color:var(--granny-ink)}
+ #overlay.storepage .store-brand p{font:600 12px/1.4 system-ui;color:#8c758d;margin:6px 0 0!important}
+ #overlay.storepage .menu-hero{height:112px;margin:5px 0!important;border:2px solid var(--granny-ink);border-radius:15px}
+ #overlay.storepage .menu-grandma,#overlay.storepage .menu-grandma svg{height:105px}
+ #overlay.storepage .menu-tabs{
+  display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;
+  position:sticky;top:0;z-index:11;padding:9px 2px;
+  background:#fff9ee;margin:0;scrollbar-width:none
+ }
+ #overlay.storepage .menu-tabs button{
+  flex:0 0 auto;min-height:44px;padding:9px 13px;
+  border:2px solid var(--granny-ink);border-radius:10px;
+  background:#fffdf7;box-shadow:2px 2px 0 var(--granny-ink);
+  font:900 12px system-ui;white-space:nowrap
+ }
+ #overlay.storepage .menu-tabs button.active{background:#ffda83}
+ #overlay.storepage .menu-meta{margin:6px 0;gap:8px}
+ #overlay.storepage .menu-record,#overlay.storepage #menuWallet{
+  border:2px solid var(--granny-ink);border-radius:999px;background:#fffdf7;
+  padding:7px 10px;box-shadow:2px 2px 0 var(--granny-ink)
+ }
+ #overlay.storepage #menuContent{
+  width:100%;margin:8px 0 0!important;max-width:none;
+  padding:4px 3px 18px;overflow:visible!important
+ }
+ #overlay.storepage .store-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+ #overlay.clothespage .store-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+ #overlay.clothespage .store-item,#overlay.storepage .store-item{
+  display:flex;flex-direction:column;min-height:198px;padding:10px 7px;
+  text-align:center;gap:6px;border:2px solid var(--granny-ink);
+  border-radius:13px;background:#fff9ef;box-shadow:2px 3px 0 var(--granny-ink)
+ }
+ #overlay.clothespage .store-item .preview,#overlay.storepage .store-item .preview{
+  width:70px;height:70px;flex-shrink:0
+ }
+ #overlay.clothespage .store-item b,#overlay.storepage .store-item b{font-size:13px}
+ #overlay.clothespage .store-item small,#overlay.storepage .store-item small{font-size:10px;flex:1}
+ #overlay.clothespage .store-item button,#overlay.storepage .store-item button{
+  width:100%;min-height:44px;margin-top:auto;font-size:11px
+ }
+ #overlay.clothespage .clothes-scroll-rail{display:none!important}
+ #overlay.storepage .progress-section h3{font-size:15px;margin:18px 0 9px}
+ #overlay.storepage .achievement-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #overlay.storepage .records-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #overlay.storepage .mastery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #overlay.storepage .collection-preview,#overlay.storepage .rank-card{border:2px solid var(--granny-ink);border-radius:12px;padding:12px;background:#fff0c4}
+}
+@media(prefers-reduced-motion:reduce){
+ #overlay.storepage .menu-grandma,#overlay.storepage .hero-orbit{animation:none!important}
+}
