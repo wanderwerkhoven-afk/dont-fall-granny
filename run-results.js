@@ -96,6 +96,7 @@ class RunResultOverlay{
   const n=Math.max(0,Math.ceil(seconds));
   this.timer.textContent=n+' s';
   this.timer.style.setProperty('--rescue-progress',Math.max(0,Math.min(1,seconds/10))*100+'%');
+  this.root.style.setProperty('--rescue-progress',Math.max(0,Math.min(1,seconds/10))*100+'%');
  }
  showResult(summary,{reducedMotion=false}={}){
   this.root.hidden=false;this.phase='result';this.visibleAt=performance.now();
