@@ -1598,3 +1598,113 @@ body:has(#overlay.hidden) .game>canvas{
   transform:rotate(-9deg) translateY(3px)!important;
  }
 }
+
+/* V11 / Improvement 11 — Fall -> Rescue -> Result -> Retry.
+ * The canvas stays visible. Only a small floating panel is interactive.
+ */
+.post-run-overlay[hidden],.post-run-result[hidden],.post-run-rescue[hidden],
+.post-run-reward[hidden]{display:none!important}
+.post-run-overlay{position:absolute;inset:0;z-index:24;pointer-events:none;
+ --post-granny-x:14%;--post-granny-y:56%;
+ font-family:ui-rounded,system-ui,-apple-system,sans-serif;color:#30263f}
+.post-run-dim{position:absolute;inset:0;
+ background:linear-gradient(0deg,#30253b6b,#30253b25 65%,#30253b30);
+ pointer-events:none;animation:postRunDimIn .24s ease both}
+.post-run-focus{position:absolute;
+ left:var(--post-granny-x);top:var(--post-granny-y);width:104px;height:104px;
+ transform:translate(-50%,-50%);border:3px solid #ffda858c;
+ box-shadow:0 0 0 13px #fff5d116;border-radius:50%;pointer-events:none}
+.post-run-card{position:absolute;top:clamp(12px,6%,52px);left:50%;
+ transform:translateX(-50%);width:min(410px,54%);max-height:calc(100% - 26px);
+ display:flex;flex-direction:column;align-items:center;gap:7px;
+ overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+ padding:clamp(12px,1.6vw,24px);border:3px solid #30263f;border-radius:22px;
+ background:#fff8eaf0;box-shadow:5px 7px 0 #30263f;
+ text-align:center;pointer-events:auto}
+.post-run-card::-webkit-scrollbar{display:none}
+.post-run-card[data-size=compact]{width:min(350px,49%)}
+.post-run-card[data-size=celebration]{border-color:#a26c5b;background:#fff4dceb}
+.post-run-tag{font:900 10px/1.1 system-ui;letter-spacing:1.7px;color:#906a85}
+.post-run-card h2{margin:0;font:1000 clamp(21px,2.9vw,35px)/1.05 system-ui;
+ letter-spacing:-1px;text-wrap:balance}
+.post-run-distance{display:flex;align-items:baseline;gap:3px;
+ font:1000 clamp(34px,4.5vw,60px)/1 system-ui;font-variant-numeric:tabular-nums}
+.post-run-distance span{font-size:.45em}
+.post-run-record{margin:0!important;min-height:0!important;font:900 12px/1.3 system-ui;
+ letter-spacing:.7px;color:#a35c48}
+.post-run-record:empty{display:none}
+.post-run-rescue,.post-run-result{display:flex;flex-direction:column;align-items:stretch;
+ gap:9px;width:100%;animation:postRunReveal .24s ease both}
+.post-run-rescue p{margin:0;font:700 12px/1.3 system-ui;color:#76647c}
+.post-run-timer{align-self:center;width:65px;height:65px;display:grid;place-items:center;
+ border-radius:50%;font:1000 22px system-ui;color:#30263f;
+ background:radial-gradient(closest-side,#fff9ec 81%,transparent 83% 99%,#fff9ec 100%),
+ conic-gradient(#f5b456 var(--rescue-progress,100%),#ddd1d6 0)}
+.post-run-rescue-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.post-run-rescue-actions button,.post-run-retry{border:2px solid #30263f;
+ border-radius:12px;padding:11px 8px;background:#ffcf70;color:#30263f;
+ box-shadow:2px 3px 0 #30263f;font:900 clamp(11px,1vw,14px) system-ui;
+ cursor:pointer;touch-action:manipulation;min-height:45px}
+.post-run-rescue-actions button:disabled{background:#e2d9d5;opacity:.6;cursor:default}
+.post-run-link{align-self:center;background:none;color:#66526f;border:0;
+ padding:8px 13px;font:900 12px system-ui;cursor:pointer;touch-action:manipulation}
+.post-run-retry{width:100%;min-height:51px;background:#ffca68;
+ font-size:clamp(13px,1.3vw,17px);letter-spacing:.4px}
+.post-run-highlights{display:flex;flex-wrap:wrap;justify-content:center;gap:7px}
+.post-run-highlight{padding:7px 10px;background:#fffdf3;border:2px solid #493e49;
+ border-radius:11px;font:800 12px/1.3 system-ui}
+.post-run-reward{width:100%;padding:7px;border:2px dashed #a56b75;border-radius:13px;
+ background:#fae6c4;animation:postRunReveal .35s ease both}
+.post-run-book{display:flex;align-items:center;justify-content:center;gap:13px;
+ color:#493e49;font:800 11px/1.5 system-ui;text-align:left}
+.post-run-book b{font-size:14px}
+.post-run-sticker{display:grid;place-items:center;width:42px;height:42px;
+ border-radius:50%;background:#ffdc84;border:2px solid #493e49;
+ transform:rotate(-12deg);box-shadow:2px 3px 0 #493e49;font-size:27px}
+.post-run-overlay button:focus-visible{outline:3px solid #4b6eaa;outline-offset:4px}
+.game.post-run-active .scoreboard,.game.post-run-active .tier-track,
+.game.post-run-active .footer,.game.post-run-active .status,
+.game.post-run-active .world-map-hud-button,.game.post-run-active .mission-pin,
+.game.post-run-active #onboarding,.game.post-run-active .event-banner{visibility:hidden!important}
+.game.post-run-active{touch-action:manipulation}
+@keyframes postRunDimIn{from{opacity:0}to{opacity:1}}
+@keyframes postRunReveal{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:650px){
+ .post-run-focus{width:76px;height:76px}
+ .post-run-card,.post-run-card[data-size=compact],.post-run-card[data-size=celebration]{
+  width:min(325px,72%);top:clamp(11px,3%,30px);max-height:calc(100% - 23px);
+  padding:12px 11px;border-width:2px;border-radius:17px;
+  gap:5px;box-shadow:3px 4px 0 #30263f}
+ .post-run-card h2{font-size:clamp(19px,5vw,25px)}
+ .post-run-distance{font-size:clamp(31px,8vw,45px)}
+ .post-run-highlight{font-size:11px;padding:6px 7px}
+ .post-run-rescue-actions{gap:5px}
+ .post-run-rescue-actions button{padding:8px 5px;min-height:44px;font-size:10px}
+ .post-run-retry{min-height:48px;font-size:14px}
+}
+@media(orientation:portrait) and (max-width:650px){
+ .post-run-card,.post-run-card[data-size=compact],.post-run-card[data-size=celebration]{
+  left:auto;right:clamp(8px,3vw,18px);transform:none;
+  width:min(270px,70%);top:clamp(14px,8%,64px)}
+}
+@media(orientation:landscape) and (max-height:500px){
+ .post-run-card,.post-run-card[data-size=compact],.post-run-card[data-size=celebration]{
+  left:auto;right:clamp(6px,3%,25px);transform:none;
+  top:7px;width:min(335px,43%);max-height:calc(100% - 14px);
+  padding:8px 11px;gap:4px;border-radius:13px}
+ .post-run-card h2{font-size:clamp(16px,2.5vw,22px)}
+ .post-run-distance{font-size:clamp(26px,4vw,42px)}
+ .post-run-timer{height:42px;width:42px;font-size:15px}
+ .post-run-rescue-actions button{min-height:38px;padding:5px;font-size:10px}
+ .post-run-retry{min-height:42px;padding:7px}
+ .post-run-highlights{gap:4px}
+ .post-run-highlight{padding:5px;font-size:10px}
+ .post-run-tag{font-size:8px}
+ .post-run-rescue p{font-size:10px}
+ .post-run-book b{font-size:12px}
+ .post-run-sticker{width:29px;height:29px;font-size:19px}
+ .post-run-reward{padding:4px}
+}
+@media(prefers-reduced-motion:reduce){
+ .post-run-dim,.post-run-rescue,.post-run-result,.post-run-reward{animation:none!important}
+}
