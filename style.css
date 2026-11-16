@@ -805,3 +805,222 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .world-map-level b{font-size:12px}
  .world-map-level small{font-size:8px}
 }
+
+/* V9 — Reference-faithful desktop home composition (left navigation + right Granny).
+   Scoped to the main home screen so shops, pause/game-over, and active gameplay
+   keep their own existing layouts. */
+.home-brand{display:none}
+#overlay .home-settings{margin:0}
+.home-settings>summary{cursor:pointer;list-style:none}
+.home-settings>summary::-webkit-details-marker{display:none}
+.home-settings>summary::after{content:"  ▾"}
+.home-settings[open]>summary::after{content:"  ▴"}
+.home-settings .pre-run-card{margin-top:7px}
+@media(min-width:651px){
+ body:has(#overlay:not(.hidden):not(.storepage):not(.gameover)) .shell>header{display:none}
+ body:has(#overlay:not(.hidden):not(.storepage):not(.gameover)) .shell{
+  padding:clamp(12px,1vw,22px);
+ }
+ body:has(#overlay:not(.hidden):not(.storepage):not(.gameover)) .game{
+  border:clamp(3px,.22vw,5px) solid #29243a;
+  border-radius:clamp(20px,2.5vw,40px);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover){
+  background:#fff9ed;backdrop-filter:none;overflow:hidden;
+  padding:clamp(12px,2.6vw,50px);
+  align-items:stretch;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover)>.panel{
+  display:grid!important;
+  grid-template-columns:minmax(0, .93fr) minmax(0, 1.15fr);
+  grid-template-rows:auto auto auto auto minmax(0,1fr) auto;
+  column-gap:clamp(26px,3vw,65px);
+  row-gap:clamp(8px,1.3vh,20px);
+  width:100%!important;max-width:1700px!important;
+  height:100%!important;max-height:100%!important;
+  padding:0!important;margin:auto!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;background:transparent!important;
+  overflow:auto!important;
+  align-content:center;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand{
+  display:block;grid-column:1;grid-row:1;
+  align-self:end;text-align:left;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand h2{
+  margin:0;font:1000 clamp(32px,3.6vw,70px)/1.05 ui-rounded,system-ui,sans-serif;
+  color:#24203c;letter-spacing:-.045em;white-space:nowrap;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand h2 span{
+  font-size:.76em;vertical-align:middle;letter-spacing:normal
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand p{
+  margin:clamp(7px,1vh,14px) 0 0!important;
+  font:600 clamp(12px,1.05vw,20px)/1.4 system-ui;
+  color:#8c758d;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-meta{
+  grid-column:1;grid-row:2;display:flex;justify-content:flex-start;
+  margin:clamp(5px,1vh,16px) 0 0!important;gap:10px;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-record{display:none}
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuWallet{
+  font:1000 clamp(13px,1.1vw,20px)/1.2 system-ui;
+  border:3px solid #29243a;background:white;
+  box-shadow:2px 3px 0 #29243a;
+  padding:clamp(10px,1vw,16px) clamp(14px,1.6vw,28px);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-kicker{
+  grid-column:1;grid-row:3;margin:0!important;
+  text-align:left;letter-spacing:clamp(1px,.12vw,2px);
+  font:900 clamp(10px,1vw,17px)/1.35 system-ui;color:#7b6483;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #startBtn{
+  grid-column:1;grid-row:4;align-self:stretch;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  position:static!important;z-index:auto!important;
+  margin:clamp(6px,1.6vh,22px) 0 0!important;
+  padding:clamp(13px,2.8vh,30px) 14px!important;
+  min-height:clamp(72px,10vh,112px)!important;
+  height:auto!important;flex:none!important;
+  border:3px solid #29243a;border-radius:clamp(16px,1.5vw,25px);
+  background:linear-gradient(180deg,#ffdc76,#ffca58);
+  box-shadow:0 6px 0 #29243a;
+  font:1000 clamp(23px,2.25vw,43px)/1.1 ui-rounded,system-ui,sans-serif;
+  color:#29243a;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent{
+  grid-column:1;grid-row:5;
+  display:flex;flex-direction:column;
+  width:100%;min-height:0;margin:clamp(4px,1vh,10px) 0 0!important;
+  gap:clamp(10px,1vh,16px);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub{
+  order:0;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  width:100%;max-width:none;gap:clamp(10px,1vw,18px)!important;
+  margin:0!important;justify-content:stretch!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile{
+  display:flex;flex-direction:row;justify-content:center;align-items:center;
+  width:100%!important;min-width:0;min-height:clamp(65px,9vh,103px);
+  height:auto!important;max-height:none!important;
+  aspect-ratio:auto!important;
+  padding:10px!important;gap:clamp(9px,.9vw,19px)!important;
+  background:#fffaf1!important;border:3px solid #29243a;
+  border-radius:clamp(14px,1.5vw,22px)!important;
+  box-shadow:3px 5px 0 #29243a!important;
+  color:#29243a;text-align:center;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile:last-of-type{
+  grid-column:1/-1;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile .tile-icon{
+  font-size:clamp(24px,2.35vw,43px)!important;line-height:1;
+  flex:0 0 auto;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile b{
+  font:1000 clamp(15px,1.4vw,24px)/1.15 ui-rounded,system-ui,sans-serif!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile:hover{
+  background:#fff2d2!important;transform:translateY(-2px);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile:active{
+  transform:translateY(3px);box-shadow:1px 2px 0 #29243a!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-achievement,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-next-unlock{
+  display:none;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-settings{
+  order:1;text-align:left;width:100%;max-width:100%;
+  border-radius:12px;color:#746879;
+  font:800 clamp(11px,.83vw,14px)/1.3 system-ui;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-settings>summary{
+  display:block;padding:9px 4px;letter-spacing:.2px;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-settings[open]{
+  background:#fffaf2;padding:8px;border:1px solid #d8c7cf;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-settings .pre-run-card{
+  grid-template-columns:1fr;gap:8px;padding:8px;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-hero{
+  grid-column:2;grid-row:1 / 7;
+  width:100%!important;max-width:none!important;
+  height:100%!important;min-height:0!important;max-height:none!important;
+  align-self:stretch;justify-self:stretch;
+  flex:none!important;margin:0!important;
+  border:clamp(3px,.25vw,5px) solid #29243a;
+  border-radius:clamp(24px,2.2vw,40px);
+  background:radial-gradient(ellipse at 50% 50%,#fff2b8 0 33%,#d3ebda 34% 67%,#abd3c7 68% 100%);
+  box-shadow:none;overflow:hidden;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-hero::after{
+  content:"";position:absolute;width:90%;height:14%;border-radius:50%;
+  background:#a3c6ac66;bottom:4%;left:5%;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-grandma{
+  width:100%;height:80%!important;margin:0;
+  z-index:3;display:flex;align-items:center;justify-content:center;
+  animation:heroBob 2.1s ease-in-out infinite;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-grandma svg{
+  display:block;width:auto!important;height:min(72%,470px)!important;
+  max-width:80%;filter:drop-shadow(0 9px 0 #30263f20);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .hero-orbit{
+  width:65%;height:70%;top:15%;left:17.5%;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .orbit-b{
+  width:77%;height:80%;top:10%;left:11.5%;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .hero-spark{
+  font-size:clamp(26px,3vw,47px);
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .hero-shadow{
+  z-index:3;bottom:12%;width:32%;height:5%;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-tabs,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-guide,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #overlayTitle,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #overlayText,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #shop,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #countdown,
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #runSummary{
+  display:none!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .app-version{
+  grid-column:1;grid-row:6;margin:0!important;align-self:end;
+  opacity:.45;text-align:left;
+ }
+}
+@media(min-width:651px) and (max-height:760px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover)>.panel{row-gap:6px}
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand h2{
+  font-size:clamp(27px,2.6vw,48px)
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile{
+  min-height:58px
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #startBtn{
+  min-height:65px!important;padding:10px!important
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-settings>summary{padding:3px}
+}
+@media(max-width:650px){
+ #overlay:not(.storepage):not(.gameover) .home-brand{display:none}
+ #overlay:not(.storepage):not(.gameover) .home-settings{margin:8px 0}
+ #overlay:not(.storepage):not(.gameover) .home-settings>summary{
+  padding:8px 11px;border:2px solid #493e49;border-radius:10px;background:#fffaf0;
+ }
+ #overlay:not(.storepage):not(.gameover) .home-hub{order:0}
+ #overlay:not(.storepage):not(.gameover) .home-settings{order:1}
+ #overlay:not(.storepage):not(.gameover) #menuContent{display:flex;flex-direction:column}
+ #overlay:not(.storepage):not(.gameover) .home-hub-tile:last-of-type{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+ #overlay .menu-grandma,#overlay .hero-orbit{animation:none!important}
+}
