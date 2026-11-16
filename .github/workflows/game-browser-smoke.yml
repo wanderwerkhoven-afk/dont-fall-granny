@@ -8,6 +8,9 @@ on:
       - 'style.css'
       - 'storybook-worlds.js'
       - 'granny-expressions.js'
+      - 'run-results.js'
+      - 'game-state.js'
+      - 'tests/post-run-browser.cjs'
       - 'levels.js'
       - 'tests/game-smoke.cjs'
       - '.github/workflows/game-browser-smoke.yml'
@@ -30,3 +33,4 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/granny-http.log 2>&1 &
           sleep 2
           node tests/game-smoke.cjs
+          node tests/post-run-browser.cjs
