@@ -1938,3 +1938,29 @@ body:has(#overlay.hidden) .game>canvas{
  .post-run-overlay .post-run-rescue,
  .post-run-overlay .post-run-result{animation:none!important}
 }
+
+/* Stable shared tray dimensions: Rescue and Result swap content in place.
+   Fixed logical height prevents the lower-anchored card from jumping upward. */
+.post-run-overlay .post-run-card,
+.post-run-overlay .post-run-card[data-size=compact],
+.post-run-overlay .post-run-card[data-size=standard],
+.post-run-overlay .post-run-card[data-size=celebration]{
+ height:156px!important;
+ min-height:0!important;
+}
+@media(orientation:landscape) and (max-height:520px){
+ .post-run-overlay .post-run-card,
+ .post-run-overlay .post-run-card[data-size=compact],
+ .post-run-overlay .post-run-card[data-size=standard],
+ .post-run-overlay .post-run-card[data-size=celebration]{
+  height:134px!important;
+ }
+}
+@media(orientation:portrait) and (max-width:650px){
+ .post-run-overlay .post-run-card,
+ .post-run-overlay .post-run-card[data-size=compact],
+ .post-run-overlay .post-run-card[data-size=standard],
+ .post-run-overlay .post-run-card[data-size=celebration]{
+  height:220px!important;
+ }
+}
