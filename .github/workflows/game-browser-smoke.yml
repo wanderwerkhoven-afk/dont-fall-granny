@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'style.css'
       - 'storybook-worlds.js'
+      - 'granny-expressions.js'
       - 'levels.js'
       - 'tests/game-smoke.cjs'
       - '.github/workflows/game-browser-smoke.yml'
