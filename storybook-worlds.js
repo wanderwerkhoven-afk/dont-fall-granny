@@ -96,13 +96,12 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
  };
  ctx.save();ctx.beginPath();ctx.rect(0,0,W,ground);ctx.clip();
  // Far layer: broad unoutlined silhouettes create depth without noise.
- if(zone===6){
-  ctx.fillStyle='#f6eedc';for(let i=0;i<16;i++){
-   const x=((i*207+travel*.018)%(W+160)+W+160)%(W+160)-60;
-   const yy=35+(i*97)%Math.max(70,y-160);circle(x,yy,1.5+(i%2),IVORY,0);
-  }
- } else if(zone===4){
-  for(let i=0;i<12;i++)circle(((i*181-travel*.018)%(W+80)+W+80)%(W+80),27+(i*83)%Math.max(70,y-155),1.5,IVORY,0);
+ if(zone===6||zone===4){
+  // Even tiny stars use world-indexed strips, never viewport modulo.
+  strip(zone===6?180:215,.018,(x,i)=>{
+   const yy=26+(((i%7)+7)%7)*Math.max(13,(y-165)/8);
+   circle(x+38,yy,zone===6?1.8:1.5,IVORY,0);
+  });
  }
  if(zone===0||zone===1||zone===3||zone===5)hills(parallax[0],p.far,90,13);
  else hills(parallax[0],p.far,72,8);
