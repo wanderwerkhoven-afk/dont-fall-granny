@@ -71,15 +71,15 @@ function draw(ctx,options){
  ctx.restore();
 }
 function installMap(getProgress,pause,onSelect){
- const button=document.getElementById('worldMapButton');
  const hudButton=document.getElementById('worldMapHudButton');
- const triggers=[button,hudButton].filter(Boolean);
+ const triggers=[hudButton].filter(Boolean);
+ const allTriggers=()=>[document.getElementById('worldMapButton'),hudButton].filter(Boolean);
  const modal=document.getElementById('worldMapModal');
  const close=document.getElementById('worldMapClose');
  const list=document.getElementById('worldMapRoute');
  const summary=document.getElementById('worldMapSummary');
  const bar=document.getElementById('worldMapProgress');
- if(!triggers.length||!modal||!close||!list)return;
+ if(!hudButton||!modal||!close||!list)return;
  let previousFocus=null;
  function refresh(){
   const {score,best,currentTier,startTierOffset}=getProgress();
@@ -120,13 +120,17 @@ function installMap(getProgress,pause,onSelect){
   if(modal.hidden===false)return;
   previousFocus=document.activeElement;
   if(getProgress().state==='playing')pause();
-  refresh();modal.hidden=false;triggers.forEach(el=>el.setAttribute('aria-expanded','true'));close.focus();
+  refresh();modal.hidden=false;allTriggers().forEach(el=>el.setAttribute('aria-expanded','true'));close.focus();
  }
  function hide(){
-  modal.hidden=true;triggers.forEach(el=>el.setAttribute('aria-expanded','false'));
+  modal.hidden=true;allTriggers().forEach(el=>el.setAttribute('aria-expanded','false'));
   if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus();
  }
- triggers.forEach(el=>el.addEventListener('click',open));close.addEventListener('click',hide);
+ triggers.forEach(el=>el.addEventListener('click',open));
+ document.getElementById('menuContent')?.addEventListener('click',event=>{
+  if(event.target.closest('#worldMapButton'))open();
+ });
+ close.addEventListener('click',hide);
  modal.addEventListener('click',event=>{if(event.target===modal)hide();});
  document.addEventListener('keydown',event=>{
   if(modal.hidden)return;
