@@ -16,6 +16,22 @@ const { chromium } = require('playwright');
   if(navCount!==5)throw Error('Expected 5 navigation buttons');
   if(!initiallyVisible)throw Error('Start button not visible');
   if(!kicker.includes('49 LEVELS'))throw Error('Game did not initialize; kicker='+kicker);
+  // Every secondary screen must preserve navigation and accessible controls.
+  for(const [key,title] of [['clothes','kledingkast'],['gadgets','Gadget garage'],['progress','progressie'],['collection','accessoires']]){
+    await page.locator('#homeMainNav [data-open-page="'+key+'"]').click();
+    if(!await page.locator('#overlay.storepage').count())throw Error('Secondary page did not open: '+key);
+    const heading=await page.locator('#storeTitle').innerText();
+    if(!heading.toLowerCase().includes(title.toLowerCase()))throw Error('Wrong heading for '+key+': '+heading);
+    if(!await page.locator('#menuContent').isVisible())throw Error('Content missing for '+key);
+    if(!await page.locator('#menuTabs [data-page="home"]').isVisible())throw Error('Back navigation missing for '+key);
+    if(['clothes','gadgets','collection'].includes(key)&&!await page.locator('#menuContent button').count())throw Error('Interactive items missing from '+key);
+    const panel=await page.locator('#menuContent').boundingBox();
+    const outer=await page.locator('#overlay').boundingBox();
+    if(!panel||!outer||panel.width<260||panel.x<outer.x+outer.width*.30)throw Error('Desktop content layout collapsed on '+key);
+    await page.locator('#menuTabs [data-page="home"]').click();
+    if(await page.locator('#overlay.storepage').count())throw Error('Return to home failed: '+key);
+  }
+  console.log('PASS: outfits, gadgets, progression, extras, and home navigation');
   await page.locator('#startBtn').click({timeout:8000});
   await page.waitForTimeout(2200);
   const overlayHidden=await page.locator('#overlay').evaluate(el=>el.classList.contains('hidden'));
