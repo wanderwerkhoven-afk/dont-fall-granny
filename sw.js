@@ -1,14 +1,14 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v16-postrun-flow';
+const CACHE_NAME = 'dont-trip-grandma-offline-v17-postrun-halo';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=16',
+  './style.css?v=17',
   './game-meta.js?v=10',
   './progression.js?v=10',
   './game-state.js?v=16',
-  './run-results.js?v=16',
+  './run-results.js?v=17',
   './app.js?v=16',
   './granny-expressions.js?v=14',
   './storybook-worlds.js?v=11',
