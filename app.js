@@ -108,7 +108,6 @@ const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)'
 let recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0,recoveryCameraSettle=0;
 function triggerRecovery(){
  if(state!=='playing'||vehicle)return;
- grandmaExpressions.react('recovery');
  recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
