@@ -634,11 +634,13 @@ function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.m
   lastLevelCelebrated=finished;
   const newlyUnlocked=LEVELS.complete(finished,levelDistance);
   LEVELS.record(finished,levelDistance);
-  levelStartScore+=goal;
   if(finished<LEVELS.LEVELS.length-1){
    activeLevel++;
    const nextWorld=LEVELS.LEVELS[activeLevel].worldIndex;
    if(nextWorld!==currentTier){
+    // Level thresholds are cumulative within each world:
+    // 600 -> 900 -> 1200 -> ... -> 2400 m.
+    levelStartScore+=goal;
     previousTier=currentTier;currentTier=nextWorld;
     transition=2.8;tierFlash=0;
     metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);
