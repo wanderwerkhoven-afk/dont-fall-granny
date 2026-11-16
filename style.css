@@ -1024,3 +1024,14 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
 @media(prefers-reduced-motion:reduce){
  #overlay .menu-grandma,#overlay .hero-orbit{animation:none!important}
 }
+
+/* Finishing touches for consistent custom SVG illustrations and typography. */
+.home-hub-tile .tile-icon svg{display:block;width:1.15em;height:1.15em;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:651px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-brand h2{
+  font-size:clamp(27px,3vw,56px);white-space:normal;text-wrap:balance;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-hub-tile .tile-icon svg{
+  width:clamp(32px,3vw,57px);height:clamp(32px,3vw,57px);
+ }
+}
