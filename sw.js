@@ -1,10 +1,10 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v14-granny-expressions';
+const CACHE_NAME = 'dont-trip-grandma-offline-v15-expressive-fall';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=13',
+  './style.css?v=15',
   './game-meta.js?v=10',
   './progression.js?v=10',
   './app.js?v=14',
