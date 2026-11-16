@@ -423,6 +423,15 @@ const HOME_ICONS={
 function showMenu(page='home'){
  updateGrandmaOutfitPreview();
  ensureMissionPeriods();
+ const sectionInfo={
+  clothes:['Oma’s kledingkast','Kies een outfit voor Granny en maak haar klaar voor het volgende avontuur.'],
+  gadgets:['Gadget garage','Ontdek speciale upgrades en speelmogelijkheden.'],
+  progress:['Jouw progressie','Missies, records, badges en alle behaalde mijlpalen.'],
+  collection:['Extra’s & accessoires','Geef Granny haar eigen uitstraling met accessoires.']
+ };
+ const info=sectionInfo[page]||['',''];
+ document.getElementById('storeTitle').textContent=info[0];
+ document.getElementById('storeDescription').textContent=info[1];
  menuPage=page;overlay.classList.toggle('storepage',page!=='home');overlay.classList.toggle('clothespage',page==='clothes');overlay.classList.toggle('gadgetspage',page==='gadgets');overlay.classList.toggle('progresspage',page==='progress');overlay.classList.toggle('collectionpage',page==='collection');
  menuWallet.textContent='🪙 '+coins+' munten';
  menuTabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
