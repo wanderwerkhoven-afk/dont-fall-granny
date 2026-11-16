@@ -110,7 +110,8 @@ class RunResultOverlay{
   reward.innerHTML=summary.reward?'<div class="post-run-book" aria-label="Nieuwe beloning">'+
    '<span class="post-run-sticker">★</span><span>ADVENTURE BOOK<br><b>'+
    escapeHtml(summary.reward.name)+'</b></span></div>':'';
-  const starting=Number(this.distance.textContent)||0;
+  const starting=0;
+  this.distance.textContent='0';
   if(this.counter)cancelAnimationFrame(this.counter);
   if(reducedMotion){this.distance.textContent=String(summary.distance);return;}
   const started=performance.now();
