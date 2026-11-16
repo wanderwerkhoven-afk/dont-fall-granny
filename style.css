@@ -1404,3 +1404,157 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
   z-index:2;
  }
 }
+
+/* Gameplay fullscreen and clean responsive HUD — menu/shop layouts unchanged.
+ * The page title is only part of the menus, never part of the active playfield. */
+body:has(#overlay.hidden){height:100dvh;min-height:0;overflow:hidden}
+body:has(#overlay.hidden) .shell{
+ width:100%;max-width:none;height:100dvh;min-height:0;
+ display:flex;flex-direction:column;
+ padding:clamp(3px,.65vw,10px)!important;gap:0!important;
+ border-radius:0!important;box-shadow:none!important;
+}
+body:has(#overlay.hidden) .shell>header{display:none!important}
+body:has(#overlay.hidden) .game{
+ flex:1 1 auto;min-height:0;min-width:0;width:100%;max-width:none;
+ border-radius:clamp(12px,1.5vw,22px);
+}
+body:has(#overlay.hidden) .game>canvas{
+ display:block;width:100%;height:100%;aspect-ratio:auto;
+}
+.game:has(#overlay.hidden) .hint{display:none!important}
+.game:has(#overlay.hidden) .scoreboard{
+ position:absolute;top:12px;left:clamp(205px,20%,300px);right:clamp(88px,9%,136px);
+ display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+ align-items:start;gap:clamp(4px,.6vw,10px);
+ max-width:none;width:auto;margin:0;z-index:3;pointer-events:none;
+}
+.game:has(#overlay.hidden) .scoreboard .pill{
+ min-width:0;max-width:100%;padding:7px 5px;
+ overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+ font-size:clamp(12px,1.4vw,21px);
+}
+.game:has(#overlay.hidden) .scoreboard .pill small{
+ font-size:clamp(8px,.75vw,11px);line-height:1.2;
+ white-space:nowrap;
+}
+.game:has(#overlay.hidden) .scoreboard .rank-pill span{
+ display:block;overflow:hidden;text-overflow:ellipsis;
+}
+.game:has(#overlay.hidden) .tier-track{
+ top:13px;left:12px;width:clamp(168px,18%,270px);
+ max-width:none;text-align:left;
+}
+.game:has(#overlay.hidden) .world-map-hud-button{
+ display:flex;top:12px;right:11px;z-index:4;
+ min-height:42px;padding:8px 10px;
+}
+.game:has(#overlay.hidden) .footer{z-index:4}
+.game:has(#overlay.hidden) .status{
+ left:12px;right:12px;bottom:8px;
+ margin:0;text-align:center;
+ max-width:none;line-height:1.2;
+ padding:5px 9px;border-radius:9px;background:#fff9eddf;
+ pointer-events:none;
+}
+/* Landscape phones and short desktop windows have five overlapping HUD pills
+ * in the old layout. Show only information useful during a run. */
+@media (orientation:landscape) and (max-height:600px){
+ body:has(#overlay.hidden){padding:0!important}
+ body:has(#overlay.hidden) .shell{padding:3px!important}
+ .game:has(#overlay.hidden) .tier-track{
+  top:9px;left:9px;width:clamp(118px,19%,176px);
+ }
+ .game:has(#overlay.hidden) .tier-track-label{
+  font-size:clamp(8px,1.1vw,12px);line-height:1.3;
+  letter-spacing:0;gap:2px;
+ }
+ .game:has(#overlay.hidden) #tierNext{font-size:clamp(7px,.85vw,10px)}
+ .game:has(#overlay.hidden) .scoreboard{
+  top:8px;left:clamp(136px,22%,200px);right:clamp(79px,10%,100px);
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;
+ }
+ .game:has(#overlay.hidden) .scoreboard .rank-pill{display:none!important}
+ .game:has(#overlay.hidden) .scoreboard .pill{
+  padding:5px 3px;border-radius:9px;
+  font-size:clamp(11px,1.4vw,17px);
+ }
+ .game:has(#overlay.hidden) .scoreboard .pill small{
+  font-size:clamp(7px,.85vw,10px);letter-spacing:.4px;
+ }
+ .game:has(#overlay.hidden) .world-map-hud-button{
+  top:8px;right:8px;min-height:37px;padding:5px 8px;
+  font-size:11px;gap:4px;
+ }
+ .game:has(#overlay.hidden) .mission-pin{
+  top:69px;left:9px;right:auto;max-width:min(33%,230px);
+  font-size:clamp(9px,1vw,12px);
+  padding:5px 8px;
+ }
+ .game:has(#overlay.hidden) .footer{
+  position:absolute;right:9px;left:auto;bottom:45px;
+  width:auto;margin:0;
+ }
+ .game:has(#overlay.hidden) .controls{
+  display:flex;flex-direction:row;gap:7px;width:auto;
+ }
+ .game:has(#overlay.hidden) .controls .button{
+  min-width:0;min-height:44px;width:auto;
+  padding:7px 10px;font-size:clamp(11px,1.4vw,16px);
+  white-space:nowrap;
+ }
+ .game:has(#overlay.hidden) .status{
+  bottom:7px;left:9px;right:9px;min-height:0;
+  font-size:clamp(10px,1.1vw,13px);
+  text-align:center;padding:5px 8px;
+ }
+ .game:has(#overlay.hidden) .event-banner{top:76px;max-width:55%}
+}
+@media (orientation:landscape) and (max-width:760px) and (max-height:600px){
+ .game:has(#overlay.hidden) .scoreboard{
+  left:clamp(125px,21%,170px);right:78px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+ }
+ .game:has(#overlay.hidden) .scoreboard .combo-pill{display:none!important}
+ .game:has(#overlay.hidden) .world-map-hud-button span:last-child{display:none}
+ .game:has(#overlay.hidden) .world-map-hud-button{min-width:38px;justify-content:center}
+ .game:has(#overlay.hidden) .footer{bottom:39px}
+ .game:has(#overlay.hidden) .controls .button{min-height:39px}
+}
+@media (orientation:portrait) and (max-width:650px){
+ body:has(#overlay.hidden){padding:0!important}
+ body:has(#overlay.hidden) .shell{padding:4px!important}
+ .game:has(#overlay.hidden) .tier-track{
+  width:clamp(110px,34%,175px);top:10px;left:8px;
+ }
+ .game:has(#overlay.hidden) .scoreboard{
+  top:8px;left:auto;right:7px;width:52%;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;
+ }
+ .game:has(#overlay.hidden) .scoreboard .combo-pill,
+ .game:has(#overlay.hidden) .scoreboard .rank-pill{display:none!important}
+ .game:has(#overlay.hidden) .scoreboard .pill{
+  padding:5px 3px;min-width:0;font-size:clamp(12px,3.2vw,16px);
+ }
+ .game:has(#overlay.hidden) .scoreboard .pill small{
+  font-size:8px;letter-spacing:0;
+ }
+ .game:has(#overlay.hidden) .world-map-hud-button{
+  right:9px;top:110px;min-height:35px;padding:5px 8px;font-size:11px;
+ }
+ .game:has(#overlay.hidden) .mission-pin{
+  left:9px;top:80px;max-width:48%;padding:5px 7px;font-size:9px;
+ }
+ .game:has(#overlay.hidden) .footer{
+  bottom:47px;left:9px;right:9px;width:auto;
+ }
+ .game:has(#overlay.hidden) .controls{
+  display:grid;grid-template-columns:1fr 1.5fr;gap:8px;width:100%;
+ }
+ .game:has(#overlay.hidden) .controls .button{
+  min-width:0;width:100%;min-height:54px;font-size:clamp(14px,4vw,20px);
+ }
+ .game:has(#overlay.hidden) .status{
+  bottom:7px;left:8px;right:8px;font-size:11px;
+ }
+}
