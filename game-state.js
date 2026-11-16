@@ -3,17 +3,18 @@
  */
 (()=>{'use strict';
 const GameState=Object.freeze({
- MENU:'menu',RUNNING:'running',RECOVERY:'recovery',SPECIAL_MODE:'special_mode',
+ MENU:'menu',RUN_RESET:'run_reset',RUNNING:'running',RECOVERY:'recovery',SPECIAL_MODE:'special_mode',
  FALLING:'falling',RESCUE:'rescue',GAME_OVER:'game_over',PAUSED:'paused'
 });
 const allowed={
- [GameState.MENU]:[GameState.RUNNING],
+ [GameState.MENU]:[GameState.RUN_RESET,GameState.RUNNING],
+ [GameState.RUN_RESET]:[GameState.RUNNING],
  [GameState.RUNNING]:[GameState.RECOVERY,GameState.SPECIAL_MODE,GameState.PAUSED,GameState.FALLING,GameState.MENU],
  [GameState.RECOVERY]:[GameState.RUNNING,GameState.FALLING],
  [GameState.SPECIAL_MODE]:[GameState.RUNNING,GameState.FALLING,GameState.PAUSED],
  [GameState.FALLING]:[GameState.RESCUE],
- [GameState.RESCUE]:[GameState.GAME_OVER,GameState.RUNNING],
- [GameState.GAME_OVER]:[GameState.RESCUE,GameState.MENU],
+ [GameState.RESCUE]:[GameState.GAME_OVER,GameState.RUNNING,GameState.MENU],
+ [GameState.GAME_OVER]:[GameState.RESCUE,GameState.RUN_RESET,GameState.MENU],
  [GameState.PAUSED]:[GameState.RUNNING,GameState.SPECIAL_MODE,GameState.MENU]
 };
 class GameStateController{
