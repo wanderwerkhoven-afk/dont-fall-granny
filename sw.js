@@ -1,5 +1,5 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v9-desktop-sidebar-menu';
+const CACHE_NAME = 'dont-trip-grandma-offline-v10-stable-home-nav';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
@@ -53,13 +53,15 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Prefer fresh HTML/CSS/JS online. Cache-first previously mixed an updated
+  // start screen with stale app.js, leaving navigation and Start unresponsive.
   event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
+    fetch(request).then(response => {
       if (response.ok && response.type === 'basic') {
         const copy = response.clone();
         event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, copy)));
       }
       return response;
-    }))
+    }).catch(async () => (await caches.match(request)) || Response.error())
   );
 });
