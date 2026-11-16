@@ -21,9 +21,11 @@ try{best=Number(localStorage.getItem('dont-trip-grandma-best'))||0;coins=Number(
 function resizeGame(){
  const oldW=W,oldGround=ground,wasGrounded=grandma.y>=oldGround-grandma.h-2;
  const mobile=window.matchMedia('(max-width:650px)').matches;
- W=mobile?560:900;
  const box=canvas.getBoundingClientRect();
- H=mobile?Math.max(390,Math.round(W*box.height/Math.max(1,box.width))):390;
+ // Keep the canvas world at a constant logical height; expand the horizontal
+ // field of view to match the full-width desktop instead of stretching art.
+ H=mobile?Math.max(390,Math.round(560*box.height/Math.max(1,box.width))):390;
+ W=mobile?560:Math.max(900,Math.round(H*box.width/Math.max(1,box.height)));
  ground=mobile?Math.round(H*.53):313;
  canvas.width=W;canvas.height=H;
  grandma.x=mobile?67:105;
