@@ -462,7 +462,7 @@ function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaini
 function finalizeRun(){if(runFinalized)return;runFinalized=true;metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
 function returnHome(){stopDeathTimer();if(state==='over')finalizeRun();
  if(runFlow.current!==GameState.MENU){
-  if(!flowTo(GameState.MENU)){runFlow.current=GameState.MENU;}
+  flowTo(GameState.MENU);
  }if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='Start het spel →';overlay.classList.remove('hidden');resizeGame();render()}
 
 const makeHomeIcon=paths=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">'+paths+'</svg>';
@@ -1031,6 +1031,12 @@ function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Mat
   return true;
  }
 );
+// Debug-only test entry points: never exposed during normal gameplay.
+if(new URLSearchParams(location.search).get('debug')==='1'){
+ window.__grannyDebug={fall:()=>end(),result:()=>showRunResult(),retry:()=>retryRun(),
+  snapshot:()=>({state,flow:runFlow.current,phase:postRun.phase,score,
+   obstacles:obstacles.length,coins})};
+}
 reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 // Rescale canvas world when the header is hidden/revealed or mobile browser chrome
 // changes usable viewport height; keep physics coordinates aligned with CSS pixels.
