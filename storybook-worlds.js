@@ -72,12 +72,14 @@ function draw(ctx,options){
 }
 function installMap(getProgress,pause){
  const button=document.getElementById('worldMapButton');
+ const hudButton=document.getElementById('worldMapHudButton');
+ const triggers=[button,hudButton].filter(Boolean);
  const modal=document.getElementById('worldMapModal');
  const close=document.getElementById('worldMapClose');
  const list=document.getElementById('worldMapRoute');
  const summary=document.getElementById('worldMapSummary');
  const bar=document.getElementById('worldMapProgress');
- if(!button||!modal||!close||!list)return;
+ if(!triggers.length||!modal||!close||!list)return;
  let previousFocus=null;
  function refresh(){
   const {score,best,currentTier,startTierOffset}=getProgress();
@@ -95,13 +97,13 @@ function installMap(getProgress,pause){
   if(modal.hidden===false)return;
   previousFocus=document.activeElement;
   if(getProgress().state==='playing')pause();
-  refresh();modal.hidden=false;button.setAttribute('aria-expanded','true');close.focus();
+  refresh();modal.hidden=false;triggers.forEach(el=>el.setAttribute('aria-expanded','true'));close.focus();
  }
  function hide(){
-  modal.hidden=true;button.setAttribute('aria-expanded','false');
+  modal.hidden=true;triggers.forEach(el=>el.setAttribute('aria-expanded','false'));
   if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus();
  }
- button.addEventListener('click',open);close.addEventListener('click',hide);
+ triggers.forEach(el=>el.addEventListener('click',open));close.addEventListener('click',hide);
  modal.addEventListener('click',event=>{if(event.target===modal)hide();});
  document.addEventListener('keydown',event=>{
   if(modal.hidden)return;
