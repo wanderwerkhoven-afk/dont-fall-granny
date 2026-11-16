@@ -1,5 +1,5 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v4-fullscreen-desktop';
+const CACHE_NAME = 'dont-trip-grandma-offline-v5-illustrated-worldmap';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
