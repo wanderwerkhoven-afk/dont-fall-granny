@@ -115,7 +115,7 @@ function triggerRecovery(){
 function finishRecovery(result){
  document.getElementById('game').classList.remove('recovery-mode');
  recoveryWindow.reset();
- if(result==='miss'){grandmaExpressions.react('fall');balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}
+ if(result==='miss'){balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}
  balanceController.recover(result);
  grandmaExpressions.react(result==='perfect'?'perfect':'safe');
  if(result==='perfect'){perfectRun++;metaState.stats.perfects++;incrementMission('perfect');registerCombo(2,'PERFECT · COMBO +2');addWorldMastery('perfects',1);playFeedback('perfect');haptic(24)}else{safeRun++;metaState.stats.safes++;perfectRunAlive=false;resetCombo();playFeedback('safe')}
