@@ -1,5 +1,5 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v5-illustrated-worldmap';
+const CACHE_NAME = 'dont-trip-grandma-offline-v6-level-campaign';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
@@ -9,6 +9,7 @@ const APP_SHELL = [
   './progression.js',
   './app.js',
   './storybook-worlds.js',
+  './levels.js',
   './assets/hanger-spritesheet.svg'
 ];
 const offlineUrl = path => new URL(path, self.registration.scope).toString();
