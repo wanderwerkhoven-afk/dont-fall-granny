@@ -1558,3 +1558,43 @@ body:has(#overlay.hidden) .game>canvas{
   bottom:7px;left:8px;right:8px;font-size:11px;
  }
 }
+
+/* Improvement 10: show a brief illustrated tumble in the game-over result.
+ * Keep rescue and countdown buttons unchanged and fully accessible. */
+#overlay.gameover .menu-hero{
+ display:grid!important;
+ height:clamp(76px,12vh,110px)!important;
+ min-height:76px!important;
+ max-height:110px!important;
+ width:min(100%,250px)!important;
+ margin:0 auto 10px!important;
+ overflow:hidden;
+ background:radial-gradient(circle at 50% 30%,#fff1ba,#c5e1d3 70%);
+}
+#overlay.gameover .menu-grandma{
+ display:flex!important;
+ height:100%!important;
+ min-height:0!important;
+ width:100%!important;
+ align-items:center!important;
+ justify-content:center!important;
+ transform-origin:50% 78%;
+ animation:grannyTumble .52s cubic-bezier(.23,.91,.42,1) both!important;
+}
+#overlay.gameover .menu-grandma svg{
+ height:90%!important;
+ max-height:88px!important;
+ width:auto!important;
+}
+@keyframes grannyTumble{
+ 0%{transform:rotate(0deg) translateY(-12px)}
+ 58%{transform:rotate(-18deg) translateY(6px)}
+ 80%{transform:rotate(-10deg) translateY(-1px)}
+ 100%{transform:rotate(-13deg) translateY(4px)}
+}
+@media(prefers-reduced-motion:reduce){
+ #overlay.gameover .menu-grandma{
+  animation:none!important;
+  transform:rotate(-9deg) translateY(3px)!important;
+ }
+}
