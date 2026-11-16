@@ -7,8 +7,15 @@ const script=readFileSync('app.js','utf8');
 const meta=readFileSync('game-meta.js','utf8');
 const progression=readFileSync('progression.js','utf8');
 
-assert.match(html, /<link rel="stylesheet" href="style\.css">/, 'External stylesheet missing');
-assert.match(html, /<script src="game-meta\.js" defer><\/script><script src="progression\.js" defer><\/script><script src="app\.js" defer><\/script>/, 'Meta/progression/app script order missing');
+assert.match(html, /<link rel="stylesheet" href="style\.css(?:\?v=\d+)?">/, 'External stylesheet missing');
+const scripts=['levels.js','storybook-worlds.js','game-meta.js','progression.js','app.js'];
+const positions=scripts.map(name=>{
+ const escaped=name.replace(/\./g,'\\.');
+ const result=new RegExp('<script src="'+escaped+'(?:\\?v=\\d+)?" defer><\\/script>').exec(html);
+ assert.ok(result,'Required game script missing: '+name);
+ return result.index;
+});
+assert.ok(positions.every((pos,i)=>i===0||pos>positions[i-1]),'Game dependencies must load before app.js');
 assert.doesNotMatch(html, /<style>/, 'Inline stylesheet should stay extracted');
 assert.doesNotMatch(html, /<script>\s*\(\(\)=>/, 'Game logic should stay extracted');
 assert.match(html, /id="appVersion"[^>]*><\/div>/, 'Version mount point missing');
