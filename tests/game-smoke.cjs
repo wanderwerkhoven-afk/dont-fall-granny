@@ -41,6 +41,43 @@ const { chromium } = require('playwright');
   if(!/\d+ m/.test(score)||parseInt(score)<=0)throw Error('Game did not advance after start');
   if(errors.length)throw Error('Browser errors: '+errors.join('\n'));
   console.log('PASS: game initialized, menu visible, and score advances after Start');
+  // Gameplay fills the entire viewport: no redundant heading, no overlapping HUD.
+  const layout=await page.evaluate(()=>{
+    const bounds=s=>{const r=document.querySelector(s).getBoundingClientRect();
+      return {x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom};};
+    return {title: getComputedStyle(document.querySelector('.shell>header')).display,
+      game:bounds('.game'),scoreboard:bounds('.scoreboard'),map:bounds('#worldMapHudButton'),
+      tier:bounds('#tierTrack'),viewport:{width:innerWidth,height:innerHeight}};
+  });
+  if(layout.title!=='none')throw Error('Gameplay still shows the page title');
+  if(layout.game.height<layout.viewport.height*.85)throw Error('Gameplay does not use available screen height');
+  if(layout.scoreboard.right>layout.map.x+3)throw Error('Gameplay HUD overlaps world-map button');
+  if(layout.tier.right>layout.scoreboard.x+3)throw Error('Level progress overlaps HUD');
+  // Landscape phone (e.g. iPhone in landscape) must keep score cards and touch
+  // controls separate; test real CSS geometry, not only DOM presence.
+  const landscape=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
+  try{
+    await landscape.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
+    await landscape.locator('#startBtn').click();
+    await landscape.waitForTimeout(250);
+    const b=await landscape.evaluate(()=>{
+      const rect=s=>{const v=document.querySelector(s).getBoundingClientRect();
+        return {x:v.x,y:v.y,right:v.right,bottom:v.bottom,width:v.width,height:v.height};};
+      return {title:getComputedStyle(document.querySelector('.shell>header')).display,
+        game:rect('.game'),scoreboard:rect('.scoreboard'),map:rect('#worldMapHudButton'),
+        tier:rect('#tierTrack'),footer:rect('.game .footer'),status:rect('.game .status'),
+        viewport:{width:innerWidth,height:innerHeight}};
+    });
+    console.log('Landscape gameplay layout:',b);
+    if(b.title!=='none')throw Error('Landscape page title remains during gameplay');
+    if(b.game.height<b.viewport.height*.8)throw Error('Landscape canvas not fullscreen');
+    if(b.scoreboard.right>b.map.x+3)throw Error('Landscape HUD overlaps map');
+    if(b.tier.right>b.scoreboard.x+3)throw Error('Landscape level HUD collides with score');
+    if(b.footer.bottom>b.status.y+3)throw Error('Landscape controls overlap status');
+    if(b.footer.right>b.game.right+3)throw Error('Landscape controls outside playfield');
+  }finally{await landscape.close();}
+  console.log('PASS: full-viewport gameplay, clean desktop and landscape phone HUD');
+
   // iOS portrait regression: Granny's complete SVG must remain inside the
   // banner even when the home panel is taller than the viewport.
   const mobile=await browser.newPage({
