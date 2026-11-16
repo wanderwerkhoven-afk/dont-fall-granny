@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BalanceSystem } from '../game/BalanceSystem';
+import { WorldRenderer } from '../rendering/WorldRenderer';
 import { RunData } from '../game/RunData';
 import { COLORS, CSS } from '../game/theme';
 import type { RunState } from '../game/types';
@@ -26,6 +27,7 @@ export class GameScene extends Phaser.Scene {
 
   private balance = new BalanceSystem();
   private runData = new RunData();
+  private worldRenderer?: WorldRenderer;
 
   private worldSpeed = 510;
   private nextHazardAt = 0;
@@ -100,6 +102,7 @@ export class GameScene extends Phaser.Scene {
       const speed = this.worldSpeed * multiplier;
 
       this.runData.addDistance(speed * dt * 0.0095);
+      this.worldRenderer?.update(this.runData.distance, speed, dt);
       this.balance.update(dt, this.state === 'recovering');
 
       this.updateHazards(speed, dt);
@@ -133,36 +136,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createEnvironment(): void {
-    const g = this.add.graphics();
-
-    g.fillStyle(0xb9dce9);
-    g.fillRect(0, 0, 1080, 1130);
-    g.fillStyle(0x6f946a);
-    g.fillRect(0, 1130, 1080, 530);
-    g.fillStyle(COLORS.asphalt);
-    g.fillRect(0, 1390, 1080, 330);
-    g.fillStyle(0xd9d2c5);
-    g.fillRect(0, 1360, 1080, 45);
-
-    for (let i = 0; i < 5; i++) {
-      const x = 70 + i * 235;
-      const y = 870 + (i % 2) * 50;
-      const houseColor = i % 2 === 0 ? COLORS.cream : 0xf2c7cb;
-
-      g.fillStyle(houseColor);
-      g.fillRoundedRect(x, y, 190, 285, 24);
-      g.fillStyle(COLORS.plum);
-      g.fillTriangle(x - 15, y + 30, x + 95, y - 80, x + 205, y + 30);
-      g.fillStyle(0x91c4d3);
-      g.fillRect(x + 32, y + 95, 52, 65);
-      g.fillRect(x + 108, y + 95, 52, 65);
-    }
-
-    for (let i = 0; i < 10; i++) {
-      g.fillStyle(0xf3e6c9, 0.5);
-      g.fillRoundedRect(i * 150 - 60, 1532, 88, 12, 6);
-    }
-
+    this.worldRenderer = new WorldRenderer(this, this.reducedMotion);
     this.add.text(38, 46, 'DON’T FALL GRANNY', {
       fontFamily: 'Arial Black, Arial',
       fontSize: '28px',
