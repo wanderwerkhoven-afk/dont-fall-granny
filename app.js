@@ -409,10 +409,61 @@ function updateGrandmaOutfitPreview(){
 
 const menuContent=document.getElementById('menuContent'),menuWallet=document.getElementById('menuWallet'),menuTabs=document.getElementById('menuTabs'),countdown=document.getElementById('countdown');
 const GAME_OVER_SECONDS=10;let deathDeadline=0,deathTimerFrame=0;
-function stopDeathTimer(){deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
-function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){returnHome();return}deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
+const GameState=window.GrannyGameState.GameState;
+const runFlow=new window.GrannyGameState.GameStateController();
+let resultPreviousBest=0,resultPreviousCollections=[],resultPreviousAchievements=[],postRunDelayed=0;
+const postRun=new window.GrannyPostRun.RunResultOverlay(document.getElementById('game'),{
+ revive:boost=>revive(boost),
+ finish:()=>showRunResult(),
+ retry:()=>retryRun(),
+ home:()=>returnHome()
+});
+document.getElementById('game').addEventListener('pointerdown',event=>{
+ if(state!=='over'||!postRun.canTapRetry())return;
+ if(event.target.closest('button, .post-run-card, .world-map-overlay'))return;
+ event.preventDefault();retryRun();
+},true);
+function flowTo(next){
+ if(runFlow.current===next)return true;
+ return runFlow.transition(next);
+}
+function showRunResult(){
+ if(state!=='over'||postRun.phase==='result')return;
+ deathDeadline=0;
+ if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);
+ deathTimerFrame=0;
+ if(postRunDelayed)clearTimeout(postRunDelayed);
+ postRunDelayed=0;
+ if(runFlow.current===GameState.RESCUE)flowTo(GameState.GAME_OVER);
+ finalizeRun();
+ const newCollections=(metaState.collections||[]).filter(id=>!resultPreviousCollections.includes(id));
+ const newAchievements=(metaState.achievements||[]).filter(id=>!resultPreviousAchievements.includes(id));
+ const newUnlock=newCollections[0]||newAchievements[0];
+ const collection=META.collectionSets?.find(a=>a.id===newUnlock);
+ const achievement=META.achievements?.find(a=>a.id===newUnlock);
+ const summary=window.GrannyPostRun.RunSummaryBuilder.build({
+  distance:score,previousBest:resultPreviousBest,coins:coinsRun,
+  bestCombo:comboPeak,perfectSaves:perfectRun,
+  worldDiscovered:currentTier>startTierOffset?{name:TIERS[currentTier%TIERS.length].name}:null,
+  adventureUnlock:newUnlock?{name:collection?.name||achievement?.name||String(newUnlock)}:null
+ });
+ postRun.showResult(summary,{reducedMotion:reducedRecoveryMotion.matches});
+ document.getElementById('game').classList.add('post-run-result');
+}
+function retryRun(){
+ if(state!=='over'||postRun.phase!=='result')return false;
+ if(runFlow.current===GameState.GAME_OVER&&!flowTo(GameState.RUN_RESET))return false;
+ start();
+ return true;
+}
+
+function stopDeathTimer(){if(postRunDelayed)clearTimeout(postRunDelayed);postRunDelayed=0;postRun.hide();document.getElementById('game').classList.remove('post-run-active','post-run-result');deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
+function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){showRunResult();return}postRun.setRemaining(remaining);deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
 function finalizeRun(){if(runFinalized)return;runFinalized=true;metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
-function returnHome(){stopDeathTimer();if(state==='over')finalizeRun();if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='Start het spel →';overlay.classList.remove('hidden');resizeGame();render()}
+function returnHome(){stopDeathTimer();if(state==='over')finalizeRun();
+ if(runFlow.current!==GameState.MENU){
+  if(!flowTo(GameState.MENU)){runFlow.current=GameState.MENU;}
+ }if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='Start het spel →';overlay.classList.remove('hidden');resizeGame();render()}
 
 const makeHomeIcon=paths=>'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">'+paths+'</svg>';
 const HOME_ICONS={
@@ -594,16 +645,36 @@ document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
 function random(a,b){return a+Math.random()*(b-a)}function reset(){grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
-function start(){stopDeathTimer();showMenu('home');reset();state='playing';overlay.classList.add('hidden');resizeGame();updateMissionPin();tutorialActive=!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
+function start(){stopDeathTimer();showMenu('home');reset();
+ if(runFlow.current===GameState.MENU)flowTo(GameState.RUN_RESET);
+ if(runFlow.current===GameState.RUN_RESET)flowTo(GameState.RUNNING);
+ state='playing';overlay.classList.add('hidden');resizeGame();updateMissionPin();tutorialActive=!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
+ if(state==='over')return;
+ // Existing collision/recovery handlers keep calling end(); all reward
+ // bookkeeping happens once, after rescue expires or the player skips.
+ resultPreviousBest=best;
+ resultPreviousCollections=[...(metaState.collections||[])];
+ resultPreviousAchievements=[...(metaState.achievements||[])];
  grandmaExpressions.react('fall');
  recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
- state='over';showMenu('home');overlay.classList.add('gameover');deathDeadline=performance.now()+GAME_OVER_SECONDS*1000;deathTimerFrame=requestAnimationFrame(tickDeathTimer);if(score>best){best=score;bestEl.textContent=best+' m';try{localStorage.setItem('dont-trip-grandma-best',best)}catch(e){}}
- title.textContent='RUN VOORBIJ!';
- text.textContent=`${score} M AFGELEGD  ·  +${coinsRun} MUNTEN. Kies snel: red oma of ga terug naar het startscherm.`;
- if(runSummaryEl){const highlights=[];if(score>metaState.records.distance)highlights.push('🏁 Nieuw afstandsrecord');if(comboPeak>metaState.records.combo)highlights.push('🔥 Nieuw comborecord');if(perfectRunAlive)highlights.push('💎 PERFECT RUN · +25 🪙');const nextUnlock=META.unlocks.find(u=>best<u.distance);if(nextUnlock)highlights.push('🗺️ Nog '+Math.max(0,nextUnlock.distance-score)+' m tot '+nextUnlock.label);runSummaryEl.innerHTML='<div><small>AFSTAND</small><b>'+score+' m</b></div><div><small>MUNTEN</small><b>+'+coinsRun+'</b></div><div><small>PERFECT</small><b>'+perfectRun+'</b></div><div><small>NEAR MISS</small><b>'+nearMissRun+'</b></div><div><small>BESTE COMBO</small><b>🔥 '+comboPeak+'</b></div><div><small>RANK XP</small><b>+'+Math.round(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7)+'</b></div><p class="run-highlights">'+highlights.join(' · ')+'</p>'}
- reviveBtn.disabled=coins<10;boostBtn.disabled=coins<6;
- shop.style.display='flex';startBtn.textContent='⌂ TERUG NAAR MENU';overlay.classList.remove('hidden');pauseBtn.textContent='⏸ Pauze'
+ state='over';
+ flowTo(GameState.FALLING);
+ flowTo(GameState.RESCUE);
+ if(score>best){best=score;bestEl.textContent=best+' m';try{localStorage.setItem('dont-trip-grandma-best',best)}catch(e){}}
+ // Keep the same canvas and camera framing, with Granny settled on the road.
+ grandma.vy=0;grandma.y=ground-grandma.h;
+ render();
+ const game=document.getElementById('game');
+ game.classList.add('post-run-active');game.classList.remove('post-run-result');
+ overlay.classList.add('hidden');overlay.classList.remove('gameover');
+ if(onboardingEl)onboardingEl.classList.remove('show');
+ postRun.setGrannyPosition({x:grandma.x,y:grandma.y,w:grandma.w,h:grandma.h,sceneWidth:W,sceneHeight:H});
+ const canRescue=coins>=6;
+ deathDeadline=performance.now()+GAME_OVER_SECONDS*1000;
+ postRun.showRescue({distance:score,coins,deadline:deathDeadline,canRevive:canRescue});
+ if(canRescue)deathTimerFrame=requestAnimationFrame(tickDeathTimer);
+ else postRunDelayed=setTimeout(showRunResult,800);
 }
 function revive(boost=false){
  const cost=boost?6:10;if(state!=='over'||coins<cost||performance.now()>=deathDeadline){if(state==='over'&&performance.now()>=deathDeadline)returnHome();return;}stopDeathTimer();
@@ -612,12 +683,13 @@ function revive(boost=false){
  grandma.y=ground-grandma.h;grandma.vy=0;
  invulnerable=boost?6:3.5;boostTime=boost?6:0;
  state='playing';shop.style.display='none';overlay.classList.add('hidden');
+ if(runFlow.current===GameState.RESCUE)flowTo(GameState.RUNNING);
  statusEl.textContent=boost?'⚡ COMEBACK TURBO: 6 seconden bescherming + bonuscombo!':'❤️ COMEBACK: 8 seconden bonuscombo actief!';showEvent('🔥 COMEBACK STREAK · 8 SEC',2);
  last=performance.now();requestAnimationFrame(frame);
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')returnHome();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
