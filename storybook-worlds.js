@@ -85,10 +85,9 @@ function installMap(getProgress,pause,onSelect){
   const {score,best,currentTier,startTierOffset}=getProgress();
   const index=Math.min(6,Math.max(0,currentTier%7));
   const campaign=window.GrannyLevels?.getLevels()||[];
-  const furthest=Math.min(6,Math.max(index,...campaign.filter(l=>l.unlocked).map(l=>l.index),0));
-  const completed=Math.max(0,Math.min(3000,Math.max(best,score)));
-  bar.style.width=(campaign.filter(l=>l.completed).length/7*100).toFixed(2)+'%';
-  summary.textContent=campaign.filter(l=>l.completed).length+'/7 levels behaald · Deze run: '+Math.floor(score)+' m';
+  const worlds=window.GrannyLevels?.getWorlds()||[];
+  bar.style.width=(campaign.filter(l=>l.completed).length/49*100).toFixed(2)+'%';
+  summary.textContent=campaign.filter(l=>l.completed).length+'/49 levels behaald · Deze run: '+Math.floor(score)+' m';
   const artwork=[
    '<rect x="7" y="57" width="126" height="44" rx="9" fill="#8ac58e"/><path d="M15 62V39L37 22L59 39V62Z" fill="#fbd2b4" stroke="#352b49" stroke-width="4"/><path d="M7 40L37 17L67 40" fill="none" stroke="#352b49" stroke-width="5" stroke-linejoin="round"/><rect x="28" y="43" width="16" height="19" rx="3" fill="#97cee0"/><path d="M77 62V33L103 16L126 33V62" fill="#ffe7c6" stroke="#352b49" stroke-width="4"/><path d="M70 35L103 12L133 35" fill="none" stroke="#352b49" stroke-width="5"/><path d="M8 78H134M20 70V92M53 70V92M86 70V92M119 70V92" stroke="#fff0da" stroke-width="6"/>',
    '<path d="M0 80Q35 51 75 77T150 74V103H0Z" fill="#7ebd95"/><path d="M19 85V43M113 83V40" stroke="#4b7354" stroke-width="8"/><circle cx="19" cy="33" r="25" fill="#6cae78" stroke="#352b49" stroke-width="4"/><circle cx="113" cy="34" r="28" fill="#94ca86" stroke="#352b49" stroke-width="4"/><ellipse cx="76" cy="90" rx="40" ry="11" fill="#88cbd4"/><ellipse cx="71" cy="84" rx="15" ry="9" fill="#fff6ce" stroke="#352b49" stroke-width="3"/><circle cx="83" cy="77" r="7" fill="#fff6ce"/><path d="M88 77L97 80L88 83" fill="#f8be66"/>',
@@ -101,13 +100,18 @@ function installMap(getProgress,pause,onSelect){
   list.className='world-map-route world-map-illustrated';
   list.innerHTML='<svg class="world-map-winding-road" viewBox="0 0 100 1140" preserveAspectRatio="none" aria-hidden="true"><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#352b49" stroke-width="18" stroke-linecap="round"/><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#fff1cb" stroke-width="12" stroke-linecap="round" stroke-dasharray="3 3"/></svg>'+
   NAMES.map((name,i)=>{
-    const level=campaign[i]||{goal:500,unlocked:i<=furthest,completed:i<furthest};
-    const unlocked=level.unlocked,active=i===index,visited=level.completed;
+    const world=worlds[i]||{levels:[],unlocked:i===0,completed:false,completedCount:0};
+    const unlocked=world.unlocked,active=i===index,visited=world.completed;
     const art='<svg class="world-map-scene" viewBox="0 0 150 105" role="img" aria-label="'+name+' illustratie">'+artwork[i]+'</svg>';
-    const status=active?'HIER BEN JE':visited?'LEVEL BEHAALD':unlocked?'SPEELBAAR':'VERGRENDELD';
-    return '<li class="world-map-island world-map-zone-'+i+(active?' is-current':'')+(unlocked?' is-unlocked':' is-locked')+'"><div class="world-map-landscape">'+art+'<span class="world-map-step-number">'+(i+1)+'</span></div><div class="world-map-island-copy"><div class="world-map-island-status">'+status+'</div><strong>'+name+'</strong><small>'+SIGNATURE[i]+'</small><span class="world-map-meters">'+'DOEL: '+level.goal+' M</span></div>'+(unlocked?'<button type="button" class="world-map-play" data-level="'+i+'" aria-label="Speel '+name+'">'+(active?'GESELECTEERD':'SPEEL LEVEL')+'</button>':'')+(active?'<div class="world-map-granny-marker" aria-label="Granny is hier">OMA <span>●</span></div>':'')+'</li>';
+    const status=active?'HIER BEN JE':visited?'WERELD BEHAALD':unlocked?'SPEELBAAR':'VERGRENDELD';
+    const stages='<div class="world-map-level-grid" aria-label="Levels '+name+'">'+world.levels.map(l=>
+      '<button type="button" class="world-map-level'+(l.completed?' is-done':'')+(l.index===window.GrannyLevels.getSelected()?' is-selected':'')+'" data-level="'+l.index+'" '+(!l.unlocked?'disabled aria-disabled="true"':'')+
+      ' aria-label="'+name+', level '+l.number+', doel '+l.goal+' meter">'+
+      '<b>'+(l.completed?'✓':l.number)+'</b><small>'+l.goal+' m</small></button>'
+    ).join('')+'</div>';
+    return '<li class="world-map-island world-map-zone-'+i+(active?' is-current':'')+(unlocked?' is-unlocked':' is-locked')+'"><div class="world-map-landscape">'+art+'<span class="world-map-step-number">'+(i+1)+'</span></div><div class="world-map-island-copy"><div class="world-map-island-status">'+status+'</div><strong>'+name+'</strong><small>'+SIGNATURE[i]+'</small><span class="world-map-meters">'+world.completedCount+' / 7 LEVELS</span></div>'+stages+(active?'<div class="world-map-granny-marker" aria-label="Granny is hier">OMA <span>●</span></div>':'')+'</li>';
   }).join('');
-  list.querySelectorAll('[data-level]').forEach(el=>el.addEventListener('click',()=>{
+  list.querySelectorAll('[data-level]:not([disabled])').forEach(el=>el.addEventListener('click',()=>{
    const target=Number(el.dataset.level);
    if(onSelect?.(target)!==false)hide();
   }));
