@@ -11,6 +11,9 @@ const {chromium}=require('playwright');
    await page.waitForTimeout(150);
    await page.evaluate(()=>window.__grannyDebug.fall());
    await page.locator('#postRunOverlay.rescue-phase').waitFor();
+   // Both phases must use the same compact, grounded tray: no floating card
+   // and no change in position when Rescue turns into Result.
+   const rescueBounds=await page.locator('.post-run-card').boundingBox();
    if(!await page.locator('#overlay').evaluate(el=>el.classList.contains('hidden')))
     throw Error('Legacy full-screen game-over menu replaced the world');
    await page.locator('#postRunResult:not([hidden])').waitFor({timeout:3500});
@@ -23,6 +26,12 @@ const {chromium}=require('playwright');
       active:window.__grannyDebug.snapshot()};
    });
    if(result.text!=='Oeps… daar gaat oma.')throw Error('Wrong result header');
+   const bottomGap=result.game.bottom-result.card.bottom;
+   if(bottomGap<3||bottomGap>60)throw Error('Post-run card is not anchored to the bottom: '+bottomGap+' '+JSON.stringify(viewport));
+   if(Math.abs(rescueBounds.y-result.card.y)>15)throw Error('Rescue-to-result card jumped vertically on '+JSON.stringify(viewport));
+   if(Math.abs(rescueBounds.x-result.card.x)>8)throw Error('Rescue-to-result card jumped horizontally on '+JSON.stringify(viewport));
+   if(viewport.height<520&&result.card.x<result.game.x+result.game.right*.15)throw Error('Landscape result bar covers Granny lane');
+
    if(result.card.x<result.game.x-4||result.card.y<result.game.y-4||
       result.card.right>result.game.right+4||result.card.bottom>result.game.bottom+4)
     throw Error('Result card clipped in viewport '+JSON.stringify(viewport)+' '+JSON.stringify(result));
