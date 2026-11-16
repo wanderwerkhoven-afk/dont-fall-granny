@@ -474,6 +474,12 @@ function showMenu(page='home'){
  requestAnimationFrame(()=>{syncClothesRailOffset();syncClothesHanger();refreshHangerAnimation()});
 }
 menuContent.addEventListener('click',e=>{const tile=e.target.closest('[data-open-page]');if(!tile||menuPage!=='home')return;showMenu(tile.dataset.openPage);overlay.querySelector('.panel').scrollTop=0;});
+document.getElementById('homeMainNav')?.addEventListener('click',event=>{
+ const tile=event.target.closest('[data-open-page]');
+ if(!tile||menuPage!=='home')return;
+ showMenu(tile.dataset.openPage);
+ overlay.querySelector('.panel').scrollTop=0;
+});
 menuTabs.addEventListener('click',e=>{
  const btn=e.target.closest('[data-page]');if(!btn)return;
  if(btn.dataset.page!==menuPage){
