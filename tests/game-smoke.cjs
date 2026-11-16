@@ -41,6 +41,30 @@ const { chromium } = require('playwright');
   if(!/\d+ m/.test(score)||parseInt(score)<=0)throw Error('Game did not advance after start');
   if(errors.length)throw Error('Browser errors: '+errors.join('\n'));
   console.log('PASS: game initialized, menu visible, and score advances after Start');
+  // iOS portrait regression: Granny's complete SVG must remain inside the
+  // banner even when the home panel is taller than the viewport.
+  const mobile=await browser.newPage({
+    viewport:{width:393,height:852},
+    deviceScaleFactor:3,
+    isMobile:true,
+    hasTouch:true
+  });
+  try {
+    await mobile.goto('http://127.0.0.1:8765/',{waitUntil:'networkidle'});
+    await mobile.waitForTimeout(350);
+    const hero=await mobile.locator('#overlay .menu-hero').boundingBox();
+    const granny=await mobile.locator('#menuGrandma svg').boundingBox();
+    console.log('Mobile hero and Granny bounds:',{hero,granny});
+    if(!hero||!granny)throw Error('Mobile Granny illustration is missing');
+    const margin=8;
+    if(granny.x<hero.x-margin||granny.y<hero.y-margin||
+       granny.x+granny.width>hero.x+hero.width+margin||
+       granny.y+granny.height>hero.y+hero.height+margin)
+      throw Error('Granny SVG overflows mobile portrait hero banner');
+    if(granny.height<85)throw Error('Granny is rendered too small on portrait mobile');
+    console.log('PASS: Granny stays fully visible inside iPhone portrait banner');
+  } finally { await mobile.close(); }
+
  } finally {
   await page.screenshot({path:'/tmp/granny-smoke.png',fullPage:true}).catch(()=>{});
   await browser.close();
