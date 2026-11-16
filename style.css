@@ -780,3 +780,28 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .world-map-island{flex-wrap:wrap}
  .world-map-play{margin-left:auto;padding:6px 8px;font-size:9px}
 }
+
+/* World map: seven distinct level milestones inside each storybook world. */
+.world-map-island{flex-wrap:wrap;align-content:start}
+.world-map-level-grid{
+ flex:1 0 100%;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+ gap:5px;width:100%;padding-top:8px;border-top:2px dashed #d3bdc7
+}
+.world-map-level{
+ min-width:0;min-height:46px;display:grid;place-items:center;gap:2px;
+ padding:5px 1px;border:2px solid #352b49;border-radius:9px;
+ background:#fff0c8;color:#352b49;cursor:pointer;font:900 12px system-ui;
+ box-shadow:1px 2px 0 #352b49;touch-action:manipulation
+}
+.world-map-level b{font-size:15px;line-height:1}
+.world-map-level small{font-size:9px;white-space:nowrap;line-height:1}
+.world-map-level.is-done{background:#b9e4c4}
+.world-map-level.is-selected{outline:3px solid #f8b45d;outline-offset:1px}
+.world-map-level:disabled{cursor:not-allowed;opacity:.5;background:#e6dce7;box-shadow:none}
+.world-map-level:focus-visible{outline:3px solid #9671e3;outline-offset:2px}
+@media(max-width:650px){
+ .world-map-level-grid{gap:3px;padding-top:6px}
+ .world-map-level{min-height:39px;padding:4px 0;border-width:1.5px;border-radius:6px}
+ .world-map-level b{font-size:12px}
+ .world-map-level small{font-size:8px}
+}
