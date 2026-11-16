@@ -44,6 +44,7 @@ jobs:
           node tests/home-desktop-layout.mjs
           node tests/recovery-skill-check.mjs
           node tests/recovery-risk-loop.mjs
+          node tests/storybook-worlds-regression.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
