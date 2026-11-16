@@ -765,3 +765,18 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  .world-map-granny-marker{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){.world-map-island{animation:none}}
+
+/* Campaign level selection appears as part of each illustrated world card. */
+.world-map-play{
+ align-self:center;flex:0 0 auto;
+ padding:8px 10px;border:2px solid #352b49;border-radius:10px;
+ background:#ffcf77;color:#352b49;box-shadow:2px 2px 0 #352b49;
+ font:900 10px/1.1 system-ui;cursor:pointer;touch-action:manipulation;
+}
+.world-map-play:hover{background:#ffe7ae}
+.world-map-play:focus-visible{outline:3px solid #a66ae8;outline-offset:2px}
+.world-map-island.is-current .world-map-play{background:#d1ead4}
+@media(max-width:650px){
+ .world-map-island{flex-wrap:wrap}
+ .world-map-play{margin-left:auto;padding:6px 8px;font-size:9px}
+}
