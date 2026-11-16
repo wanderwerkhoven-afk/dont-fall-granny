@@ -1717,3 +1717,224 @@ body:has(#overlay.hidden) .game>canvas{
  mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
  filter:drop-shadow(0 0 2px #37273d);
 }
+
+/* Improvement 11 / visual polish: a grounded result tray, not a floating modal.
+ * Leave the world, Granny and the countdown ring clearly visible.
+ * Identical placement for rescue and result, so the panel never jumps.
+ */
+.post-run-dim{
+ background:linear-gradient(0deg,rgba(48,37,59,.24),rgba(48,37,59,.075) 58%,rgba(48,37,59,.11))!important;
+}
+.post-run-overlay .post-run-card,
+.post-run-overlay .post-run-card[data-size=compact],
+.post-run-overlay .post-run-card[data-size=standard],
+.post-run-overlay .post-run-card[data-size=celebration]{
+ position:absolute!important;
+ top:auto!important;
+ left:50%!important;
+ right:auto!important;
+ bottom:max(12px,env(safe-area-inset-bottom,0px))!important;
+ transform:translateX(-50%)!important;
+ width:min(1020px,80%)!important;
+ min-height:134px;
+ height:auto;
+ max-height:min(235px,43%)!important;
+ display:grid;
+ grid-template-columns:minmax(0,1.4fr) minmax(95px,.64fr) minmax(0,2fr);
+ grid-template-rows:auto auto auto;
+ align-items:center;
+ justify-items:stretch;
+ column-gap:clamp(12px,1.7vw,24px);
+ row-gap:4px;
+ padding:12px 18px;
+ overflow-y:auto;
+ border-radius:17px 17px 14px 14px;
+ background:rgba(255,248,234,.97);
+ border:3px solid #30263f;
+ box-shadow:4px 5px 0 #30263f;
+ text-align:left;
+}
+.post-run-overlay .post-run-tag{
+ grid-column:1;grid-row:1;
+ font-size:9px;letter-spacing:1.2px;
+}
+.post-run-overlay .post-run-card h2{
+ grid-column:1;grid-row:2;
+ font-size:clamp(17px,2vw,25px);
+ letter-spacing:-.6px;
+ line-height:1.08;
+ text-wrap:balance;
+}
+.post-run-overlay .post-run-distance{
+ grid-column:2;grid-row:1/3;
+ justify-content:center;
+ align-items:baseline;
+ font-size:clamp(29px,3.2vw,47px);
+}
+.post-run-overlay .post-run-record{
+ grid-column:2;grid-row:3;
+ text-align:center;
+ font-size:10px;
+}
+.post-run-overlay .post-run-rescue,
+.post-run-overlay .post-run-result{
+ grid-column:3;grid-row:1/4;
+ width:100%;min-width:0;
+ gap:5px;
+ animation:postRunReveal .22s ease both;
+}
+.post-run-overlay .post-run-rescue{
+ display:grid;grid-template-columns:56px minmax(0,1fr);
+ grid-template-rows:auto auto auto;
+ align-items:center;column-gap:9px;
+}
+.post-run-overlay .post-run-timer{
+ grid-column:1;grid-row:1/3;
+ width:50px;height:50px;font-size:18px;
+}
+.post-run-overlay .post-run-rescue p{
+ grid-column:2;grid-row:1;
+ text-align:left;font-size:11px;
+}
+.post-run-overlay .post-run-rescue-actions{
+ grid-column:2;grid-row:2;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:5px;
+}
+.post-run-overlay .post-run-rescue-actions button{
+ min-height:40px;
+ padding:5px 4px;
+ font-size:clamp(9px,.85vw,12px);
+ line-height:1.15;
+}
+.post-run-overlay .post-run-rescue .post-run-link{
+ grid-column:2;grid-row:3;
+ justify-self:center;
+ padding:3px 7px;
+}
+.post-run-overlay .post-run-result{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(124px,.82fr);
+ grid-template-rows:auto auto;
+ align-items:center;column-gap:8px;
+}
+.post-run-overlay .post-run-highlights,
+.post-run-overlay .post-run-reward{
+ grid-column:1;grid-row:1/3;
+ justify-content:flex-start;
+ text-align:left;
+}
+.post-run-overlay .post-run-reward:not([hidden]){
+ grid-row:2;
+}
+.post-run-overlay .post-run-highlights:has(+ .post-run-reward:not([hidden])){
+ grid-row:1;
+}
+.post-run-overlay .post-run-highlight{
+ padding:5px 8px;
+ border-width:1.5px;
+ font-size:clamp(10px,.85vw,12px);
+}
+.post-run-overlay .post-run-retry{
+ grid-column:2;grid-row:1;
+ min-height:48px;
+ padding:8px 7px;
+ font-size:clamp(12px,1.1vw,15px);
+ line-height:1.15;
+}
+.post-run-overlay .post-run-result>.post-run-link{
+ grid-column:2;grid-row:2;
+ padding:4px 8px;
+}
+.post-run-overlay .post-run-focus{
+ box-shadow:0 0 0 9px rgba(255,245,209,.09);
+}
+@media(orientation:landscape) and (max-height:520px){
+ .post-run-overlay .post-run-card,
+ .post-run-overlay .post-run-card[data-size=compact],
+ .post-run-overlay .post-run-card[data-size=standard],
+ .post-run-overlay .post-run-card[data-size=celebration]{
+  left:auto!important;right:clamp(8px,1.5vw,18px)!important;
+  bottom:max(7px,env(safe-area-inset-bottom,0px))!important;
+  transform:none!important;
+  width:min(74%,900px)!important;
+  min-height:112px;
+  max-height:45%!important;
+  grid-template-columns:minmax(0,1.2fr) minmax(65px,.55fr) minmax(0,2fr);
+  gap:4px 9px;
+  padding:8px 11px;
+  border-width:2px;
+  border-radius:13px;
+ }
+ .post-run-overlay .post-run-card h2{font-size:clamp(14px,1.8vw,19px)}
+ .post-run-overlay .post-run-distance{font-size:clamp(24px,3vw,36px)}
+ .post-run-overlay .post-run-tag{font-size:8px}
+ .post-run-overlay .post-run-record{font-size:9px}
+ .post-run-overlay .post-run-rescue{grid-template-columns:40px minmax(0,1fr);column-gap:5px}
+ .post-run-overlay .post-run-timer{width:37px;height:37px;font-size:13px}
+ .post-run-overlay .post-run-rescue p{font-size:9px}
+ .post-run-overlay .post-run-rescue-actions button{min-height:37px;font-size:9px}
+ .post-run-overlay .post-run-result{grid-template-columns:minmax(0,1fr) minmax(100px,.85fr)}
+ .post-run-overlay .post-run-highlight{font-size:9px;padding:3px 5px}
+ .post-run-overlay .post-run-retry{min-height:42px;font-size:11px}
+ .post-run-overlay .post-run-link{font-size:10px}
+ .post-run-overlay .post-run-book{font-size:9px;gap:6px}
+ .post-run-overlay .post-run-book b{font-size:11px}
+}
+@media(orientation:portrait) and (max-width:650px){
+ .post-run-overlay .post-run-card,
+ .post-run-overlay .post-run-card[data-size=compact],
+ .post-run-overlay .post-run-card[data-size=standard],
+ .post-run-overlay .post-run-card[data-size=celebration]{
+  left:50%!important;right:auto!important;
+  bottom:max(17px,calc(env(safe-area-inset-bottom,0px) + 8px))!important;
+  transform:translateX(-50%)!important;
+  width:calc(100% - 22px)!important;
+  min-height:192px;
+  max-height:36%!important;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:auto auto auto;
+  align-items:center;column-gap:9px;row-gap:4px;
+  padding:11px 13px 10px;
+  border-width:2px;
+  border-radius:17px;
+  text-align:left;
+ }
+ .post-run-overlay .post-run-tag{grid-column:1;grid-row:1;font-size:8px}
+ .post-run-overlay .post-run-card h2{
+  grid-column:1;grid-row:2;font-size:clamp(17px,5vw,22px)
+ }
+ .post-run-overlay .post-run-distance{
+  grid-column:2;grid-row:1/3;
+  font-size:clamp(30px,9vw,40px)
+ }
+ .post-run-overlay .post-run-record{
+  grid-column:1/3;grid-row:3;
+  font-size:10px;text-align:left
+ }
+ .post-run-overlay .post-run-rescue,
+ .post-run-overlay .post-run-result{
+  grid-column:1/3;grid-row:4;
+  width:100%;padding-top:5px
+ }
+ .post-run-overlay .post-run-rescue{
+  display:grid;grid-template-columns:42px minmax(0,1fr);
+  grid-template-rows:auto auto auto;
+  gap:5px 8px;
+ }
+ .post-run-overlay .post-run-timer{height:42px;width:42px;font-size:14px}
+ .post-run-overlay .post-run-rescue p{font-size:11px}
+ .post-run-overlay .post-run-rescue-actions button{min-height:44px;font-size:10px}
+ .post-run-overlay .post-run-result{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,.85fr);
+  grid-template-rows:auto auto;gap:7px;
+ }
+ .post-run-overlay .post-run-highlights{justify-content:flex-start;align-content:center}
+ .post-run-overlay .post-run-highlight{font-size:11px;padding:5px 7px}
+ .post-run-overlay .post-run-retry{min-height:50px;font-size:13px}
+ .post-run-overlay .post-run-link{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ .post-run-overlay .post-run-rescue,
+ .post-run-overlay .post-run-result{animation:none!important}
+}
