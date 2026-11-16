@@ -4,12 +4,12 @@ const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css',
-  './game-meta.js',
-  './progression.js',
-  './app.js',
-  './storybook-worlds.js',
-  './levels.js',
+  './style.css?v=10',
+  './game-meta.js?v=10',
+  './progression.js?v=10',
+  './app.js?v=10',
+  './storybook-worlds.js?v=10',
+  './levels.js?v=10',
   './assets/hanger-spritesheet.svg'
 ];
 const offlineUrl = path => new URL(path, self.registration.scope).toString();
