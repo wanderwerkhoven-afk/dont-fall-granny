@@ -627,7 +627,7 @@ function update(dt){elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.m
  const tierNow=document.getElementById('tierNow'),tierNext=document.getElementById('tierNext');
  if(tierNow)tierNow.textContent='TIER '+(newTier+1)+' · '+TIERS[newTier%TIERS.length].name.toUpperCase();
  if(tierNext)tierNext.textContent='VOLGENDE WERELD · '+(500-score%500)+' M';
- if(newTier!==currentTier){if(challengeTier===currentTier&&challengeTime>0){const bonus=Math.round(15*difficultyRule().reward);coins+=bonus;coinsRun+=bonus;saveCoins();rewardPopups.push({text:'CHALLENGE +'+bonus+' 🪙',x:W*.5,y:82,life:2});challengeTime=0}previousTier=currentTier;currentTier=newTier;transition=2.8;tierFlash=3.3;puff(W*.65,ground-110,'#fff3a0');metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);incrementMission('tier',currentTier+1);evaluateAchievements();playFeedback('tier');haptic([15,20,15]);statusEl.textContent=(TIERS[currentTier%TIERS.length].icon||'🌍')+' '+currentWorldRule().label;}
+ if(newTier!==currentTier){if(challengeTier===currentTier&&challengeTime>0){const bonus=Math.round(15*difficultyRule().reward);coins+=bonus;coinsRun+=bonus;saveCoins();rewardPopups.push({text:'CHALLENGE +'+bonus+' 🪙',x:W*.5,y:82,life:2});challengeTime=0}previousTier=currentTier;currentTier=newTier;transition=0;tierFlash=3.3;puff(W*.65,ground-110,'#fff3a0');metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);incrementMission('tier',currentTier+1);evaluateAchievements();playFeedback('tier');haptic([15,20,15]);statusEl.textContent=(TIERS[currentTier%TIERS.length].icon||'🌍')+' '+currentWorldRule().label;}
  tierFlash=Math.max(0,tierFlash-dt);transition=Math.max(0,transition-dt);
  if(!vehicle){const wasAirborne=grandma.y<ground-grandma.h-2;grandma.vy+=(currentWorldRule().gravity||1850)*worldEventGravity()*dt;grandma.y=Math.min(ground-grandma.h,grandma.y+grandma.vy*dt);if(grandma.y>=ground-grandma.h){if(wasAirborne&&grandma.vy>260)landingPulse=1;grandma.vy=0;}}invulnerable=Math.max(0,invulnerable-dt);flash=Math.max(0,flash-dt);for(const c of clouds){c.x-=speed*.045*dt;if(c.x< -110)c.x=W+80}
 if(vehicle){for(const p of particles){p.life-=dt}particles=particles.filter(p=>p.life>0);return;}spawnDistance+=speed*dt;candyDistance-=speed*dt;coinDistance-=speed*dt;
@@ -737,6 +737,10 @@ function background(tierIndex=currentTier){
   ellipse(W*.77,ground*.24,48,48,'#c9b8e5');ellipse(W*.75,ground*.22,10,10,'#9e8dbd');ellipse(W*.8,ground*.28,8,8,'#9e8dbd');
   hill('#433969',travel*.08,100);hill('#635185',travel*.2,50);
   for(let i=-1;i<Math.ceil(W/100)+5;i++){let x=scroll(.4,145,i*145)-70;rounded(x,ground-82,75,82,20,'#9287b7');rounded(x+12,ground-67,51,32,15,'#bde2ed');ellipse(x+19,ground-12,7,7,'#c4c0e6');ellipse(x+55,ground-12,7,7,'#c4c0e6')}
+ }
+ // Hand-drawn storybook depth layers, painted behind the collision-free road.
+ if(window.GrannyStorybook){
+  window.GrannyStorybook.draw(ctx,{tier:tierIndex,travel,W,ground,elapsed,reducedMotion:reducedRecoveryMotion.matches});
  }
  // Ground belongs to the current zone too; pavement is synced to world travel.
  const road=ctx.createLinearGradient(0,ground,0,H);
@@ -892,7 +896,15 @@ function render(){
   const wobble=Math.sin((1-strength)*Math.PI*3)*strength;
   ctx.translate(wobble*4,Math.abs(wobble)*1.5);
  }
- if(transition>0){
+ // Preview the next illustrated world before reaching the actual tier boundary.
+ // Roadmap/gameplay switches at the usual 500 m; only scenery blends early.
+ const approaching=(score%500),lastWorld=(currentTier%7===6);
+ const blend=(!lastWorld&&state==='playing'&&approaching>=420)
+   ? Math.max(0,Math.min(1,(approaching-455)/45)):0;
+ if(blend>0){
+  background(currentTier);
+  ctx.save();ctx.globalAlpha=blend;background(currentTier+1);ctx.restore();
+ }else if(transition>0){
   background(previousTier);
   ctx.save();ctx.globalAlpha=1-transition/2.8;background(currentTier);ctx.restore();
  }else background();
@@ -922,5 +934,8 @@ for(const c of coinItems){
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
 for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore()}
-function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;if(state==='recovery')updateRecovery(dt);else update(dt);render();if(state==='playing'||state==='recovery')requestAnimationFrame(frame)}reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
+function frame(now){if(state!=='playing'&&state!=='recovery')return;const dt=Math.max(0,Math.min((now-last)/1000,.035));last=now;if(state==='recovery')updateRecovery(dt);else update(dt);render();if(state==='playing'||state==='recovery')requestAnimationFrame(frame)}if(window.GrannyStorybook)window.GrannyStorybook.installMap(
+ ()=>({score,best,currentTier,startTierOffset,state}),pause
+);
+reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 })();
