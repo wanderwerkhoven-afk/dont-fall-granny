@@ -1708,3 +1708,12 @@ body:has(#overlay.hidden) .game>canvas{
 @media(prefers-reduced-motion:reduce){
  .post-run-dim,.post-run-rescue,.post-run-result,.post-run-reward{animation:none!important}
 }
+
+/* Rescue ring is spatially anchored to Granny, not a second modal. */
+.post-run-overlay.rescue-phase .post-run-focus::after{
+ content:'';position:absolute;inset:-12px;border-radius:50%;
+ background:conic-gradient(from -90deg,#ffcc66 var(--rescue-progress,100%),#ffffff45 0);
+ -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+ mask:radial-gradient(farthest-side,transparent calc(100% - 7px),#000 calc(100% - 6px));
+ filter:drop-shadow(0 0 2px #37273d);
+}
