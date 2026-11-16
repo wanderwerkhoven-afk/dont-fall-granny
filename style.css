@@ -724,3 +724,44 @@ header{margin:0 0 9px;padding:0 4px}header h1{font-size:clamp(21px,4vw,31px);let
  #overlay:not(.storepage):not(.gameover) .home-hub{grid-template-columns:repeat(4,100px);gap:8px}
  #overlay:not(.storepage):not(.gameover) #menuContent{margin:5px auto}
 }
+
+/* Illustrated world roadmap: winding illustrated path, not a text-only list. */
+.world-map-panel{background:linear-gradient(155deg,#fffaf0,#fcebdc);border:4px solid #352b49;box-shadow:7px 7px 0 #211b34}
+.world-map-illustrated{position:relative;isolation:isolate;display:grid;grid-template-columns:1fr;gap:12px;padding:18px 5% 24px;margin:0;overflow:hidden;border-radius:20px;background:linear-gradient(165deg,#dbeed7 0%,#eaf2d6 26%,#f8e1c7 48%,#e8d9ec 75%,#ced2f2 100%);border:3px solid #352b49}
+.world-map-winding-road{position:absolute;top:0;left:36%;width:30%;height:100%;pointer-events:none;z-index:-1;opacity:.75}
+.world-map-island{list-style:none;position:relative;display:flex;align-items:center;gap:14px;width:min(78%,480px);min-height:130px;padding:11px;border:3px solid #352b49;border-radius:20px;background:#fff9ec;box-shadow:5px 5px 0 #352b49;color:#352b49}
+.world-map-island:nth-of-type(even){justify-self:end;flex-direction:row-reverse;text-align:right}
+.world-map-island:nth-of-type(odd){justify-self:start}
+.world-map-island.is-locked{filter:saturate(.5);opacity:.84}
+.world-map-island.is-current{outline:5px solid #ffcb6a;outline-offset:3px;background:#fff4d6}
+.world-map-landscape{position:relative;flex:0 0 142px;max-width:42%;aspect-ratio:1.43;border:2px solid #352b49;border-radius:13px;overflow:hidden;background:#c8e8df}
+.world-map-scene{display:block;width:100%;height:100%;object-fit:cover}
+.world-map-step-number{position:absolute;top:5px;left:6px;display:grid;place-items:center;width:23px;height:23px;border:2px solid #352b49;border-radius:50%;background:#fff8eb;font:900 12px system-ui}
+.world-map-island-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.world-map-island-copy strong{font:1000 clamp(15px,1.5vw,21px)/1.08 system-ui}
+.world-map-island-copy small{font:600 11px/1.35 system-ui;color:#6b5971}
+.world-map-island-status{font:1000 9px/1 system-ui;letter-spacing:1px;color:#a2687a}
+.world-map-meters{width:max-content;padding:5px 8px;border:2px solid #352b49;border-radius:999px;background:#ffe3a2;font:900 9px system-ui}
+.world-map-island:nth-of-type(even) .world-map-meters{align-self:flex-end}
+.world-map-granny-marker{position:absolute;right:-12px;top:-16px;padding:6px 9px;border:2px solid #352b49;border-radius:14px;background:#ffca6c;font:1000 11px system-ui;box-shadow:2px 2px 0 #352b49;transform:rotate(5deg)}
+.world-map-granny-marker span{color:#b95374}
+.world-map-zone-0 .world-map-landscape{background:#b9dfd3}
+.world-map-zone-1 .world-map-landscape{background:#bee1ac}
+.world-map-zone-2 .world-map-landscape{background:#9baad1}
+.world-map-zone-3 .world-map-landscape{background:#f5cb98}
+.world-map-zone-4 .world-map-landscape{background:#555173}
+.world-map-zone-5 .world-map-landscape{background:#f5c2df}
+.world-map-zone-6 .world-map-landscape{background:#2b294b}
+@media(max-width:650px){
+ .world-map-panel{width:100%;max-height:100%;padding:10px}
+ .world-map-illustrated{padding:16px 4% 18px;gap:12px}
+ .world-map-island{width:87%;min-height:105px;gap:7px;padding:7px;border-width:2px;border-radius:14px;box-shadow:3px 3px 0 #352b49}
+ .world-map-landscape{flex-basis:104px;max-width:41%;border-radius:10px}
+ .world-map-island-copy{gap:4px}
+ .world-map-island-copy strong{font-size:13px}
+ .world-map-island-copy small{font-size:9px}
+ .world-map-island-status,.world-map-meters{font-size:8px}
+ .world-map-step-number{width:19px;height:19px;font-size:10px}
+ .world-map-granny-marker{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.world-map-island{animation:none}}
