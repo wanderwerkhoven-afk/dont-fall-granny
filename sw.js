@@ -1,5 +1,5 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v10-stable-home-nav';
+const CACHE_NAME = 'dont-trip-grandma-offline-v11-calm-storybook-worlds';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
@@ -7,8 +7,8 @@ const APP_SHELL = [
   './style.css?v=10',
   './game-meta.js?v=10',
   './progression.js?v=10',
-  './app.js?v=10',
-  './storybook-worlds.js?v=10',
+  './app.js?v=11',
+  './storybook-worlds.js?v=11',
   './levels.js?v=10',
   './assets/hanger-spritesheet.svg'
 ];
