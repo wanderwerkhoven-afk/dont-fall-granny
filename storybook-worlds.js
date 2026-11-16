@@ -127,6 +127,8 @@ function installMap(getProgress,pause,onSelect){
   if(previousFocus&&typeof previousFocus.focus==='function')previousFocus.focus();
  }
  triggers.forEach(el=>el.addEventListener('click',open));
+ const menuMapButton=document.getElementById('worldMapButton');
+ menuMapButton?.addEventListener('click',open);
  document.getElementById('menuContent')?.addEventListener('click',event=>{
   if(event.target.closest('#worldMapButton'))open();
  });
