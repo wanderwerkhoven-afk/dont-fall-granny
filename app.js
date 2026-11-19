@@ -113,6 +113,7 @@ const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)'
 let recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0,recoveryCameraSettle=0;
 function triggerRecovery(){
  if(state!=='playing'||vehicle)return;
+ clearDangerWarnings();audioDirector.stop();
  recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();flowTo(GameState.RECOVERY);state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
@@ -205,7 +206,7 @@ const gadgets=[
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
-let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
+let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:true,visualWarnings:true,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
 try{
  const savedMeta=JSON.parse(localStorage.getItem('grandma-meta-v1')||'null');
@@ -216,6 +217,9 @@ try{
  }
 }catch(e){}
 
+if(typeof metaState.settings.sfx!=='boolean')metaState.settings.sfx=metaState.settings.audio!==false;
+if(typeof metaState.settings.music!=='boolean')metaState.settings.music=false;
+if(typeof metaState.settings.visualWarnings!=='boolean')metaState.settings.visualWarnings=true;
 function saveInventory(){try{localStorage.setItem('grandma-clothes',JSON.stringify(ownedClothes));localStorage.setItem('grandma-outfit',selectedClothes);localStorage.setItem('grandma-gadgets',JSON.stringify(ownedGadgets))}catch(e){}}
 
 const comboEl=document.getElementById('combo'),onboardingEl=document.getElementById('onboarding'),runSummaryEl=document.getElementById('runSummary'),missionPinEl=document.getElementById('missionPin'),eventBannerEl=document.getElementById('eventBanner'),rankHudEl=document.getElementById('rankHud');
@@ -240,17 +244,28 @@ function updateRankHud(){
  if(!rankHudEl)return;
  const rank=currentRank();rankHudEl.textContent=rank?'LV '+rank.level+' · '+rank.name:'LV 1';
 }
-let audioContext=null;
+const dangerDirector=new window.GrannyDangerSoundscape.DangerSoundscape();
+const audioDirector=new window.GrannyDangerSoundscape.DangerAudioDirector(window);
+const warningEl=document.createElement('div');
+warningEl.id='dangerWarning';warningEl.className='danger-warning';warningEl.hidden=true;
+warningEl.setAttribute('aria-hidden','true');
+warningEl.innerHTML='<span class="danger-warning-edge"></span><span class="danger-warning-label"></span>';
+document.getElementById('game').appendChild(warningEl);
+function clearDangerWarnings(){
+ dangerDirector.reset();warningEl.hidden=true;warningEl.classList.remove('urgent');
+}
+function updateDangerWarnings(){
+ const cue=dangerDirector.update({obstacles,granny,speed,state,controllerState:runFlow.current,
+   vehicle,recovery:recoveryWindow.active,paused:state==='paused'});
+ if(cue?.first&&metaState.settings.sfx)audioDirector.warning(cue.kind);
+ if(!cue||!metaState.settings.visualWarnings){warningEl.hidden=true;return;}
+ warningEl.hidden=false;
+ warningEl.classList.toggle('urgent',cue.eta<=.55);
+ warningEl.style.setProperty('--danger-strength',String(Math.min(1,Math.max(.35,(.9-cue.eta)/.5))));
+ warningEl.querySelector('.danger-warning-label').textContent=cue.kind.label+' nadert';
+}
 function playFeedback(kind){
- if(!metaState.settings.audio)return;
- try{
-  audioContext=audioContext||new (window.AudioContext||window.webkitAudioContext)();
-  const osc=audioContext.createOscillator(),gain=audioContext.createGain();
-  const map={coin:[680,.045],jump:[330,.035],perfect:[880,.09],safe:[520,.06],fail:[150,.11],tier:[760,.12],achievement:[980,.13],combo:[820,.07]};
-  const [freq,duration]=map[kind]||[440,.04];osc.frequency.value=freq;osc.type=kind==='fail'?'sawtooth':'sine';
-  gain.gain.setValueAtTime(.035,audioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);
-  osc.connect(gain);gain.connect(audioContext.destination);osc.start();osc.stop(audioContext.currentTime+duration);
- }catch(e){}
+ if(metaState.settings.sfx)audioDirector.effect(kind);
 }
 function haptic(pattern){if(metaState.settings.haptics&&navigator.vibrate)try{navigator.vibrate(pattern)}catch(e){}}
 function pinnedMission(){
@@ -496,6 +511,7 @@ function updateWorldEventCard(){
 function beginWorldEvent(ev){
  if(state!=='playing'||vehicle||recoveryWindow.active||runFlow.current!==GameState.RUNNING)return false;
  if(!flowTo(GameState.SPECIAL_MODE))return false;
+ clearDangerWarnings();audioDirector.stop();
  vehicle=ev.mode;
  grandmaExpressions.react(vehicle==='plane'?'plane':'scooter');
  vehicleTime=ev.duration;vehicleLane=1;vehicleVelocity=-180;modeGraceTime=0;
@@ -567,7 +583,7 @@ function retryRun(){
 function stopDeathTimer(){if(postRunDelayed)clearTimeout(postRunDelayed);postRunDelayed=0;postRun.hide();document.getElementById('game').classList.remove('post-run-active','post-run-result');deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
 function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){showRunResult();return}postRun.setRemaining(remaining);deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
 function finalizeRun(){if(runFinalized)return;runFinalized=true;saveWorldEventPity(worldEvents.noteRunEnded());metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
-function returnHome(){stopDeathTimer();if(state==='over')finalizeRun();
+function returnHome(){clearDangerWarnings();audioDirector.stop();stopDeathTimer();if(state==='over')finalizeRun();
  if(runFlow.current!==GameState.MENU){
   flowTo(GameState.MENU);
  }if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='Start het spel →';overlay.classList.remove('hidden');resizeGame();render()}
@@ -600,10 +616,10 @@ function showMenu(page='home'){
   document.getElementById('menuKicker').textContent='OMA’S LEVELAVONTUUR  ✦  49 LEVELS';
   document.getElementById('menuRecord').textContent='🏁 RECORD '+best+' M';
   const outfit=clothing.find(x=>x.id===selectedClothes)||clothing[0],pin=pinnedMission(),rank=currentRank(),unlockedWorld=LEVELS.getWorlds().filter(w=>w.unlocked).length-1,activeAccessories=Object.values(selectedAccessories).filter(Boolean).map(id=>META.cosmetics.find(x=>x.id===id)?.name).filter(Boolean),gadgetLabel=ownedGadgets.length?ownedGadgets.map(id=>gadgets.find(g=>g.id===id)?.name).filter(Boolean).join(' / '):'Geen gadget';
-  menuContent.innerHTML='<details class="home-settings"><summary>Spelinstellingen</summary><div class="pre-run-card"><div><small>WERELD '+(LEVELS.LEVELS[LEVELS.getSelected()].worldIndex+1)+' · LEVEL '+LEVELS.LEVELS[LEVELS.getSelected()].number+' / 7 · '+LEVELS.LEVELS[LEVELS.getSelected()].goal+' M</small><b>'+outfit.name+' · '+(rank?.name||'Buurtwandelaar')+'</b><span>'+(pin?pin.icon+' '+pin.label:'Geen missie')+'</span></div><div class="pre-run-settings"><label>Moeilijkheid <select id="difficultySelect">'+Object.values(META.difficultyModes||{}).map(d=>'<option value="'+d.id+'" '+(d.id===metaState.settings.difficulty?'selected':'')+'>'+d.label+'</option>').join('')+'</select></label><label>Startwereld <select id="worldSelect">'+TIERS.map((t,i)=>'<option value="'+i+'" '+(i>unlockedWorld?'disabled':'')+' '+(i===LEVELS.LEVELS[LEVELS.getSelected()].worldIndex?'selected':'')+'>'+t.icon+' '+t.name+'</option>').join('')+'</select></label><button type="button" data-toggle-setting="audio">'+(metaState.settings.audio?'🔊 Audio':'🔇 Audio')+'</button><button type="button" data-toggle-setting="haptics">'+(metaState.settings.haptics?'📳 Haptics':'📴 Haptics')+'</button></div></div></details><div class="home-hub"><button class="home-hub-tile home-map-tile" type="button" id="worldMapButtonLegacy" aria-haspopup="dialog" aria-expanded="false"><span class="tile-icon" aria-hidden="true">'+HOME_ICONS.map+'</span><b>Wereldkaart</b></button><button class="home-hub-tile" type="button" data-open-page="clothes"><span class="tile-icon">'+HOME_ICONS.outfits+'</span><b>Outfits</b></button><button class="home-hub-tile" type="button" data-open-page="gadgets"><span class="tile-icon">'+HOME_ICONS.gadgets+'</span><b>Gadgets</b></button><button class="home-hub-tile" type="button" data-open-page="progress"><span class="tile-icon">'+HOME_ICONS.progress+'</span><b>Progressie</b></button><button class="home-hub-tile" type="button" data-open-page="collection"><span class="tile-icon">'+HOME_ICONS.extras+'</span><b>Extra’s</b></button><div class="home-achievement"><small>🏆 '+metaState.achievements.length+'/'+META.achievements.length+' ACHIEVEMENTS · XP '+(metaState.stats.xp||0)+'</small><strong>🏁 '+best+' m · 🔥 '+metaState.records.combo+'</strong></div>'+(nextUnlock?'<div class="home-next-unlock">VOLGENDE LEVELDOEL: '+nextUnlock.name+' · '+nextUnlock.number+'/7 · '+nextUnlock.goal+' m</div>':'<div class="home-next-unlock">ALLE 49 LEVELS BEHAALD</div>')+'</div>';
+  menuContent.innerHTML='<details class="home-settings"><summary>Spelinstellingen</summary><div class="pre-run-card"><div><small>WERELD '+(LEVELS.LEVELS[LEVELS.getSelected()].worldIndex+1)+' · LEVEL '+LEVELS.LEVELS[LEVELS.getSelected()].number+' / 7 · '+LEVELS.LEVELS[LEVELS.getSelected()].goal+' M</small><b>'+outfit.name+' · '+(rank?.name||'Buurtwandelaar')+'</b><span>'+(pin?pin.icon+' '+pin.label:'Geen missie')+'</span></div><div class="pre-run-settings"><label>Moeilijkheid <select id="difficultySelect">'+Object.values(META.difficultyModes||{}).map(d=>'<option value="'+d.id+'" '+(d.id===metaState.settings.difficulty?'selected':'')+'>'+d.label+'</option>').join('')+'</select></label><label>Startwereld <select id="worldSelect">'+TIERS.map((t,i)=>'<option value="'+i+'" '+(i>unlockedWorld?'disabled':'')+' '+(i===LEVELS.LEVELS[LEVELS.getSelected()].worldIndex?'selected':'')+'>'+t.icon+' '+t.name+'</option>').join('')+'</select></label><button type="button" data-toggle-setting="music" aria-pressed="'+Boolean(metaState.settings.music)+'">'+(metaState.settings.music?'♫ Muziek aan':'♫ Muziek uit')+'</button><button type="button" data-toggle-setting="sfx" aria-pressed="'+Boolean(metaState.settings.sfx)+'">'+(metaState.settings.sfx?'🔊 Geluidseffecten aan':'🔇 Geluidseffecten uit')+'</button><button type="button" data-toggle-setting="visualWarnings" aria-pressed="'+Boolean(metaState.settings.visualWarnings)+'">'+(metaState.settings.visualWarnings?'◉ Waarschuwingen aan':'◎ Waarschuwingen uit')+'</button><button type="button" data-toggle-setting="haptics">'+(metaState.settings.haptics?'📳 Haptics':'📴 Haptics')+'</button></div></div></details><div class="home-hub"><button class="home-hub-tile home-map-tile" type="button" id="worldMapButtonLegacy" aria-haspopup="dialog" aria-expanded="false"><span class="tile-icon" aria-hidden="true">'+HOME_ICONS.map+'</span><b>Wereldkaart</b></button><button class="home-hub-tile" type="button" data-open-page="clothes"><span class="tile-icon">'+HOME_ICONS.outfits+'</span><b>Outfits</b></button><button class="home-hub-tile" type="button" data-open-page="gadgets"><span class="tile-icon">'+HOME_ICONS.gadgets+'</span><b>Gadgets</b></button><button class="home-hub-tile" type="button" data-open-page="progress"><span class="tile-icon">'+HOME_ICONS.progress+'</span><b>Progressie</b></button><button class="home-hub-tile" type="button" data-open-page="collection"><span class="tile-icon">'+HOME_ICONS.extras+'</span><b>Extra’s</b></button><div class="home-achievement"><small>🏆 '+metaState.achievements.length+'/'+META.achievements.length+' ACHIEVEMENTS · XP '+(metaState.stats.xp||0)+'</small><strong>🏁 '+best+' m · 🔥 '+metaState.records.combo+'</strong></div>'+(nextUnlock?'<div class="home-next-unlock">VOLGENDE LEVELDOEL: '+nextUnlock.name+' · '+nextUnlock.number+'/7 · '+nextUnlock.goal+' m</div>':'<div class="home-next-unlock">ALLE 49 LEVELS BEHAALD</div>')+'</div>';
   const dsel=document.getElementById('difficultySelect'),wsel=document.getElementById('worldSelect');
   dsel?.addEventListener('change',()=>{metaState.settings.difficulty=dsel.value;saveMetaState()});wsel?.addEventListener('change',()=>{const world=Number(wsel.value);const group=LEVELS.getWorlds()[world]?.levels||[];const first=group.find(l=>l.unlocked&&!l.completed)||group.find(l=>l.unlocked);if(first&&LEVELS.select(first.index)){metaState.settings.startWorld=world;saveMetaState();showMenu('home');}});
-  menuContent.querySelectorAll('[data-toggle-setting]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.toggleSetting;metaState.settings[k]=!metaState.settings[k];saveMetaState();showMenu('home')}));
+  menuContent.querySelectorAll('[data-toggle-setting]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.toggleSetting;metaState.settings[k]=!metaState.settings[k];if(k==='music'&&metaState.settings.music)audioDirector.unlock();if(k==='music'&&!metaState.settings.music)audioDirector.stop();if(k==='visualWarnings'&&!metaState.settings.visualWarnings)warningEl.hidden=true;saveMetaState();showMenu('home')}));
   return
  }
  if(page==='progress'){
@@ -751,12 +767,13 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
-function start(){stopDeathTimer();showMenu('home');reset();
+function random(a,b){return a+Math.random()*(b-a)}function reset(){clearDangerWarnings();audioDirector.stop();worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function start(){stopDeathTimer();showMenu('home');reset();audioDirector.unlock();
  if(runFlow.current===GameState.MENU)flowTo(GameState.RUN_RESET);
  if(runFlow.current===GameState.RUN_RESET)flowTo(GameState.RUNNING);
  state='playing';overlay.classList.add('hidden');resizeGame();updateMissionPin();tutorialActive=!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
  if(state==='over')return;
+ clearDangerWarnings();audioDirector.stop();
  // Existing collision/recovery handlers keep calling end(); all reward
  // bookkeeping happens once, after rescue expires or the player skips.
  resultPreviousBest=best;
@@ -797,7 +814,7 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){flowTo(GameState.PAUSED);worldEventCard.hidden=true;showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';updateWorldEventCard();overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){clearDangerWarnings();audioDirector.stop();flowTo(GameState.PAUSED);worldEventCard.hidden=true;showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';audioDirector.unlock();updateWorldEventCard();overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&worldEvents.active&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
@@ -807,6 +824,7 @@ function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,
 function update(dt){grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}// Exactly one world-specific sequence per run; the pity threshold is based
  // on eligible running time/distance and never consumes recovery or pause time.
  tickWorldEvent(dt);
+ audioDirector.musicTick(state==='playing'&&runFlow.current===GameState.RUNNING,metaState.settings.music);
  if(vehicle){
   vehicleTime=worldEvents.remaining;
   modeDistance+=speed*dt;
@@ -912,7 +930,9 @@ for(const c of coinItems){c.x-=speed*dt;c.t+=dt;if(magnetTime>0&&c.x>grandma.x&&
 for(const o of obstacles){
   if(o.attacking&&!o.charging&&o.x<=o.chargeX)o.charging=true;
   o.x-=speed*(o.charging?o.multiplier:1)*dt;
-}for(const c of candies){c.x-=speed*dt;c.t+=dt}obstacles=obstacles.filter(o=>o.x+o.w>-30);candies=candies.filter(c=>c.x+c.w>-30);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
+}
+updateDangerWarnings();
+for(const c of candies){c.x-=speed*dt;c.t+=dt}obstacles=obstacles.filter(o=>o.x+o.w>-30);candies=candies.filter(c=>c.x+c.w>-30);for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=300*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);
 const body={x:grandma.x+7,y:grandma.y+7,w:grandma.w-13,h:grandma.h-9};
 for(const o of obstacles){
  const obstacleBody={x:o.x+3,y:o.y+3,w:o.w-6,h:o.h-3};
@@ -1176,7 +1196,7 @@ if(new URLSearchParams(location.search).get('debug')==='1'){
  window.__grannyDebug={fall:()=>end(),result:()=>showRunResult(),retry:()=>retryRun(),
   setWorldForTest:world=>{if(state==='playing'&&!worldEvents.used)currentTier=Math.max(0,Math.min(6,world|0));},
   advanceWorldEventForTest:seconds=>{for(let i=0;i<Math.ceil(seconds/.05);i++)tickWorldEvent(.05);},
-  snapshot:()=>({state,flow:runFlow.current,phase:postRun.phase,score,
+  snapshot:()=>({state,flow:runFlow.current,phase:postRun.phase,score,warningVisible:!warningEl.hidden,dangerCues:dangerDirector.count,
    obstacles:obstacles.length,coins,
    worldEvent:{phase:worldEvents.phase,id:worldEvents.current?.id||null,
     eventCount:worldEvents.eventCount,used:worldEvents.used,elapsed:worldEvents.elapsed,
