@@ -32,7 +32,7 @@ assert.match(app,/function evaluateAchievements\(/);
 assert.match(app,/function incrementMission\(/);
 assert.match(app,/event==='tier'\?Math\.max/,'Tier missions must track highest reached tier');
 assert.match(app,/function finalizeRun\(/,'Runs need one-shot finalization');
-assert.match(app,/if\(state==='over'&&!wasDaily\)finalizeRun\(\)/,'Only endless runs finalize on return home; Daily must not grant endless XP or coins');
+assert.match(app,/if\(state==='over'&&!wasDaily&&!wasPlayback\)finalizeRun\(\)/,'Only endless runs finalize on return home; neither Daily nor replays may grant XP or coins');
 assert.match(app,/runFinalized=false/,'Run finalization guard missing');
 assert.match(app,/function comboMultiplier\(/);
 assert.match(app,/function pinnedMission\(/);
