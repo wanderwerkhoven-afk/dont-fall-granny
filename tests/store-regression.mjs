@@ -43,7 +43,7 @@ assert.match(html, /prefers-reduced-motion/);
 // A green build must ship the sprite, not only index.html.
 assert.match(workflow, /node tests\/store-regression\.mjs/);
 assert.match(workflow, /cp -R assets\/\. _site\/assets\//);
-assert.match(workflow, /cp style\.css app\.js game-meta\.js progression\.js levels\.js storybook-worlds\.js granny-expressions\.js game-state\.js run-results\.js world-events\.js world-mastery\.js danger-soundscape\.js daily-challenge\.js sw\.js _site\//);
+assert.match(workflow, /cp style\.css app\.js game-meta\.js progression\.js levels\.js storybook-worlds\.js granny-expressions\.js game-state\.js run-results\.js world-events\.js world-mastery\.js danger-soundscape\.js daily-challenge\.js replay-engine\.js sw\.js _site\//);
 assert.match(workflow, /test -s _site\/assets\/hanger-spritesheet\.svg/);
 assert.match(workflow, /deploy-pages@v4/);
 
