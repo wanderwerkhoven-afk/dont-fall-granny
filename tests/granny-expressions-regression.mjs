@@ -37,5 +37,5 @@ assert.match(app,/grandmaExpressions\.react\('fall'/);
 assert.match(app,/grandmaExpressions\.react\(result==='perfect'\?'perfect':'safe'\)/);
 assert.match(app,/grandmaExpressions\.drawFace\(ctx,x,y,bob,mood/);
 assert.match(app,/grandmaExpressions\.resolve\(/);
-assert.ok(html.indexOf('granny-expressions.js?v=14')<html.indexOf('app.js?v=28'),'Expressions must load before main game');
+assert.ok(html.indexOf('granny-expressions.js?v=14')<html.indexOf('app.js?v=29'),'Expressions must load before main game');
 console.log('PASS: Granny expression states, priorities, reduced motion, face drawing and runtime integration');
