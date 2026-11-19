@@ -1,10 +1,10 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v27-replay';
+const CACHE_NAME = 'dont-trip-grandma-offline-v28-replay-ghost';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=27',
+  './style.css?v=28',
   './game-meta.js?v=10',
   './progression.js?v=10',
   './game-state.js?v=16',
@@ -13,8 +13,8 @@ const APP_SHELL = [
   './world-mastery.js?v=21',
   './danger-soundscape.js?v=23',
   './daily-challenge.js?v=26',
-  './replay-engine.js?v=27',
-  './app.js?v=27',
+  './replay-engine.js?v=28',
+  './app.js?v=28',
   './granny-expressions.js?v=14',
   './storybook-worlds.js?v=11',
   './levels.js?v=10',
