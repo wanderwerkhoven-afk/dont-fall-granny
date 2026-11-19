@@ -6,7 +6,7 @@ const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
 const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
 const replay=new window.GrannyReplay.ReplayEngine();
-let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null,replayStepping=false;
+let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null,replayEconomySnapshot=null,replayStepping=false;
 let replayLevelCompleted=new Set();
 replay.ghostEnabled=(()=>{try{return localStorage.getItem(window.GrannyReplay.GHOST_KEY)==='true'}catch(e){return false}})();
 const previousReplay=replay.restore(localStorage);
@@ -30,6 +30,7 @@ function finishReplayRecording(){
 }
 function beginReplayCapture(tape){
  if(tape){
+  replayEconomySnapshot={coins,best,meta:JSON.parse(JSON.stringify(metaState))};
   replay.load(tape);replayLevelCompleted=new Set(tape.start.completedLevels||[]);
  }else{
   replay.newRecording({
@@ -733,7 +734,13 @@ function retryRun(){
 function stopDeathTimer(){if(postRunDelayed)clearTimeout(postRunDelayed);postRunDelayed=0;postRun.hide();document.getElementById('game').classList.remove('post-run-active','post-run-result');deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
 function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){showRunResult();return}postRun.setRemaining(remaining);deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
 function finalizeRun(){if(replay.mode==='playback'||daily.active||daily.finished)return;if(runFinalized)return;runFinalized=true;saveWorldEventPity(worldEvents.noteRunEnded());metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
-function returnHome(){const wasPlayback=replay.mode==='playback';if(replay.mode==='record')finishReplayRecording();if(replay.mode==='playback'&&replayInitialOutfit){selectedClothes=replayInitialOutfit;replayInitialOutfit=null;}replay.idle();const wasDaily=daily.active||daily.finished;dailyResultCard.hidden=true;dailyHud.hidden=true;document.getElementById('game').classList.remove('daily-running','daily-finished','post-run-active');pendingDaily=false;clearDangerWarnings();audioDirector.stop();stopDeathTimer();if(state==='over'&&!wasDaily&&!wasPlayback)finalizeRun();daily.active=false;daily.finished=false;
+function returnHome(){const wasPlayback=replay.mode==='playback';if(replay.mode==='record')finishReplayRecording();if(replay.mode==='playback'&&replayInitialOutfit){selectedClothes=replayInitialOutfit;replayInitialOutfit=null;}replay.idle();
+ if(wasPlayback&&replayEconomySnapshot){
+  coins=replayEconomySnapshot.coins;best=replayEconomySnapshot.best;
+  metaState=replayEconomySnapshot.meta;replayEconomySnapshot=null;
+  bestEl.textContent=best+' m';saveCoins();saveMetaState();updateRankHud();
+ }
+ const wasDaily=daily.active||daily.finished;dailyResultCard.hidden=true;dailyHud.hidden=true;document.getElementById('game').classList.remove('daily-running','daily-finished','post-run-active');pendingDaily=false;clearDangerWarnings();audioDirector.stop();stopDeathTimer();if(state==='over'&&!wasDaily&&!wasPlayback)finalizeRun();daily.active=false;daily.finished=false;
  if(runFlow.current!==GameState.MENU){
   flowTo(GameState.MENU);
  }if(runSummaryEl)runSummaryEl.innerHTML='';state='ready';reset();showMenu('home');title.textContent='KLAAR VOOR DE START?';text.textContent='Spring over hindernissen, verzamel munten en ontdek nieuwe gebieden.';startBtn.textContent='Start het spel →';overlay.classList.remove('hidden');resizeGame();render()}
@@ -930,7 +937,7 @@ function start(){replayAccumulator=0;dailyFixedAccumulator=0;const loading=pendi
  if(loading){selectedClothes=loading.start.outfit;forceReplayDimensions();}
  if(runFlow.current===GameState.MENU)flowTo(GameState.RUN_RESET);
  if(runFlow.current===GameState.RUN_RESET)flowTo(GameState.RUNNING);
- state='playing';overlay.classList.add('hidden');resizeGame();if(loading)forceReplayDimensions();updateMissionPin();tutorialActive=!daily.active&&!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
+ state='playing';overlay.classList.add('hidden');resizeGame();if(loading)forceReplayDimensions();updateMissionPin();tutorialActive=!loading&&!daily.active&&!metaState.onboardingSeen;tutorialStep=-1;if(onboardingEl){onboardingEl.classList.toggle('show',tutorialActive)}last=performance.now();requestAnimationFrame(frame)}function end(){
  if(daily.active){finishDailyRun('fall');return;}
  if(state==='over')return;
  clearDangerWarnings();audioDirector.stop();
