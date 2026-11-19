@@ -255,8 +255,9 @@ function clearDangerWarnings(){
  dangerDirector.reset();warningEl.hidden=true;warningEl.classList.remove('urgent');
 }
 function updateDangerWarnings(){
- const cue=dangerDirector.update({obstacles,granny:grandma,speed,state,controllerState:runFlow.current,
-   vehicle,recovery:recoveryWindow.active,paused:state==='paused'});
+ const cue=dangerDirector.update({obstacles,modeObstacles,granny:grandma,speed,state,controllerState:runFlow.current,
+   vehicle,worldEventActive:worldEvents.active,vehicleLane,vehicleVelocity,elapsed,modeGraceTime,
+   recovery:recoveryWindow.active,paused:state==='paused'});
  if(cue?.first&&metaState.settings.sfx)audioDirector.warning(cue.kind);
  if(!cue||!metaState.settings.visualWarnings){warningEl.hidden=true;return;}
  warningEl.hidden=false;
@@ -529,6 +530,7 @@ function beginWorldEvent(ev){
 }
 function completeWorldEvent(){
  if(runFlow.current!==GameState.SPECIAL_MODE)return;
+ clearDangerWarnings();
  finishVehicle();
  flowTo(GameState.RUNNING);
  updateWorldEventCard();
@@ -863,6 +865,7 @@ function update(dt){grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;update
    modeObstacles=modeObstacles.filter(o=>o.z>-.12);
   }
   }
+  updateDangerWarnings();
  }
 
  // A milestone unlocks the next level, without ever stopping this run.
