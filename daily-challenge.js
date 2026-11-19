@@ -63,13 +63,13 @@ function record(storage,config,result){
 function read(storage,date=utcDate()){
  try{return JSON.parse(storage.getItem(PREFIX+date)||'null')}catch(e){return null}
 }
-function points({distance=0,nearMisses=0,perfectSaves=0}={}){
- return Math.floor(distance)+Math.floor(nearMisses)*25+Math.floor(perfectSaves)*50;
+function points({distance=0,nearMisses=0,completed=false}={}){
+ return Math.floor(distance)+Math.floor(nearMisses)*25+(completed?100:0);
 }
 function resultText(config,result){
  return 'DAILY GRANNY CHALLENGE · '+config.date+'\n'+
  'Score: '+result.points+' punten · '+result.distance+' m\n'+
- 'Near Misses: '+result.nearMisses+' · Perfect Saves: '+result.perfectSaves+'\n'+
+ 'Near Misses: '+result.nearMisses+' · Voltooiingsbonus: '+(result.completed?100:0)+' punten\n'+
  (result.completed?'75/75 seconden voltooid!':'Oma struikelde na '+Math.floor(result.seconds)+' sec.')+
  '\nZelfde parcours voor iedereen · '+config.id+'\nhttps://wanderwerkhoven-afk.github.io/dont-fall-granny/';
 }
@@ -83,7 +83,7 @@ function cardCanvas(config,result){
  g.fillStyle='#825e80';g.font='800 24px system-ui';g.fillText('DAILY GRANNY CHALLENGE · '+config.date,94,166);
  g.fillStyle='#392d44';g.font='1000 104px system-ui';g.fillText(result.points+' PT',86,320);
  g.font='900 34px system-ui';g.fillText(result.distance+' meter',94,389);
- g.font='700 24px system-ui';g.fillText(result.nearMisses+' Near Misses   ·   '+result.perfectSaves+' Perfect Saves',94,442);
+ g.font='700 24px system-ui';g.fillText(result.nearMisses+' Near Misses   ·   '+(result.completed?'+100 voltooiingsbonus':'Volgende keer beter!'),94,442);
  g.fillStyle='#ffcf70';g.beginPath();g.roundRect(88,478,1020,69,20);g.fill();
  g.strokeStyle='#392d44';g.lineWidth=3;g.stroke();
  g.fillStyle='#392d44';g.font='800 24px system-ui';g.fillText(result.completed?'UITGESPEELD · 75 SECONDEN':'RUN VOLTOOID · '+Math.floor(result.seconds)+' SEC',113,522);
