@@ -36,7 +36,7 @@ function ensureTape(value){
   !Number.isInteger(st.activeLevel)||st.activeLevel<0||st.activeLevel>48||
   !Number.isInteger(st.world)||st.world<0||st.world>6||
   !Array.isArray(st.ownedGadgets)||!Array.isArray(st.completedLevels)||
-  !['easy','normal','hard'].includes(st.difficulty))
+  !['calm','normal','chaos'].includes(st.difficulty))
   throw Error('Replay heeft ongeldige startwaarden.');
  if(o.inputs.some((row,i)=>i>0&&row[0]<o.inputs[i-1][0]))
   throw Error('Replay-input moet oplopend per tick zijn.');
