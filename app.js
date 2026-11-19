@@ -3,6 +3,7 @@ const META=window.GrannyMeta||{version:'V.1.2.0.0',achievements:[],missionPool:[
 const PROG=window.GrannyProgression||{};
 const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
+const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
 const APP_VERSION=META.version;
 const appVersionEl=document.getElementById('appVersion');
 if(appVersionEl)appVersionEl.textContent=APP_VERSION;
@@ -108,7 +109,7 @@ const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)'
 let recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0,recoveryCameraSettle=0;
 function triggerRecovery(){
  if(state!=='playing'||vehicle)return;
- recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();state='recovery';
+ recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();flowTo(GameState.RECOVERY);state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
 }
@@ -126,7 +127,7 @@ function finishRecovery(result){
  recoveryCameraSettle=result==='perfect'&&!reducedRecoveryMotion.matches?.24:0;
  recoveryFeedback=1.05;
  recoveryFeedbackText=result==='perfect'?'PERFECT SAVE!':'GERED!';
- invulnerable=1.2;state='playing';
+ invulnerable=1.2;flowTo(GameState.RUNNING);state='playing';
  statusEl.textContent=result==='perfect'?'PERFECT SAVE! Korte snelheidsboost.':'Net gered! Oma moet even op snelheid komen.';
 }
 function attemptRecovery(){
@@ -411,6 +412,53 @@ const menuContent=document.getElementById('menuContent'),menuWallet=document.get
 const GAME_OVER_SECONDS=10;let deathDeadline=0,deathTimerFrame=0;
 const GameState=window.GrannyGameState.GameState;
 const runFlow=new window.GrannyGameState.GameStateController();
+const worldEventCard=document.createElement('div');
+worldEventCard.id='worldEventCard';
+worldEventCard.className='world-event-card';
+worldEventCard.hidden=true;
+worldEventCard.setAttribute('role','status');
+worldEventCard.setAttribute('aria-live','polite');
+worldEventCard.innerHTML='<span class="world-event-icon"></span><span class="world-event-copy"><b></b><small></small></span><span class="world-event-countdown"></span>';
+document.getElementById('game').appendChild(worldEventCard);
+function updateWorldEventCard(){
+ if(!worldEvents.inEvent){worldEventCard.hidden=true;return;}
+ const ev=worldEvents.current;
+ worldEventCard.hidden=false;
+ worldEventCard.classList.toggle('intro',worldEvents.phase==='intro');
+ worldEventCard.classList.toggle('outro',worldEvents.phase==='outro');
+ worldEventCard.style.setProperty('--event-accent',ev.accent);
+ worldEventCard.querySelector('.world-event-icon').textContent=ev.icon;
+ worldEventCard.querySelector('b').textContent=ev.title;
+ worldEventCard.querySelector('small').textContent=worldEvents.phase==='intro'?'Daar gaan we! · '+ev.caption:
+  worldEvents.phase==='outro'?'Oma komt weer veilig op de weg…':ev.caption;
+ worldEventCard.querySelector('.world-event-countdown').textContent=worldEvents.phase==='active'?
+  Math.ceil(worldEvents.remaining)+' s':worldEvents.phase==='intro'?'START':'KLAAR';
+}
+function beginWorldEvent(ev){
+ if(state!=='playing'||vehicle||recoveryWindow.active||runFlow.current!==GameState.RUNNING)return false;
+ if(!flowTo(GameState.SPECIAL_MODE))return false;
+ vehicle=ev.mode;
+ grandmaExpressions.react(vehicle==='plane'?'plane':'scooter');
+ vehicleTime=ev.duration;vehicleLane=1;vehicleVelocity=-180;
+ modeObstacles=[];modeSpawn=vehicle==='plane'?1.25:1.65;modeDistance=0;
+ grandma.y=vehicle==='plane'?H*.42:ground-grandma.h;
+ // Ordinary collisions/spawns are suspended for the whole event, including intro/outro.
+ obstacles=[];candies=[];coinItems=[];spawnDistance=0;
+ invulnerable=Math.max(invulnerable,1);
+ if(ownedGadgets.includes(ev.mode))shield=Math.max(1,shield);
+ statusEl.textContent=ev.title+' · '+ev.caption;
+ document.getElementById('jumpBtn').textContent=vehicle==='plane'?'↑ Fladder!':'↑ Spring!';
+ document.getElementById('game').classList.toggle('scooter-mode',vehicle==='booster');
+ updateWorldEventCard();
+ return true;
+}
+function completeWorldEvent(){
+ if(runFlow.current!==GameState.SPECIAL_MODE)return;
+ finishVehicle();
+ flowTo(GameState.RUNNING);
+ updateWorldEventCard();
+}
+
 let resultPreviousBest=0,resultPreviousCollections=[],resultPreviousAchievements=[],postRunDelayed=0;
 const postRun=new window.GrannyPostRun.RunResultOverlay(document.getElementById('game'),{
  revive:boost=>revive(boost),
@@ -644,7 +692,7 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function random(a,b){return a+Math.random()*(b-a)}function reset(){worldEvents.reset();updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){stopDeathTimer();showMenu('home');reset();
  if(runFlow.current===GameState.MENU)flowTo(GameState.RUN_RESET);
  if(runFlow.current===GameState.RUN_RESET)flowTo(GameState.RUNNING);
@@ -656,6 +704,7 @@ function start(){stopDeathTimer();showMenu('home');reset();
  resultPreviousCollections=[...(metaState.collections||[])];
  resultPreviousAchievements=[...(metaState.achievements||[])];
  grandmaExpressions.react('fall');
+ worldEvents.abort();updateWorldEventCard();
  recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
  state='over';
@@ -689,17 +738,36 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){state='playing';overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){flowTo(GameState.PAUSED);showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
-function steerScooter(direction){if(state==='playing'&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
+function steerScooter(direction){if(state==='playing'&&worldEvents.active&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}if(worldEventCooldown<=0&&worldEventTime<=0){worldEventTime=5;worldEventCooldown=24+Math.random()*10;const zone=currentTier%7;if(zone===0)magnetTime=Math.max(magnetTime,3);if(zone===1)candyDistance=Math.min(candyDistance,180);if(zone===5)magnetTime=Math.max(magnetTime,5);const ev=eventLabel();showEvent(ev.icon+' WERELDEVENT · '+ev.label,2.4)}
+function update(dt){grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}// Exactly one world-specific sequence per run; the pity threshold is based
+ // on eligible running time/distance and never consumes recovery or pause time.
+ worldEvents.tick(dt,{
+  state,controllerState:runFlow.current,vehicle,
+  recovery:recoveryWindow.active,paused:state==='paused',
+  world:currentTier%7,distance:score,
+  safeToEnter:obstacles.every(o=>o.x<grandma.x-110||o.x>grandma.x+grandma.w+260)
+ },{
+  onStart:beginWorldEvent,
+  onActive:()=>{modeObstacles=[];modeSpawn=vehicle==='plane'?1.1:1.3},
+  onOutro:()=>{modeObstacles=[]},
+  onEnd:completeWorldEvent
+ });
+ updateWorldEventCard();
  if(vehicle){
-  vehicleTime=Math.max(0,vehicleTime-dt);modeDistance+=speed*dt;modeSpawn-=dt;
-  if(vehicleTime<=0){finishVehicle();return;}
+  vehicleTime=worldEvents.remaining;
+  modeDistance+=speed*dt;
+  if(!worldEvents.active){
+   // Intro/outro crossfades are completely safe; no obstacle spawning or
+   // collision tests can run while the camera settles between worlds.
+   modeObstacles=[];
+  }else{
+  modeSpawn-=dt;
   if(vehicle==='plane'){
    vehicleVelocity+=980*dt;grandma.y+=vehicleVelocity*dt;
    if(grandma.y<24||grandma.y+grandma.h>H-30){end();return}
@@ -719,9 +787,7 @@ function update(dt){grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;update
    }
    modeObstacles=modeObstacles.filter(o=>o.z>-.12);
   }
- }else if(ownedGadgets.length&&state==='playing'){
-  vehicleSpawnWait-=dt;
-  if(vehicleSpawnWait<=0){vehicle=ownedGadgets[Math.floor(Math.random()*ownedGadgets.length)];grandmaExpressions.react(vehicle==='plane'?'plane':'scooter');vehicleTime=10;vehicleLane=1;vehicleVelocity=-180;modeObstacles=[];modeSpawn=vehicle==='plane'?1.2:1.8;modeDistance=0;grandma.y=vehicle==='plane'?H*.42:ground-grandma.h;obstacles=[];candies=[];coinItems=[];statusEl.textContent=vehicle==='plane'?'✈️ FLAPPY: tik om te vliegen en ontwijk de verticale muren!':'🛵 SCOOTMOBIEL: gebruik de knoppen LINKS en RECHTS!';document.getElementById('jumpBtn').textContent=vehicle==='plane'?'↑ Fladder!':'↑ Spring!';document.getElementById('game').classList.toggle('scooter-mode',vehicle==='booster');}
+  }
  }
 
  // A milestone unlocks the next level, without ever stopping this run.
@@ -977,7 +1043,10 @@ function drawVehicleMode(){
  ctx.restore();
 }
 function render(){
- if(vehicle){drawVehicleMode();return;}
+ if(vehicle){
+  if(worldEvents.opacity<1){background(currentTier);drawGrandma();}
+  ctx.save();ctx.globalAlpha=worldEvents.opacity;drawVehicleMode();ctx.restore();return;
+ }
  ctx.save();
  if(recoveryCameraSettle>0&&!reducedRecoveryMotion.matches){
   const strength=recoveryCameraSettle/.24;
