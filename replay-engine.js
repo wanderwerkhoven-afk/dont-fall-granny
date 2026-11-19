@@ -17,7 +17,7 @@ class SeededRandom{
 }
 function digest(frame){
  let h=2166136261>>>0;
- for(const value of [frame.t,frame.x,frame.y,frame.score,frame.world,frame.lane,frame.mode]){
+ for(const value of [frame.t,frame.x,frame.y,frame.vy,frame.score,frame.world,frame.lane,frame.mode]){
   for(const c of String(value)){h=Math.imul(h^c.charCodeAt(0),16777619)>>>0;}
  }
  return h>>>0;
@@ -113,7 +113,7 @@ class ReplayEngine{
   const index=Math.min(this.ghostFrames.length-1,Math.floor(Math.max(0,tick)/5));
   return this.ghostFrames[index]||null;
  }
- setGhost(tape){this.ghostFrames=tape?.frames||[];}
+ setGhost(tape){this.ghostTape=tape||null;this.ghostFrames=tape?.frames||[];}
 }
 window.GrannyReplay={VERSION,RULESET,DT,KEY,GHOST_KEY,SeededRandom,ReplayEngine,digest,ensureTape};
 })();
