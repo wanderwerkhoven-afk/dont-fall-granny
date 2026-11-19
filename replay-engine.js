@@ -28,6 +28,18 @@ function ensureTape(value){
  if(!Number.isInteger(o.seed)||o.seed<0||o.seed>0xffffffff||!Array.isArray(o.inputs)||!Array.isArray(o.frames)||!o.start)
   throw Error('Replay bevat ongeldige gegevens.');
  if(o.inputs.length>60000||o.frames.length>20000)throw Error('Replay is te groot.');
+ const st=o.start;
+ if(!Number.isInteger(st.worldWidth)||st.worldWidth<280||st.worldWidth>5000||
+  !Number.isInteger(st.worldHeight)||st.worldHeight<250||st.worldHeight>2500||
+  !Number.isFinite(st.ground)||st.ground<100||st.ground>st.worldHeight||
+  !Number.isFinite(st.grandmaX)||st.grandmaX<0||st.grandmaX>st.worldWidth||
+  !Number.isInteger(st.activeLevel)||st.activeLevel<0||st.activeLevel>48||
+  !Number.isInteger(st.world)||st.world<0||st.world>6||
+  !Array.isArray(st.ownedGadgets)||!Array.isArray(st.completedLevels)||
+  !['easy','normal','hard'].includes(st.difficulty))
+  throw Error('Replay heeft ongeldige startwaarden.');
+ if(o.inputs.some((row,i)=>i>0&&row[0]<o.inputs[i-1][0]))
+  throw Error('Replay-input moet oplopend per tick zijn.');
  if(!o.inputs.every(e=>Array.isArray(e)&&e.length===2&&Number.isInteger(e[0])&&e[0]>=0&&
    ['jump','left','right'].includes(e[1])))throw Error('Replay bevat ongeldige input.');
  return o;
