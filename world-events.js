@@ -15,10 +15,11 @@ const EVENTS=Object.freeze([
 const INTRO=.85,OUTRO=.75;
 const ELIGIBLE_AT=18, PITY_AT=35, PITY_DISTANCE=680;
 class WorldEventDirector{
- constructor(){this.reset();}
- reset(){
+ constructor(){this.reset(0);}
+ reset(pityStreak=0){
   this.phase='idle';this.current=null;this.used=false;this.elapsed=0;this.distance=0;
   this.phaseTime=0;this.startedAt=0;this.eventCount=0;this.reason=null;
+  this.noEventStreak=Math.max(0,Math.min(5,Math.floor(pityStreak)||0));
  }
  get active(){return this.phase==='active'}
  get inEvent(){return ['intro','active','outro'].includes(this.phase)}
@@ -55,20 +56,22 @@ class WorldEventDirector{
   if(this.used||!this.canStart(options))return;
   this.elapsed+=step;
   this.distance=Math.max(this.distance,options.distance||0);
-  const pity=this.elapsed>=PITY_AT||this.distance>=PITY_DISTANCE;
+  const pity=this.elapsed>=Math.max(14,PITY_AT-this.noEventStreak*5)||
+   this.distance>=Math.max(140,PITY_DISTANCE-this.noEventStreak*120);
   // Deterministic scheduled start at 22–28s, varying by world, never RNG.
-  const scheduled=ELIGIBLE_AT+((options.world||0)%7)*1.6;
+  const scheduled=Math.max(7,ELIGIBLE_AT-this.noEventStreak*3)+((options.world||0)%7)*1.6;
   if((this.elapsed>=scheduled||pity)&&
      // Give the player a clean, predictable entrance without a collision.
      (options.safeToEnter||pity)){
    const next=this.eventFor(options.world||0);
    // The owner must authorize the transition before the director consumes the run.
    if(handlers.onStart?.(next,pity?'pity':'scheduled')===false)return;
-   this.current=next;this.used=true;this.eventCount++;
+   this.current=next;this.used=true;this.eventCount++;this.noEventStreak=0;
    this.phase='intro';this.phaseTime=0;
    this.startedAt=this.elapsed;this.reason=pity?'pity':'scheduled';
   }
  }
+ noteRunEnded(){return this.used?0:Math.min(5,this.noEventStreak+1);}
  abort(){
   const wasActive=this.inEvent;
   this.phase=this.used?'complete':'idle';this.phaseTime=0;
