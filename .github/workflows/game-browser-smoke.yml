@@ -11,6 +11,8 @@ on:
       - 'run-results.js'
       - 'game-state.js'
       - 'world-events.js'
+      - 'world-mastery.js'
+      - 'tests/world-mastery-browser.cjs'
       - 'tests/world-events-browser.cjs'
       - 'tests/post-run-browser.cjs'
       - 'levels.js'
@@ -37,3 +39,4 @@ jobs:
           node tests/game-smoke.cjs
           node tests/post-run-browser.cjs
           node tests/world-events-browser.cjs
+          node tests/world-mastery-browser.cjs
