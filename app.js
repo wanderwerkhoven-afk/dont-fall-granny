@@ -6,7 +6,7 @@ const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
 const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
 const replay=new window.GrannyReplay.ReplayEngine();
-let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null;
+let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null,replayStepping=false;
 let replayLevelCompleted=new Set();
 replay.ghostEnabled=(()=>{try{return localStorage.getItem(window.GrannyReplay.GHOST_KEY)==='true'}catch(e){return false}})();
 const previousReplay=replay.restore(localStorage);
@@ -42,7 +42,7 @@ function beginReplayCapture(tape){
  }
 }
 function forceReplayDimensions(){
- if(replay.mode!=='playback')return;
+ if(!replay.tape||!['playback','record'].includes(replay.mode))return;
  const st=replay.tape.start;
  W=st.worldWidth;H=st.worldHeight;ground=st.ground;grandma.x=st.grandmaX;
  canvas.width=W;canvas.height=H;
@@ -64,7 +64,7 @@ const daily=new window.GrannyDaily.DailyChallenge();
 let pendingDaily=false,dailyLastResult=null;
 const WORLD_EVENT_PITY_KEY='dont-trip-grandma-world-event-pity';
 function getWorldEventPity(){try{return Math.max(0,Math.min(5,Number(localStorage.getItem(WORLD_EVENT_PITY_KEY))||0))}catch(e){return 0}}
-function saveWorldEventPity(value){try{localStorage.setItem(WORLD_EVENT_PITY_KEY,String(Math.max(0,Math.min(5,value))))}catch(e){}}
+function saveWorldEventPity(value){if(replay.mode==='playback')return;try{localStorage.setItem(WORLD_EVENT_PITY_KEY,String(Math.max(0,Math.min(5,value))))}catch(e){}}
 const APP_VERSION=META.version;
 const appVersionEl=document.getElementById('appVersion');
 if(appVersionEl)appVersionEl.textContent=APP_VERSION;
@@ -84,7 +84,7 @@ let combo=0,comboPeak=0,perfectRun=0,safeRun=0,nearMissRun=0,landingPulse=0,rewa
 let W=900,H=390,ground=313;const grandma={x:105,y:0,vy:0,w:43,h:70};let state='ready',score=0,best=0,shield=0,speed=270,obstacles=[],candies=[],particles=[],clouds=[{x:80,y:67,s:1},{x:410,y:110,s:.7},{x:740,y:52,s:1.15}],last=0,spawnDistance=0,nextDistance=450,candyDistance=1200,elapsed=0,invulnerable=0,walk=0,flash=0,travel=0,lastGap=0;
 try{best=Number(localStorage.getItem('dont-trip-grandma-best'))||0;coins=Number(localStorage.getItem('dont-trip-grandma-coins'))||0}catch(e){}bestEl.textContent=best+' m';coinsEl.textContent='🪙 '+coins;
 function resizeGame(){
- if(replay.mode==='playback'&&replay.tape){forceReplayDimensions();return;}
+ if(['playback','record'].includes(replay.mode)&&replay.tape){forceReplayDimensions();return;}
  const oldW=W,oldGround=ground,wasGrounded=grandma.y>=oldGround-grandma.h-2;
  const mobile=window.matchMedia('(max-width:650px)').matches;
  const box=canvas.getBoundingClientRect();
@@ -574,6 +574,7 @@ function finishDailyRun(reason){
  document.getElementById('game').classList.add('post-run-active','daily-finished');
  overlay.classList.add('hidden');if(onboardingEl)onboardingEl.classList.remove('show');
  dailyResultCard.hidden=false;
+ if(!replayStepping)finishReplayRecording();
  document.getElementById('dailyResultTitle').textContent=dailyLastResult.completed?'OMA HEEFT HET GEHAALD!':'OEPS… OMA STRUIKELT';
  document.getElementById('dailyResultPoints').textContent=dailyLastResult.points+' PT';
  document.getElementById('dailyResultDetail').textContent=dailyLastResult.distance+' m · '+nearMissRun+' Near Misses · '+Math.floor(daily.elapsed)+' / 75 sec · '+(dailyLastResult.completed?'+100 voltooibonus':'Run beëindigd');
@@ -948,6 +949,7 @@ function start(){replayAccumulator=0;dailyFixedAccumulator=0;const loading=pendi
  postRun.showRescue({distance:score,coins,deadline:deathDeadline,canRevive:canRescue});
  if(canRescue)deathTimerFrame=requestAnimationFrame(tickDeathTimer);
  else postRunDelayed=setTimeout(showRunResult,800);
+ if(!replayStepping)finishReplayRecording();
 }
 function revive(boost=false){
  if(replay.mode==='playback')return;
@@ -1034,7 +1036,7 @@ function update(dt){if(daily.active&&daily.advance(dt)){finishDailyRun('complete
     levelStartScore+=goal;
     previousTier=currentTier;currentTier=nextWorld;
     transition=2.8;tierFlash=0;
-    metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);
+    if(replay.mode!=='playback')metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);
     incrementMission('tier',currentTier+1);evaluateAchievements();
    }
   }
@@ -1345,10 +1347,11 @@ for(const c of coinItems){
 for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
 let dailyFixedAccumulator=0;
 function replayStep(){
+ replayStepping=true;
  replay.beforeTick(applyReplayInput);
  if(state==='recovery')updateRecovery(window.GrannyReplay.DT);
  else if(state==='playing')update(window.GrannyReplay.DT);
- replay.afterTick(replayFrame());
+ replay.afterTick(replayFrame());replayStepping=false;
  if(state==='over')finishReplayRecording();
 }
 function frame(now){
