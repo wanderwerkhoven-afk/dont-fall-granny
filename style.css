@@ -2166,3 +2166,37 @@ body:has(#overlay.hidden) .game>canvas{
 @media(prefers-reduced-motion:reduce){
  .danger-warning{transition:none!important}
 }
+
+/* Short landscape menus must have real grid-row height for their navigation.
+ * Previously minmax(0,1fr) collapsed the row beneath its buttons, causing
+ * the navigation to intercept taps on Spelinstellingen. */
+@media (min-width:651px) and (max-height:540px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover)>.panel{
+  grid-template-rows:auto auto auto auto max-content max-content auto!important;
+  align-content:start!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  padding-bottom:max(18px,env(safe-area-inset-bottom,0px))!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .home-main-nav{
+  grid-row:5!important;
+  align-self:start!important;
+  margin-top:8px!important;
+  z-index:1!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent{
+  grid-row:6!important;
+  position:relative!important;
+  z-index:3!important;
+  margin:8px 0 0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-hero{
+  grid-row:1/5!important;
+  position:sticky!important;
+  top:0;
+  align-self:start!important;
+  height:clamp(150px,62dvh,265px)!important;
+  max-height:265px!important;
+  min-height:0!important;
+ }
+}
