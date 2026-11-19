@@ -1,6 +1,7 @@
 (()=>{'use strict';
 const META=window.GrannyMeta||{version:'V.1.2.0.0',achievements:[],missionPool:[],weeklyPool:[],unlocks:[],cosmetics:[],worldRules:[],tieredAchievements:[],difficultyModes:{},rankLevels:[],worldChallenges:[],collectionSets:[]};
 const PROG=window.GrannyProgression||{};
+const WORLD_MASTERY=window.GrannyWorldMastery;
 const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
 const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
@@ -324,7 +325,48 @@ function achievementProgress(a){
  return '';
 }
 function masteryFor(tier=currentTier){const id=tier%TIERS.length;return metaState.mastery[id]||(metaState.mastery[id]={distance:0,perfects:0,nearMisses:0,bestCombo:0})}
-function addWorldMastery(key,amount){const m=masteryFor();m[key]=(m[key]||0)+amount;m.bestCombo=Math.max(m.bestCombo||0,combo)}
+function addWorldMastery(key,amount){
+ const m=masteryFor();m[key]=(m[key]||0)+amount;m.bestCombo=Math.max(m.bestCombo||0,combo);
+ const newStars=WORLD_MASTERY.evaluate(currentTier%TIERS.length,m);
+ if(newStars.length){
+  saveMetaState(); // Permanent at the exact milestone, not only after game-over.
+  for(const award of newStars){
+   rewardPopups.push({text:'⭐ MASTERY · '+award.sticker,x:W*.5,y:76,life:2.2});
+  }
+ }
+}
+function reconcileWorldMastery(){
+ let changed=false;
+ for(let i=0;i<TIERS.length;i++){
+  const entry=metaState.mastery[i];
+  if(entry&&WORLD_MASTERY.evaluate(i,entry).length)changed=true;
+ }
+ if(changed)saveMetaState();
+}
+function renderAdventureBook(){
+ const total=WORLD_MASTERY.totalStars(metaState.mastery);
+ const pages=WORLD_MASTERY.WORLD_MASTERY.map((world,index)=>{
+  const p=WORLD_MASTERY.progress(index,metaState.mastery[index]||{});
+  const goals=p.goals.map(goal=>
+   '<div class="book-goal '+(goal.earned?'earned':'')+'">'+
+   '<span class="book-sticker" aria-label="'+(goal.earned?'Sticker verdiend':'Sticker vergrendeld')+'">'+
+   (goal.earned?goal.symbol:'☆')+'</span>'+
+   '<div class="book-goal-copy"><b>'+(goal.earned?goal.sticker:goal.label)+'</b>'+
+   '<small>'+(goal.earned?'Permanent vrijgespeeld':Math.min(goal.value,goal.target)+' / '+goal.target)+'</small>'+
+   '<div class="book-meter"><span style="width:'+(goal.fraction*100).toFixed(1)+'%"></span></div></div></div>'
+  ).join('');
+  return '<article class="adventure-page" style="--book-color:'+world.color+'">'+
+   '<div class="adventure-page-heading"><span class="adventure-world-icon">'+world.icon+'</span>'+
+   '<div><small>WERELD '+(index+1)+' · MASTERYPAGINA</small><h4>'+world.name+'</h4></div>'+
+   '<strong>'+p.earned+' / 3 ★</strong></div>'+
+   '<div class="book-goals">'+goals+'</div></article>';
+ }).join('');
+ return '<section class="adventure-book" id="adventureBook" aria-label="Adventure Book World Mastery">'+
+ '<div class="adventure-book-header"><div><small>OMA’S ADVENTURE BOOK</small>'+
+ '<h3>World Mastery</h3><p>Verdien drie sterren per wereld en verzamel 21 unieke stickers. Alleen voor de sier — zonder gameplayvoordeel.</p></div>'+
+ '<strong class="book-total">'+total+' <span>/ 21 ★</span></strong></div>'+
+ '<div class="adventure-pages">'+pages+'</div></section>';
+}
 function currentWorldRule(){return META.worldRules[currentTier%Math.max(1,META.worldRules.length)]||{speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0}}
 function eventLabel(){return META.worldChallenges?.[currentTier%Math.max(1,META.worldChallenges.length)]||{icon:'⚡',label:'Wereldevent'}}
 function worldEventSpeed(){
@@ -568,7 +610,7 @@ function showMenu(page='home'){
   document.getElementById('menuKicker').textContent='OMA’S TROFEEËNKAST  ✦  MISSIES & MIJLPALEN';
   const daily=activeMissions(META.missionPool,3,metaState.daily.key),weekly=activeMissions(META.weeklyPool,2,metaState.weekly.key),rank=currentRank(),next=nextRank();
   const missionCard=(m,kind)=>{const box=metaState[kind],p=Math.min(m.goal,box.progress[m.id]||0),done=box.claimed.includes(m.id),pinned=kind==='daily'&&metaState.settings.pinnedMission===m.id;return '<button class="mission-card '+(done?'done ':'')+(pinned?'pinned':'')+'" type="button" '+(kind==='daily'?'data-pin-mission="'+m.id+'"':'')+'><span>'+m.icon+'</span><div><b>'+m.label+'</b><small>'+p+' / '+m.goal+(done?' · VOLTOOID':'')+(pinned?' · 📌 HUD':'')+'</small></div><strong>+'+m.reward+' 🪙</strong></button>'};
-  menuContent.innerHTML='<section class="progress-section"><div class="rank-card"><b>LV '+(rank?.level||1)+' · '+(rank?.name||'Buurtwandelaar')+'</b><small>XP '+(metaState.stats.xp||0)+(next?' / '+next.xp:' · MAX RANK')+'</small></div><h3>Vandaag · tik om te pinnen</h3>'+daily.map(m=>missionCard(m,'daily')).join('')+'<h3>Deze week</h3>'+weekly.map(m=>missionCard(m,'weekly')).join('')+'<h3>Achievement tiers</h3><div class="achievement-grid">'+(META.tieredAchievements||[]).map(a=>{const tier=metaState.tiered[a.id]||0,value=metaState.stats[a.stat]||0,nextGoal=a.tiers[Math.min(tier,a.tiers.length-1)];return '<div class="achievement-card '+(tier?'done':'')+'"><span>'+a.icon+'</span><b>'+a.name+'</b><small>'+(PROG.tierLabel?PROG.tierLabel(tier):tier)+' · '+value+'/'+nextGoal+'</small><strong>Brons → Zilver → Goud → Holo</strong></div>'}).join('')+'</div><h3>Records</h3><div class="records-grid"><span>🏁 '+metaState.records.distance+' m</span><span>🔥 '+metaState.records.combo+'</span><span>🪙 '+metaState.records.coins+'</span><span>✨ '+metaState.records.perfects+'</span></div><h3>Wereld mastery</h3><div class="mastery-grid">'+TIERS.map((t,i)=>{const m=metaState.mastery[i]||{};return '<div><span>'+t.icon+'</span><b>'+t.name+'</b><small>'+Math.round(m.distance||0)+'m · ✨ '+(m.perfects||0)+' · ⚡ '+(m.nearMisses||0)+'</small></div>'}).join('')+'</div><h3>Wereld-roadmap</h3><div class="unlock-roadmap">'+META.unlocks.map(u=>'<div class="unlock-step '+(best>=u.distance?'done':'')+'"><span>'+u.icon+'</span><div><b>'+u.distance+' m · '+u.label+'</b><small>'+u.detail+'</small></div></div>').join('')+'</div></section>';menuContent.querySelectorAll('[data-pin-mission]').forEach(b=>b.addEventListener('click',()=>{metaState.settings.pinnedMission=b.dataset.pinMission;saveMetaState();showMenu('progress')}));return
+  menuContent.innerHTML='<section class="progress-section"><div class="rank-card"><b>LV '+(rank?.level||1)+' · '+(rank?.name||'Buurtwandelaar')+'</b><small>XP '+(metaState.stats.xp||0)+(next?' / '+next.xp:' · MAX RANK')+'</small></div><h3>Vandaag · tik om te pinnen</h3>'+daily.map(m=>missionCard(m,'daily')).join('')+'<h3>Deze week</h3>'+weekly.map(m=>missionCard(m,'weekly')).join('')+'<h3>Achievement tiers</h3><div class="achievement-grid">'+(META.tieredAchievements||[]).map(a=>{const tier=metaState.tiered[a.id]||0,value=metaState.stats[a.stat]||0,nextGoal=a.tiers[Math.min(tier,a.tiers.length-1)];return '<div class="achievement-card '+(tier?'done':'')+'"><span>'+a.icon+'</span><b>'+a.name+'</b><small>'+(PROG.tierLabel?PROG.tierLabel(tier):tier)+' · '+value+'/'+nextGoal+'</small><strong>Brons → Zilver → Goud → Holo</strong></div>'}).join('')+'</div><h3>Records</h3><div class="records-grid"><span>🏁 '+metaState.records.distance+' m</span><span>🔥 '+metaState.records.combo+'</span><span>🪙 '+metaState.records.coins+'</span><span>✨ '+metaState.records.perfects+'</span></div>' +renderAdventureBook()+'<h3>Wereld-roadmap</h3><div class="unlock-roadmap">'+META.unlocks.map(u=>'<div class="unlock-step '+(best>=u.distance?'done':'')+'"><span>'+u.icon+'</span><div><b>'+u.distance+' m · '+u.label+'</b><small>'+u.detail+'</small></div></div>').join('')+'</div></section>';menuContent.querySelectorAll('[data-pin-mission]').forEach(b=>b.addEventListener('click',()=>{metaState.settings.pinnedMission=b.dataset.pinMission;saveMetaState();showMenu('progress')}));return
  }
  if(page==='collection'){
   document.getElementById('menuKicker').textContent='OMA’S EXTRA’S  ✦  ACCESSOIRES';
@@ -1140,7 +1182,7 @@ if(new URLSearchParams(location.search).get('debug')==='1'){
     eventCount:worldEvents.eventCount,used:worldEvents.used,elapsed:worldEvents.elapsed,
     remaining:worldEvents.remaining,reason:worldEvents.reason}})};
 }
-reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
+reconcileWorldMastery();reset();showMenu('home');resizeGame();requestAnimationFrame(resizeGame);
 // Rescale canvas world when the header is hidden/revealed or mobile browser chrome
 // changes usable viewport height; keep physics coordinates aligned with CSS pixels.
 if(typeof ResizeObserver!=='undefined'){
