@@ -288,7 +288,7 @@ function updateComboHud(){
 }
 function resetCombo(){combo=0;updateComboHud()}
 function registerCombo(points=1,labelText=''){
- const before=combo;combo=Math.min(99,combo+points);comboPeak=Math.max(comboPeak,combo);metaState.stats.bestCombo=Math.max(metaState.stats.bestCombo,combo);
+ const before=combo;combo=Math.min(99,combo+points);comboPeak=Math.max(comboPeak,combo);if(!daily.active)metaState.stats.bestCombo=Math.max(metaState.stats.bestCombo,combo);
  updateComboHud();
  const milestone=[5,10,15,25].find(m=>before<m&&combo>=m);
  if(milestone){comboBurstTime=1.7;magnetTime=Math.max(magnetTime,milestone>=10?4:2);rewardPopups.push({text:'🔥 '+(milestone>=15?'MEGA STREAK':'HOT STREAK')+' x'+comboMultiplier().toFixed(2),x:W*.5,y:90,life:1.7});playFeedback('combo');haptic(16)}
@@ -503,7 +503,7 @@ function startDaily(){
 function finishDailyRun(reason){
  if(!daily.active||state==='over')return;
  daily.finish(reason);dailyLastResult={
-  distance:score,seconds:daily.elapsed,nearMisses:nearMissRun,perfectSaves:perfectRun,
+  distance:score,seconds:daily.elapsed,nearMisses:nearMissRun,
   completed:reason==='completed'
  };
  dailyLastResult.points=window.GrannyDaily.points(dailyLastResult);
@@ -518,7 +518,7 @@ function finishDailyRun(reason){
  dailyResultCard.hidden=false;
  document.getElementById('dailyResultTitle').textContent=dailyLastResult.completed?'OMA HEEFT HET GEHAALD!':'OEPS… OMA STRUIKELT';
  document.getElementById('dailyResultPoints').textContent=dailyLastResult.points+' PT';
- document.getElementById('dailyResultDetail').textContent=dailyLastResult.distance+' m · '+nearMissRun+' Near Misses · '+perfectRun+' Perfect Saves · '+Math.floor(daily.elapsed)+' / 75 sec';
+ document.getElementById('dailyResultDetail').textContent=dailyLastResult.distance+' m · '+nearMissRun+' Near Misses · '+Math.floor(daily.elapsed)+' / 75 sec · '+(dailyLastResult.completed?'+100 voltooibonus':'Run beëindigd');
  document.getElementById('dailyResultRecord').textContent=(result.newRecord?'NIEUW DAGRECORD · ':'DAGRECORD · ')+result.bestScore+' PT · POGING '+result.attempts;
 }
 async function shareDailyResult(){
