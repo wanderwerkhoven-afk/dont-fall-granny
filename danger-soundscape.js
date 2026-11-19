@@ -24,18 +24,42 @@ function classify(obstacle){
  if(id==='walker')return {id:'pedestrian',label:'Wandelaar',frequency:480,pan:.6};
  return {id:'obstacle',label:'Obstakel',frequency:360,pan:.62};
 }
+function timeToModeContact(obstacle,{vehicle,granny,speed,lane,elapsed=0,velocity=0}={}){
+ if(!obstacle||!granny)return Infinity;
+ if(vehicle==='booster'){
+  if(obstacle.lane!==lane)return Infinity;
+  const approach=.43+elapsed*.0015;
+  return approach>0&&obstacle.z>.1?(obstacle.z-.1)/approach:Infinity;
+ }
+ if(vehicle==='plane'){
+  const closing=Math.max(260,speed*.86);
+  const distance=obstacle.x-(granny.x+granny.w-7);
+  if(distance<=0||closing<=0)return Infinity;
+  const eta=distance/closing;
+  const projectedY=granny.y+velocity*eta+.5*980*eta*eta;
+  return (projectedY+6<obstacle.top||projectedY+granny.h-5>obstacle.top+obstacle.gap)?eta:Infinity;
+ }
+ return Infinity;
+}
 class DangerSoundscape{
  constructor(){this.reset();}
  reset(){this.warned=new WeakSet();this.visible=null;this.count=0;}
- update({obstacles=[],granny,speed,state,controllerState,vehicle=false,recovery=false,paused=false}={}){
-  if(state!=='playing'||controllerState!=='running'||vehicle||recovery||paused){
+ update({obstacles=[],modeObstacles=[],granny,speed,state,controllerState,
+   vehicle=false,worldEventActive=false,vehicleLane=1,vehicleVelocity=0,
+   elapsed=0,modeGraceTime=0,recovery=false,paused=false}={}){
+  const running=controllerState==='running'&&!vehicle;
+  const special=controllerState==='special_mode'&&!!vehicle&&worldEventActive;
+  if(state!=='playing'||(!running&&!special)||recovery||paused){
    this.visible=null;return null;
   }
   let closest=null;
-  for(const obstacle of obstacles){
-   const eta=timeToContact(obstacle,granny,speed);
-   if(eta>MAX_LEAD||eta<0||!Number.isFinite(eta))continue;
-   if(!closest||eta<closest.eta)closest={obstacle,eta,kind:classify(obstacle)};
+  for(const obstacle of special?modeObstacles:obstacles){
+   const eta=special?timeToModeContact(obstacle,{vehicle,granny,speed,lane:vehicleLane,elapsed,velocity:vehicleVelocity}):
+    timeToContact(obstacle,granny,speed);
+   if(eta>MAX_LEAD||eta<0||!Number.isFinite(eta)||(special&&eta<modeGraceTime))continue;
+   const kind=special&&vehicle==='plane'
+    ?{id:'air',label:'Luchtobstakel',frequency:420,pan:.65}:classify(obstacle);
+   if(!closest||eta<closest.eta)closest={obstacle,eta,kind};
   }
   this.visible=closest;
   if(closest&&closest.eta>=MIN_LEAD&&!this.warned.has(closest.obstacle)){
@@ -105,5 +129,5 @@ class DangerAudioDirector{
   this.voices.clear();
  }
 }
-window.GrannyDangerSoundscape={MIN_LEAD,MAX_LEAD,timeToContact,classify,DangerSoundscape,DangerAudioDirector};
+window.GrannyDangerSoundscape={MIN_LEAD,MAX_LEAD,timeToContact,timeToModeContact,classify,DangerSoundscape,DangerAudioDirector};
 })();
