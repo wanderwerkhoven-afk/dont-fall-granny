@@ -16,7 +16,7 @@ w.begin(0);assert.equal(w.tick(.9),true);assert.equal(w.resolve(),'miss');
 w.begin(10000);assert.ok(w.safeMin>.38&&w.safeMax<.62);assert.ok(w.safeMin<.47&&w.safeMax>.53);
 w.reset();assert.equal(w.active,false);assert.equal(w.position,0);
 assert.ok(script.includes('triggerRecovery();return'), 'ordinary unshielded collision enters recovery');
-assert.ok(script.includes("if(state==='recovery')updateRecovery(dt)"),'recovery ticks in animation loop');
+assert.ok(script.includes("if(state==='recovery')updateRecovery(window.GrannyReplay.DT)"),'recovery ticks in fixed 60 Hz simulation loop');
 assert.ok(script.includes("if(state==='recovery'){attemptRecovery();return}"),'jump input taps recovery');
 assert.ok(script.includes("if(result==='miss'){balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}"),'miss clears perfect-run state, resets combo and delegates rescue flow');
 assert.ok(script.includes('drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();'),'in-world meter renders');
