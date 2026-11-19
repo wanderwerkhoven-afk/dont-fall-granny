@@ -2127,3 +2127,42 @@ body:has(#overlay.hidden) .game>canvas{
  .book-sticker{width:35px;height:35px;flex-basis:35px;font-size:23px}
 }
 @media(prefers-reduced-motion:reduce){.book-meter span{transition:none}}
+
+/* Improvement 14 — quiet, optional non-audio danger warnings.
+ * Right-hand peripheral cue doesn't cover the runway, hero or touch controls. */
+.danger-warning[hidden]{display:none!important}
+.danger-warning{
+ position:absolute;inset:0 0 0 auto;z-index:7;
+ width:clamp(22px,5%,52px);
+ pointer-events:none;opacity:var(--danger-strength,.6);
+ transition:opacity .09s linear;
+}
+.danger-warning-edge{
+ display:block;position:absolute;inset:8% 0 18% auto;
+ width:100%;border-radius:80% 0 0 80%;
+ background:linear-gradient(90deg,transparent 0%,rgba(247,167,100,.22) 48%,rgba(243,140,93,.56) 100%);
+ box-shadow:inset -3px 0 0 rgba(85,54,70,.25);
+}
+.danger-warning.urgent .danger-warning-edge{
+ background:linear-gradient(90deg,transparent 0%,rgba(246,151,111,.35) 45%,rgba(237,105,91,.72) 100%);
+}
+.danger-warning-label{
+ position:absolute;right:5px;top:50%;
+ writing-mode:vertical-rl;text-orientation:mixed;
+ transform:translateY(-50%) rotate(180deg);
+ text-transform:uppercase;letter-spacing:1.6px;
+ color:#4c344d;background:#fff4e3dc;
+ border-radius:5px;padding:8px 3px;
+ font:900 clamp(9px,.85vw,12px)/1.2 system-ui;
+ white-space:nowrap;
+}
+.game.post-run-active .danger-warning,
+.game.recovery-mode .danger-warning,
+.game.scooter-mode .danger-warning{display:none!important}
+@media(max-width:650px){
+ .danger-warning{width:clamp(16px,5%,28px)}
+ .danger-warning-label{font-size:8px;letter-spacing:.6px;padding:5px 2px}
+}
+@media(prefers-reduced-motion:reduce){
+ .danger-warning{transition:none!important}
+}
