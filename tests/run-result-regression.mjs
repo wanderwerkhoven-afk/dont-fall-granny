@@ -49,7 +49,7 @@ assert.match(app,/postRun\.showRescue\(/);
 assert.match(app,/postRun\.showResult\(/);
 assert.match(app,/if\(remaining<=0\)\{showRunResult\(\);return\}/);
 assert.ok(html.indexOf('game-state.js?v=16')<html.indexOf('run-results.js?v=17'));
-assert.ok(html.indexOf('run-results.js?v=17')<html.indexOf('app.js?v=22'));
+assert.ok(html.indexOf('run-results.js?v=17')<html.indexOf('app.js?v=23'));
 assert.match(workflow,/node tests\/run-result-regression\.mjs/);
 assert.match(workflow,/cp style\.css app\.js[^\n]+game-state\.js run-results\.js world-events\.js world-mastery\.js danger-soundscape\.js sw\.js _site\//);
 new Function(code);new Function(gameCode);new Function(app);
