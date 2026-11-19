@@ -738,7 +738,7 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){flowTo(GameState.PAUSED);showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery')return;if(state==='playing'){flowTo(GameState.PAUSED);worldEventCard.hidden=true;showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';updateWorldEventCard();overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&worldEvents.active&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
@@ -1000,9 +1000,12 @@ function finishVehicle(){
 }
 function drawVehicleMode(){
  const plane=vehicle==='plane';
+ const eventWorld=worldEvents.current?.world??currentTier%7;
+ const eventTheme=TIERS[eventWorld];
+ const eventColor=worldEvents.current?.accent||'#b2d6cf';
  ctx.save();
  if(plane){
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#79c3f2');g.addColorStop(1,'#e4f8ff');
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,eventTheme.sky[0]);g.addColorStop(1,eventTheme.sky[2]);
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   for(let i=0;i<12;i++){const x=((i*151-modeDistance*.17)%(W+170)+(W+170))%(W+170)-80;ellipse(x,65+(i%5)*94,55,16,'#fff9ed');ellipse(x+21,53+(i%5)*94,31,21,'#fff9ed')}
   for(const o of modeObstacles){
@@ -1014,8 +1017,9 @@ function drawVehicleMode(){
   drawGrandma();
   rounded(15,H-70,W-30,48,12,'#ffffffdd');ctx.fillStyle='#302b48';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText('✈️ Tik = fladderen · ontwijk de muren',W/2,H-40);
  }else{
-  const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#9bd5ed');sky.addColorStop(.6,'#e8f0dd');sky.addColorStop(1,'#a7b7ae');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+  const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,eventTheme.sky[0]);sky.addColorStop(.6,eventTheme.sky[1]);sky.addColorStop(1,eventTheme.sky[2]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
   const horizon=H*.29,cx=W/2;
+  ctx.save();ctx.globalAlpha=.5;ellipse(W*.79,H*.18,27,27,eventColor);ctx.restore();
   for(let i=0;i<14;i++){const x=i*110-(modeDistance*.12%110);rounded(x,horizon-65-(i%3)*30,75,110+(i%3)*30,3,i%2?'#b6c8bd':'#c5b6b1');for(let j=0;j<3;j++)rounded(x+12+j*20,horizon-44,11,16,1,'#fff2bd')}
   ctx.fillStyle='#595768';ctx.beginPath();ctx.moveTo(cx-48,horizon);ctx.lineTo(cx+48,horizon);ctx.lineTo(W+140,H);ctx.lineTo(-140,H);ctx.closePath();ctx.fill();
   for(let l=1;l<3;l++){ctx.strokeStyle='#fff2cf';ctx.lineWidth=3;ctx.setLineDash([24,23]);ctx.beginPath();ctx.moveTo(cx+(l-1.5)*32,horizon);ctx.lineTo(cx+(l-1.5)*W*.7,H);ctx.stroke();ctx.setLineDash([])}
