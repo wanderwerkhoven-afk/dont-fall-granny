@@ -10,6 +10,8 @@ on:
       - 'granny-expressions.js'
       - 'run-results.js'
       - 'game-state.js'
+      - 'world-events.js'
+      - 'tests/world-events-browser.cjs'
       - 'tests/post-run-browser.cjs'
       - 'levels.js'
       - 'tests/game-smoke.cjs'
@@ -34,3 +36,4 @@ jobs:
           sleep 2
           node tests/game-smoke.cjs
           node tests/post-run-browser.cjs
+          node tests/world-events-browser.cjs
