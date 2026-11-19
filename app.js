@@ -199,8 +199,8 @@ const clothing=[
  {id:'midnight',name:'Middernacht',cost:1200,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
 ];
 const gadgets=[
- {id:'plane',name:'Vliegtuig',cost:45,description:'Zeldzame Flappy-modus · tik om te vliegen · 10 sec.'},
- {id:'booster',name:'Scootmobiel',cost:35,description:'Zeldzame 3D-renmodus · wissel van baan · 10 sec.'}
+ {id:'plane',name:'Vliegtuig',cost:45,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
+ {id:'booster',name:'Scootmobiel',cost:35,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
@@ -524,7 +524,7 @@ function retryRun(){
 
 function stopDeathTimer(){if(postRunDelayed)clearTimeout(postRunDelayed);postRunDelayed=0;postRun.hide();document.getElementById('game').classList.remove('post-run-active','post-run-result');deathDeadline=0;if(deathTimerFrame)cancelAnimationFrame(deathTimerFrame);deathTimerFrame=0;overlay.classList.remove('gameover');overlay.style.removeProperty('--timer-angle')}
 function tickDeathTimer(){if(state!=='over'||!deathDeadline)return;const remaining=Math.max(0,(deathDeadline-performance.now())/1000);overlay.style.setProperty('--timer-angle',(remaining/GAME_OVER_SECONDS*360)+'deg');countdown.textContent='⏳ Nog '+Math.ceil(remaining)+' seconden om verder te gaan';if(remaining<=0){showRunResult();return}postRun.setRemaining(remaining);deathTimerFrame=requestAnimationFrame(tickDeathTimer)}
-function finalizeRun(){if(runFinalized)return;runFinalized=true;metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
+function finalizeRun(){if(runFinalized)return;runFinalized=true;saveWorldEventPity(worldEvents.noteRunEnded());metaState.stats.runs++;metaState.stats.totalDistance+=score;metaState.stats.maxTier=Math.max(metaState.stats.maxTier,currentTier+1);metaState.records.distance=Math.max(metaState.records.distance,score);metaState.records.combo=Math.max(metaState.records.combo,comboPeak);metaState.records.coins=Math.max(metaState.records.coins,coinsRun);metaState.records.perfects=Math.max(metaState.records.perfects,perfectRun);metaState.records.tier=Math.max(metaState.records.tier,currentTier+1);incrementMission('distance',score);incrementMission('tier',currentTier+1);gainXp(score*.18+coinsRun*2+perfectRun*15+nearMissRun*7+(perfectRunAlive?100:0));if(perfectRunAlive){coins+=25;saveCoins()}evaluateAchievements();saveMetaState()}
 function returnHome(){stopDeathTimer();if(state==='over')finalizeRun();
  if(runFlow.current!==GameState.MENU){
   flowTo(GameState.MENU);
@@ -721,7 +721,7 @@ function start(){stopDeathTimer();showMenu('home');reset();
  resultPreviousCollections=[...(metaState.collections||[])];
  resultPreviousAchievements=[...(metaState.achievements||[])];
  grandmaExpressions.react('fall');
- saveWorldEventPity(worldEvents.noteRunEnded());worldEvents.abort();updateWorldEventCard();
+ worldEvents.abort();updateWorldEventCard();
  recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
  state='over';
