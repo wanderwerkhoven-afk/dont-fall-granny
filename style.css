@@ -1964,3 +1964,67 @@ body:has(#overlay.hidden) .game>canvas{
   height:220px!important;
  }
 }
+
+/* Improvement 12 — World Events. Compact illustrated identifier stays out
+ * of the mobile controls and never covers Granny or the recovery meter. */
+.world-event-card[hidden]{display:none!important}
+.world-event-card{
+ position:absolute;z-index:8;top:clamp(74px,12%,120px);left:50%;
+ transform:translateX(-50%);width:max-content;max-width:min(74%,440px);
+ display:flex;align-items:center;justify-content:center;gap:11px;
+ padding:9px 16px 9px 10px;border-radius:15px;
+ border:2.5px solid #392d44;background:#fff8eaf0;
+ color:#392d44;box-shadow:3px 4px 0 #392d44;
+ pointer-events:none;
+ animation:worldEventAppear .4s cubic-bezier(.2,.9,.3,1) both;
+}
+.world-event-card::before{
+ content:'';position:absolute;inset:0 0 auto 0;height:5px;
+ background:var(--event-accent,#b7e0d0);
+ border-radius:11px 11px 2px 2px;
+}
+.world-event-card .world-event-icon{
+ display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;
+ border:2px solid #392d44;border-radius:12px;
+ background:var(--event-accent,#b7e0d0);font-size:24px;
+}
+.world-event-card .world-event-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.world-event-card .world-event-copy b{font:900 clamp(13px,1.45vw,19px)/1.15 system-ui}
+.world-event-card .world-event-copy small{font:700 clamp(10px,.92vw,12px)/1.25 system-ui;color:#79657d}
+.world-event-card .world-event-countdown{
+ margin-left:auto;flex:0 0 auto;font:900 13px/1 system-ui;
+ border:2px solid #392d44;border-radius:9px;background:#fffdf4;
+ padding:8px 9px;min-width:51px;text-align:center
+}
+.world-event-card.intro{animation:worldEventAppear .55s cubic-bezier(.2,.9,.3,1) both}
+.world-event-card.outro{opacity:.76;transition:opacity .6s ease}
+@keyframes worldEventAppear{
+ from{opacity:0;transform:translate(-50%,-17px) scale(.94)}
+ to{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@media(orientation:landscape) and (max-height:550px){
+ .world-event-card{
+  top:clamp(50px,14%,74px);
+  left:auto;right:clamp(8px,2vw,20px);
+  transform:none;max-width:min(46%,390px);
+  padding:5px 9px;gap:7px;
+ }
+ .world-event-card .world-event-icon{width:30px;height:30px;flex-basis:30px;font-size:17px;border-radius:8px}
+ .world-event-card .world-event-copy b{font-size:clamp(10px,1.6vw,15px)}
+ .world-event-card .world-event-copy small{font-size:9px}
+ .world-event-card .world-event-countdown{font-size:10px;min-width:39px;padding:6px}
+ @keyframes worldEventAppear{
+  from{opacity:0;transform:translateY(-10px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+ }
+}
+@media(orientation:portrait) and (max-width:650px){
+ .world-event-card{top:150px;max-width:calc(100% - 26px);padding:7px 10px;gap:7px}
+ .world-event-card .world-event-icon{height:32px;width:32px;flex-basis:32px;font-size:19px}
+ .world-event-card .world-event-copy b{font-size:12px}
+ .world-event-card .world-event-copy small{font-size:10px}
+ .world-event-card .world-event-countdown{padding:7px 5px;font-size:10px;min-width:40px}
+}
+@media(prefers-reduced-motion:reduce){
+ .world-event-card{animation:none!important;transition:none!important}
+}
