@@ -1343,26 +1343,26 @@ for(const c of coinItems){
 }
 for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
 let dailyFixedAccumulator=0;
+function replayStep(){
+ replay.beforeTick(applyReplayInput);
+ if(state==='recovery')updateRecovery(window.GrannyReplay.DT);
+ else if(state==='playing')update(window.GrannyReplay.DT);
+ replay.afterTick(replayFrame());
+ if(state==='over')finishReplayRecording();
+}
 function frame(now){
  if(state!=='playing'&&state!=='recovery')return;
  const raw=Math.max(0,(now-last)/1000);
- last=now;
- if(daily.active){
-  // The daily course uses fixed 60Hz physics, regardless of the device's
-  // display refresh rate. World-space seeds/spawn distances remain identical.
-  dailyFixedAccumulator+=Math.min(raw,.25);
-  let steps=0;
-  while(daily.active&&state==='playing'&&dailyFixedAccumulator>=1/60&&steps<15){
-   update(1/60);
-   dailyFixedAccumulator-=1/60;steps++;
-  }
- }else{
-  const dt=Math.min(raw,.035);
-  if(state==='recovery')updateRecovery(dt);else if(state==='playing')update(dt);
+ last=now;replayAccumulator+=Math.min(raw,.25);
+ let steps=0;
+ while((state==='playing'||state==='recovery')&&replayAccumulator>=window.GrannyReplay.DT&&steps<15){
+  replayStep();replayAccumulator-=window.GrannyReplay.DT;steps++;
  }
  render();
+ if(typeof updateReplayDebugPanel==='function')updateReplayDebugPanel();
  if(state==='playing'||state==='recovery')requestAnimationFrame(frame);
-}if(window.GrannyStorybook)window.GrannyStorybook.installMap(
+}
+if(window.GrannyStorybook)window.GrannyStorybook.installMap(
  ()=>({score,best,currentTier,startTierOffset,state}),pause,
  index=>{
   if(!LEVELS.select(index))return false;
@@ -1373,6 +1373,39 @@ function frame(now){
 );
 // Debug-only test entry points: never exposed during normal gameplay.
 if(new URLSearchParams(location.search).get('debug')==='1'){
+ const replayDebug=document.createElement('div');
+replayDebug.id='replayDebugPanel';replayDebug.className='replay-debug-panel';replayDebug.hidden=true;
+replayDebug.innerHTML='<b>REPLAY DEBUG · <span id="replayDebugState">READY</span></b>'+
+ '<button type="button" id="copyReplay">COPY REPLAY</button>'+
+ '<button type="button" id="loadReplay">LOAD REPLAY</button>'+
+ '<span id="replayDebugMessage" role="status"></span>';
+document.body.appendChild(replayDebug);
+function replayDebugMessage(message){document.getElementById('replayDebugMessage').textContent=message;}
+document.getElementById('copyReplay').addEventListener('click',async()=>{
+ const tape=replay.mode==='record'?replay.tape:replay.restore(localStorage);
+ if(!tape){replayDebugMessage('Nog geen opname beschikbaar.');return;}
+ const str=JSON.stringify(tape);
+ try{await navigator.clipboard.writeText(str);replayDebugMessage('Opname gekopieerd · '+tape.ruleset);}
+ catch(e){const box=window.prompt('Kopieer de replay-JSON',str);replayDebugMessage(box===null?'Kopiëren geannuleerd.':'Selecteer en kopieer de JSON.');}
+});
+document.getElementById('loadReplay').addEventListener('click',()=>{
+ const value=window.prompt('Plak de replay-JSON (zelfde rulesetversie):');
+ if(!value)return;
+ try{
+  const tape=window.GrannyReplay.ensureTape(value);
+  if(state!=='ready')returnHome();
+  pendingReplayTape=tape;start();
+  replayDebugMessage('Replay geladen · seed '+tape.seed);
+ }catch(e){replayDebugMessage(e.message);}
+});
+function updateReplayDebugPanel(){
+ if(replayDebug.hidden)return;
+ document.getElementById('replayDebugState').textContent=
+  replay.mode.toUpperCase()+' · '+replay.tick+' ticks'+(replay.error?' · DESYNC':'');
+ if(replay.error)replayDebugMessage(replay.error);
+}
+
+ replayDebug.hidden=false;
  window.__grannyDebug={fall:()=>end(),result:()=>showRunResult(),retry:()=>retryRun(),
   setWorldForTest:world=>{if(state==='playing'&&!worldEvents.used)currentTier=Math.max(0,Math.min(6,world|0));},
   advanceWorldEventForTest:seconds=>{for(let i=0;i<Math.ceil(seconds/.05);i++)tickWorldEvent(.05);},
@@ -1387,6 +1420,12 @@ if(new URLSearchParams(location.search).get('debug')==='1'){
   dangerTestClear:()=>{obstacles=[];updateDangerWarnings();},
 
   dailyAdvanceForTest:seconds=>{if(daily.active){daily.elapsed=Math.min(daily.config.duration,daily.elapsed+Math.max(0,seconds));if(daily.elapsed>=daily.config.duration)finishDailyRun('completed');}},
+  exportReplay:()=>replay.tape?JSON.stringify(replay.tape):null,
+  loadReplay:json=>{const tape=window.GrannyReplay.ensureTape(json);if(state!=='ready')returnHome();pendingReplayTape=tape;start();return true;},
+  replayStepForTest:(count=1)=>{for(let i=0;i<count&&(state==='playing'||state==='recovery');i++)replayStep();render();},
+  replayInfo:()=>({mode:replay.mode,tick:replay.tick,seed:replay.tape?.seed,
+    ruleset:replay.tape?.ruleset,error:replay.error,ghost:replay.ghostEnabled,
+    inputCount:replay.inputs.length,frameCount:replay.frames.length}),
   snapshot:()=>({daily:daily.config?{active:daily.active,finished:daily.finished,date:daily.config.date,seed:daily.config.seed,elapsed:daily.elapsed,index:daily.index,reason:daily.reason}:null,state,flow:runFlow.current,phase:postRun.phase,score,warningVisible:!warningEl.hidden,dangerCues:dangerDirector.count,
    obstacles:obstacles.length,coins,
    worldEvent:{phase:worldEvents.phase,id:worldEvents.current?.id||null,
