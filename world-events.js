@@ -28,8 +28,12 @@ class WorldEventDirector{
   if(this.phase==='outro')return Math.max(0,1-this.phaseTime/OUTRO);
   return this.phase==='active'?1:0;
  }
- get remaining(){return this.phase==='active'?Math.max(0,this.current.duration-this.phaseTime):
- this.phase==='intro'?this.current.duration:0;}
+ get remaining(){if(!this.current)return 0;
+  if(this.phase==='intro')return Math.max(0,this.current.duration-this.phaseTime);
+  if(this.phase==='active')return Math.max(0,this.current.duration-INTRO-this.phaseTime);
+  if(this.phase==='outro')return Math.max(0,OUTRO-this.phaseTime);
+  return 0;
+ }
  eventFor(world){return EVENTS[((world%EVENTS.length)+EVENTS.length)%EVENTS.length];}
  canStart({state,controllerState,vehicle,recovery,paused}={}){
   return !this.used&&this.phase==='idle'&&state==='playing'&&controllerState==='running'&&
@@ -45,7 +49,7 @@ class WorldEventDirector{
    this.phaseTime+=step;
    if(this.phase==='intro'&&this.phaseTime>=INTRO){
     this.phase='active';this.phaseTime=0;handlers.onActive?.(this.current);
-   }else if(this.phase==='active'&&this.phaseTime>=this.current.duration){
+   }else if(this.phase==='active'&&this.phaseTime>=this.current.duration-INTRO-OUTRO){
     this.phase='outro';this.phaseTime=0;handlers.onOutro?.(this.current);
    }else if(this.phase==='outro'&&this.phaseTime>=OUTRO){
     const finished=this.current;
