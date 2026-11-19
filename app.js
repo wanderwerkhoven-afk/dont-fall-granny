@@ -206,7 +206,7 @@ const gadgets=[
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
-let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:true,visualWarnings:true,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
+let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:null,visualWarnings:true,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
 try{
  const savedMeta=JSON.parse(localStorage.getItem('grandma-meta-v1')||'null');
@@ -1196,6 +1196,16 @@ if(new URLSearchParams(location.search).get('debug')==='1'){
  window.__grannyDebug={fall:()=>end(),result:()=>showRunResult(),retry:()=>retryRun(),
   setWorldForTest:world=>{if(state==='playing'&&!worldEvents.used)currentTier=Math.max(0,Math.min(6,world|0));},
   advanceWorldEventForTest:seconds=>{for(let i=0;i<Math.ceil(seconds/.05);i++)tickWorldEvent(.05);},
+  dangerTestObstacle:(id='cat',seconds=.7)=>{
+   if(state!=='playing'||runFlow.current!==GameState.RUNNING)return false;
+   const type=allTypes.find(t=>t.id===id)||allTypes[0];
+   const x=grandma.x+grandma.w-13+Math.max(.2,Math.min(1.2,seconds))*speed-3;
+   const item={type,x,y:ground-type.h,w:type.w,h:type.h,
+    attacking:false,charging:false,multiplier:1,hit:false,nearMiss:false};
+   obstacles=[item];updateDangerWarnings();return true;
+  },
+  dangerTestClear:()=>{obstacles=[];updateDangerWarnings();},
+
   snapshot:()=>({state,flow:runFlow.current,phase:postRun.phase,score,warningVisible:!warningEl.hidden,dangerCues:dangerDirector.count,
    obstacles:obstacles.length,coins,
    worldEvent:{phase:worldEvents.phase,id:worldEvents.current?.id||null,
