@@ -14,6 +14,8 @@ on:
       - 'world-mastery.js'
       - 'danger-soundscape.js'
       - 'daily-challenge.js'
+      - 'replay-engine.js'
+      - 'tests/replay-browser.cjs'
       - 'tests/daily-challenge-browser.cjs'
       - 'tests/danger-soundscape-browser.cjs'
       - 'tests/world-mastery-browser.cjs'
@@ -46,3 +48,4 @@ jobs:
           node tests/world-mastery-browser.cjs
           node tests/danger-soundscape-browser.cjs
           node tests/daily-challenge-browser.cjs
+          node tests/replay-browser.cjs
