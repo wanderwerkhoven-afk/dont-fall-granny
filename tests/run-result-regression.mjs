@@ -51,6 +51,6 @@ assert.match(app,/if\(remaining<=0\)\{showRunResult\(\);return\}/);
 assert.ok(html.indexOf('game-state.js?v=16')<html.indexOf('run-results.js?v=17'));
 assert.ok(html.indexOf('run-results.js?v=16')<html.indexOf('app.js?v=20'));
 assert.match(workflow,/node tests\/run-result-regression\.mjs/);
-assert.match(workflow,/cp style\.css app\.js[^\n]+game-state\.js run-results\.js sw\.js _site\//);
+assert.match(workflow,/cp style\.css app\.js[^\n]+game-state\.js run-results\.js world-events\.js sw\.js _site\//);
 new Function(code);new Function(gameCode);new Function(app);
 console.log('PASS Improvement 11: top-three reward priorities, compact vs celebration, in-place retry state path and bundle');
