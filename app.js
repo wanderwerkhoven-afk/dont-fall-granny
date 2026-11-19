@@ -13,7 +13,7 @@ const previousReplay=replay.restore(localStorage);
 if(previousReplay)replay.setGhost(previousReplay);
 function replayFrame(){
  return {t:replay.tick,x:Math.round(grandma.x*100)/100,
-  y:Math.round(grandma.y*100)/100,score,world:currentTier,
+  y:Math.round(grandma.y*100)/100,vy:Math.round(grandma.vy*100)/100,score,world:currentTier,
   lane:vehicleLane,mode:vehicle||'run'};
 }
 function applyReplayInput(action){
@@ -52,14 +52,23 @@ function forceReplayDimensions(){
 function drawReplayGhost(){
  const snap=replay.ghostAt(replay.tick);
  if(!snap||snap.mode!=='run'||vehicle||snap.world!==currentTier)return;
+ // Render the real Granny artwork instead of a generic oval. Ghost snapshots
+ // never touch collision or physics; every visual state is restored immediately.
+ const prev={x:grandma.x,y:grandma.y,vy:grandma.vy,shield,invulnerable,
+  outfit:selectedClothes,expression:grandmaExpressions.current};
  const dx=Math.max(-70,Math.min(80,(snap.score-score)*.22));
- const x=grandma.x+dx,y=snap.y;
- ctx.save();ctx.globalAlpha=.32;ctx.fillStyle='#8ceee6';ctx.strokeStyle='#1a6a78';ctx.lineWidth=3;
- ctx.beginPath();ctx.ellipse(x+22,y+35,25,32,0,0,Math.PI*2);ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.arc(x+22,y+14,17,0,Math.PI*2);ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(x+40,y+40);ctx.lineTo(x+52,y+67);ctx.stroke();
- ctx.font='900 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#1f7180';
- ctx.fillText('GHOST',x+22,y-15);ctx.restore();
+ try{
+  grandma.x=prev.x+dx;grandma.y=snap.y;grandma.vy=snap.vy||0;
+  shield=0;invulnerable=0;
+  selectedClothes=replay.ghostTape?.start?.outfit||prev.outfit;
+  ctx.save();ctx.globalAlpha=.29;ctx.filter='hue-rotate(148deg) saturate(.6)';
+  drawGrandma();
+  ctx.restore();
+ }finally{
+  grandma.x=prev.x;grandma.y=prev.y;grandma.vy=prev.vy;shield=prev.shield;
+  invulnerable=prev.invulnerable;selectedClothes=prev.outfit;
+  grandmaExpressions.current=prev.expression;
+ }
 }
 
 const daily=new window.GrannyDaily.DailyChallenge();
