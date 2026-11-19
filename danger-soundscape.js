@@ -38,7 +38,7 @@ class DangerSoundscape{
    if(!closest||eta<closest.eta)closest={obstacle,eta,kind:classify(obstacle)};
   }
   this.visible=closest;
-  if(closest&&!this.warned.has(closest.obstacle)){
+  if(closest&&closest.eta>=MIN_LEAD&&!this.warned.has(closest.obstacle)){
    this.warned.add(closest.obstacle);this.count++;
    return {...closest,first:true};
   }
@@ -46,7 +46,7 @@ class DangerSoundscape{
  }
 }
 class DangerAudioDirector{
- constructor(win=window){this.win=win;this.context=null;this.step=0;this.nextBeat=0;this.enabled=false;}
+ constructor(win=window){this.win=win;this.context=null;this.step=0;this.nextBeat=0;this.enabled=false;this.voices=new Set();}
  getContext(){
   if(this.context)return this.context;
   const Ctor=this.win.AudioContext||this.win.webkitAudioContext;
@@ -70,6 +70,8 @@ class DangerAudioDirector{
     panner.pan.value=Math.max(-1,Math.min(1,pan));
     osc.connect(gain);gain.connect(panner);panner.connect(ctx.destination);
    }else{osc.connect(gain);gain.connect(ctx.destination);}
+   this.voices.add(osc);
+   osc.onended=()=>this.voices.delete(osc);
    osc.start(start);osc.stop(start+duration+.015);
   }catch(e){}
  }
@@ -98,7 +100,10 @@ class DangerAudioDirector{
    this.step++;this.nextBeat=ctx.currentTime+.28;
   }
  }
- stop(){this.enabled=false;}
+ stop(){this.enabled=false;
+  for(const osc of this.voices){try{osc.stop();}catch(e){}}
+  this.voices.clear();
+ }
 }
 window.GrannyDangerSoundscape={MIN_LEAD,MAX_LEAD,timeToContact,classify,DangerSoundscape,DangerAudioDirector};
 })();
