@@ -1,6 +1,7 @@
 const {chromium}=require('playwright');
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ let desktopTape=null;
  for(const viewport of [{width:1280,height:800},{width:393,height:852},{width:844,height:390}]){
   const page=await browser.newPage({viewport,isMobile:viewport.width<900,hasTouch:true});
   const errors=[];page.on('pageerror',error=>errors.push(error.stack||String(error)));
@@ -35,6 +36,7 @@ const {chromium}=require('playwright');
       !Number.isInteger(result.tape.seed)||result.tape.frames.length<15)
     throw Error('Incomplete replay JSON');
    if(result.tape.inputs.some(x=>x[1]!=='jump'))throw Error('Unexpected stored actions');
+   if(viewport.width===1280)desktopTape=result.tape;
    const recorded=await page.evaluate(tape=>{
     const debug=window.__grannyDebug;
     debug.loadReplay(JSON.stringify(tape));
@@ -53,5 +55,23 @@ const {chromium}=require('playwright');
    console.log('PASS Replay record → seed/input JSON → deterministic playback → ghost setting '+viewport.width+'x'+viewport.height);
   }finally{await page.close();}
  }
- await browser.close();
+ // A desktop recording must reproduce on a portrait phone using the
+ // saved logical physics geometry, rather than device-specific canvas bounds.
+ const phone=await browser.newPage({viewport:{width:393,height:852},isMobile:true,hasTouch:true});
+ try{
+  await phone.goto('http://127.0.0.1:8765/?debug=1',{waitUntil:'networkidle'});
+  const cross=await phone.evaluate(tape=>{
+   const debug=window.__grannyDebug;
+   debug.loadReplay(JSON.stringify(tape));
+   debug.replayStepForTest(tape.result.ticks);
+   return {error:debug.replayInfo().error,score:debug.snapshot().score,
+    width:document.getElementById('canvas').width,
+    height:document.getElementById('canvas').height};
+  },desktopTape);
+  if(cross.error||cross.score!==desktopTape.result.score||
+    cross.width!==desktopTape.start.worldWidth||cross.height!==desktopTape.start.worldHeight)
+   throw Error('Desktop replay was not deterministic on portrait mobile '+JSON.stringify(cross));
+  console.log('PASS cross-viewport desktop recording → portrait-phone deterministic replay');
+ }finally{await phone.close();}
+  await browser.close();
 })().catch(e=>{console.error(e.stack||e);process.exit(1)});
