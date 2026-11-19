@@ -41,7 +41,7 @@ for(let world=0;world<7;world++){
  assert.equal(x.e.used,true,'Scheduled event missing in world '+world);
  assert.equal(x.e.current.id,EVENTS[world].id);
  assert.equal(x.e.eventCount,1);
- assert.ok(x.e.inEvent);
+ assert.ok(x.e.inEvent||x.e.phase==='complete');
  assert.equal(x.e.reason,'scheduled');
  x.step(EVENTS[world].duration+INTRO+OUTRO+1);
  assert.equal(x.e.phase,'complete','Event did not finish '+world);
@@ -51,6 +51,14 @@ for(let world=0;world<7;world++){
  x.step(80);
  assert.equal(x.e.eventCount,1,'Double special event in one run');
 }
+// Total event time includes the intro and outro (not 12s plus transitions).
+const timing=sim(0);
+timing.step(18.1);
+assert.equal(timing.e.eventCount,1);
+timing.step(EVENTS[0].duration-.3);
+assert.ok(timing.e.inEvent,'Event ended earlier than its inclusive 8–12s duration');
+timing.step(.5);
+assert.equal(timing.e.phase,'complete','Event exceeded its inclusive duration');
 const paused=sim(1);
 paused.step(10);
 const before=paused.e.elapsed;
