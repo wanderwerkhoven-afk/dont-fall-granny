@@ -27,6 +27,7 @@ jobs:
           test -s index.html
           test -s style.css
           test -s app.js
+          test -s danger-soundscape.js
           test -s world-mastery.js
           test -s world-events.js
           test -s game-state.js
@@ -54,6 +55,7 @@ jobs:
           node tests/run-result-regression.mjs
           node tests/world-events-regression.mjs
           node tests/world-mastery-regression.mjs
+          node tests/danger-soundscape-regression.mjs
 
   deploy:
     if: github.ref == 'refs/heads/main'
@@ -69,13 +71,14 @@ jobs:
           set -eu
           mkdir -p _site/assets
           cp index.html _site/index.html
-          cp style.css app.js game-meta.js progression.js levels.js storybook-worlds.js granny-expressions.js game-state.js run-results.js world-events.js world-mastery.js sw.js _site/
+          cp style.css app.js game-meta.js progression.js levels.js storybook-worlds.js granny-expressions.js game-state.js run-results.js world-events.js world-mastery.js danger-soundscape.js sw.js _site/
           cp -R assets/. _site/assets/
           test -s _site/assets/hanger-spritesheet.svg
           test -s _site/index.html
           test -s _site/style.css
           test -s _site/app.js
           test -s _site/game-state.js
+          test -s _site/danger-soundscape.js
           test -s _site/world-mastery.js
           test -s _site/world-events.js
           test -s _site/run-results.js
@@ -94,6 +97,7 @@ jobs:
           grep -Eq 'src="run-results[.]js([?]v=[0-9]+)?"' _site/index.html
           grep -Eq 'src="world-events[.]js([?]v=[0-9]+)?"' _site/index.html
           grep -Eq 'src="world-mastery[.]js([?]v=[0-9]+)?"' _site/index.html
+          grep -Eq 'src="danger-soundscape[.]js([?]v=[0-9]+)?"' _site/index.html
           grep -Eq 'src="levels[.]js([?]v=[0-9]+)?"' _site/index.html
           grep -Eq 'src="storybook-worlds[.]js([?]v=[0-9]+)?"' _site/index.html
           grep -q 'assets/hanger-spritesheet.svg' _site/style.css
