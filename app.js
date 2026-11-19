@@ -726,6 +726,7 @@ function showRunResult(){
 }
 function retryRun(){
  if(state!=='over'||postRun.phase!=='result')return false;
+ if(replay.mode==='playback'){returnHome();start();return true;}
  if(runFlow.current===GameState.GAME_OVER&&!flowTo(GameState.RUN_RESET))return false;
  start();
  return true;
