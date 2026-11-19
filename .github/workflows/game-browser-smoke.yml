@@ -12,6 +12,8 @@ on:
       - 'game-state.js'
       - 'world-events.js'
       - 'world-mastery.js'
+      - 'danger-soundscape.js'
+      - 'tests/danger-soundscape-browser.cjs'
       - 'tests/world-mastery-browser.cjs'
       - 'tests/world-events-browser.cjs'
       - 'tests/post-run-browser.cjs'
@@ -40,3 +42,4 @@ jobs:
           node tests/post-run-browser.cjs
           node tests/world-events-browser.cjs
           node tests/world-mastery-browser.cjs
+          node tests/danger-soundscape-browser.cjs
