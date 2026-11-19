@@ -255,7 +255,7 @@ function clearDangerWarnings(){
  dangerDirector.reset();warningEl.hidden=true;warningEl.classList.remove('urgent');
 }
 function updateDangerWarnings(){
- const cue=dangerDirector.update({obstacles,granny,speed,state,controllerState:runFlow.current,
+ const cue=dangerDirector.update({obstacles,granny:grandma,speed,state,controllerState:runFlow.current,
    vehicle,recovery:recoveryWindow.active,paused:state==='paused'});
  if(cue?.first&&metaState.settings.sfx)audioDirector.warning(cue.kind);
  if(!cue||!metaState.settings.visualWarnings){warningEl.hidden=true;return;}
