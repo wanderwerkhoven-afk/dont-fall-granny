@@ -5,6 +5,61 @@ const WORLD_MASTERY=window.GrannyWorldMastery;
 const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
 const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
+const replay=new window.GrannyReplay.ReplayEngine();
+let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null;
+let replayLevelCompleted=new Set();
+replay.ghostEnabled=(()=>{try{return localStorage.getItem(window.GrannyReplay.GHOST_KEY)==='true'}catch(e){return false}})();
+const previousReplay=replay.restore(localStorage);
+if(previousReplay)replay.setGhost(previousReplay);
+function replayFrame(){
+ return {t:replay.tick,x:Math.round(grandma.x*100)/100,
+  y:Math.round(grandma.y*100)/100,score,world:currentTier,
+  lane:vehicleLane,mode:vehicle||'run'};
+}
+function applyReplayInput(action){
+ if(action==='jump')jump();
+ else if(action==='left')steerScooter(-1);
+ else if(action==='right')steerScooter(1);
+}
+function finishReplayRecording(){
+ if(replay.mode!=='record')return;
+ const tape=replay.finish({score,distance:score,elapsed:Math.round(elapsed*1000)/1000,
+  state,world:currentTier,reason:daily.finished?daily.reason:'fall'});
+ replay.save(localStorage,tape);replay.setGhost(tape);
+ replay.mode='recorded';
+}
+function beginReplayCapture(tape){
+ if(tape){
+  replay.load(tape);replayLevelCompleted=new Set(tape.start.completedLevels||[]);
+ }else{
+  replay.newRecording({
+   activeLevel,world:currentTier,difficulty:metaState.settings.difficulty,
+   outfit:selectedClothes,ownedGadgets:[...ownedGadgets],pity:getWorldEventPity(),
+   dailyDate:daily.active?daily.config.date:null,
+   worldWidth:W,worldHeight:H,ground,grandmaX:grandma.x,
+   completedLevels:LEVELS.getLevels().filter(x=>x.completed).map(x=>x.index)
+  },daily.active?daily.config.seed:undefined);
+ }
+}
+function forceReplayDimensions(){
+ if(replay.mode!=='playback')return;
+ const st=replay.tape.start;
+ W=st.worldWidth;H=st.worldHeight;ground=st.ground;grandma.x=st.grandmaX;
+ canvas.width=W;canvas.height=H;
+}
+function drawReplayGhost(){
+ const snap=replay.ghostAt(replay.tick);
+ if(!snap||snap.mode!=='run'||vehicle||snap.world!==currentTier)return;
+ const dx=Math.max(-70,Math.min(80,(snap.score-score)*.22));
+ const x=grandma.x+dx,y=snap.y;
+ ctx.save();ctx.globalAlpha=.32;ctx.fillStyle='#8ceee6';ctx.strokeStyle='#1a6a78';ctx.lineWidth=3;
+ ctx.beginPath();ctx.ellipse(x+22,y+35,25,32,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.arc(x+22,y+14,17,0,Math.PI*2);ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x+40,y+40);ctx.lineTo(x+52,y+67);ctx.stroke();
+ ctx.font='900 11px system-ui';ctx.textAlign='center';ctx.fillStyle='#1f7180';
+ ctx.fillText('GHOST',x+22,y-15);ctx.restore();
+}
+
 const daily=new window.GrannyDaily.DailyChallenge();
 let pendingDaily=false,dailyLastResult=null;
 const WORLD_EVENT_PITY_KEY='dont-trip-grandma-world-event-pity';
@@ -188,7 +243,7 @@ function drawRecoveryFeedback(){
  ctx.restore();
 }
 
-function saveCoins(){if(typeof menuWallet!=='undefined')menuWallet.textContent='🪙 '+coins+' munten';coinsEl.textContent='🪙 '+coins;try{localStorage.setItem('dont-trip-grandma-coins',coins)}catch(e){}}
+function saveCoins(){if(replay.mode==='playback')return;if(typeof menuWallet!=='undefined')menuWallet.textContent='🪙 '+coins+' munten';coinsEl.textContent='🪙 '+coins;try{localStorage.setItem('dont-trip-grandma-coins',coins)}catch(e){}}
 const clothing=[
  {id:'classic',name:'Klassieke oma',cost:0,color:'#ad78a4',hair:'#e6e4e3'},
  {id:'red',name:'Rode jas',cost:250,color:'#e35d67',hair:'#e6e4e3',pattern:'stripes',patternColor:'#ffe0e2'},
@@ -209,7 +264,7 @@ const gadgets=[
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
-let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:null,visualWarnings:true,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
+let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:null,visualWarnings:true,ghost:false,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
 try{
  const savedMeta=JSON.parse(localStorage.getItem('grandma-meta-v1')||'null');
@@ -223,6 +278,8 @@ try{
 if(typeof metaState.settings.sfx!=='boolean')metaState.settings.sfx=metaState.settings.audio!==false;
 if(typeof metaState.settings.music!=='boolean')metaState.settings.music=false;
 if(typeof metaState.settings.visualWarnings!=='boolean')metaState.settings.visualWarnings=true;
+if(typeof metaState.settings.ghost!=='boolean')metaState.settings.ghost=replay.ghostEnabled;
+replay.ghostEnabled=metaState.settings.ghost;
 function saveInventory(){try{localStorage.setItem('grandma-clothes',JSON.stringify(ownedClothes));localStorage.setItem('grandma-outfit',selectedClothes);localStorage.setItem('grandma-gadgets',JSON.stringify(ownedGadgets))}catch(e){}}
 
 const comboEl=document.getElementById('combo'),onboardingEl=document.getElementById('onboarding'),runSummaryEl=document.getElementById('runSummary'),missionPinEl=document.getElementById('missionPin'),eventBannerEl=document.getElementById('eventBanner'),rankHudEl=document.getElementById('rankHud');
@@ -236,11 +293,11 @@ function ensureMissionPeriods(){
  const available=activeMissions(META.missionPool,3,d);
  if(!metaState.settings.pinnedMission||!available.some(m=>m.id===metaState.settings.pinnedMission))metaState.settings.pinnedMission=available[0]?.id||null;
 }
-function saveMetaState(){
+function saveMetaState(){if(replay.mode==='playback')return;
  metaState.stats.accessoriesOwned=ownedAccessories.length;
  try{localStorage.setItem('grandma-meta-v1',JSON.stringify({...metaState,ownedAccessories,selectedAccessories}))}catch(e){}
 }
-function difficultyRule(){return META.difficultyModes?.[metaState.settings.difficulty]||{speed:1,recovery:0,reward:1,label:'Normaal'}}
+function difficultyRule(){return META.difficultyModes?.[(replay.mode==='playback'?replay.tape.start.difficulty:metaState.settings.difficulty)]||{speed:1,recovery:0,reward:1,label:'Normaal'}}
 function currentRank(){return PROG.rankForXp?PROG.rankForXp(metaState.stats.xp||0,META.rankLevels):META.rankLevels?.[0]}
 function nextRank(){return PROG.nextRank?PROG.nextRank(metaState.stats.xp||0,META.rankLevels):null}
 function updateRankHud(){
@@ -288,13 +345,13 @@ function updateComboHud(){
 }
 function resetCombo(){combo=0;updateComboHud()}
 function registerCombo(points=1,labelText=''){
- const before=combo;combo=Math.min(99,combo+points);comboPeak=Math.max(comboPeak,combo);if(!daily.active)metaState.stats.bestCombo=Math.max(metaState.stats.bestCombo,combo);
+ const before=combo;combo=Math.min(99,combo+points);comboPeak=Math.max(comboPeak,combo);if(!daily.active&&replay.mode!=='playback')metaState.stats.bestCombo=Math.max(metaState.stats.bestCombo,combo);
  updateComboHud();
  const milestone=[5,10,15,25].find(m=>before<m&&combo>=m);
  if(milestone){comboBurstTime=1.7;magnetTime=Math.max(magnetTime,milestone>=10?4:2);rewardPopups.push({text:'🔥 '+(milestone>=15?'MEGA STREAK':'HOT STREAK')+' x'+comboMultiplier().toFixed(2),x:W*.5,y:90,life:1.7});playFeedback('combo');haptic(16)}
  if(labelText)rewardPopups.push({text:labelText,x:grandma.x+35,y:grandma.y-8,life:1});
 }
-function incrementMission(event,amount=1){
+function incrementMission(event,amount=1){if(replay.mode==='playback')return;
  ensureMissionPeriods();
  const sets=[['daily',activeMissions(META.missionPool,3,metaState.daily.key)],['weekly',activeMissions(META.weeklyPool,2,metaState.weekly.key)]];
  for(const [kind,list] of sets){
@@ -310,7 +367,7 @@ function incrementMission(event,amount=1){
  }
  updateMissionPin();saveMetaState();
 }
-function evaluateAchievements(){
+function evaluateAchievements(){if(replay.mode==='playback')return;
  metaState.stats.accessoriesOwned=ownedAccessories.length;
  for(const a of META.achievements){
   if(metaState.achievements.includes(a.id)||!a.check(metaState.stats))continue;
@@ -344,7 +401,7 @@ function achievementProgress(a){
  return '';
 }
 function masteryFor(tier=currentTier){const id=tier%TIERS.length;return metaState.mastery[id]||(metaState.mastery[id]={distance:0,perfects:0,nearMisses:0,bestCombo:0})}
-function addWorldMastery(key,amount){
+function addWorldMastery(key,amount){if(replay.mode==='playback')return;
  const m=masteryFor();m[key]=(m[key]||0)+amount;m.bestCombo=Math.max(m.bestCombo||0,combo);
  const newStars=WORLD_MASTERY.evaluate(currentTier%TIERS.length,m);
  if(newStars.length){
@@ -404,7 +461,7 @@ function worldEventCoinMultiplier(){return worldEventTime>0&&currentTier%7===5?1
 function showEvent(text,duration=2){
  if(!eventBannerEl)return;eventBannerEl.textContent=text;eventBannerEl.classList.add('show');setTimeout(()=>eventBannerEl.classList.remove('show'),duration*1000)
 }
-function gainXp(amount){
+function gainXp(amount){if(replay.mode==='playback')return;
  metaState.stats.xp=(metaState.stats.xp||0)+Math.max(0,Math.round(amount));updateRankHud();
 }
 function updateTutorial(){
@@ -850,7 +907,7 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+Math.random()*(b-a)}function reset(){clearDangerWarnings();audioDirector.stop();worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function random(a,b){return a+replay.randomValue()*(b-a)}function reset(){clearDangerWarnings();audioDirector.stop();worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){dailyFixedAccumulator=0;const dailyRequested=pendingDaily;pendingDaily=false;stopDeathTimer();dailyResultCard.hidden=true;document.getElementById('game').classList.remove('daily-finished','post-run-active');showMenu('home');reset();audioDirector.unlock();
  daily.active=false;daily.finished=false;
  if(dailyRequested){daily.start();currentTier=daily.config.world;startTierOffset=currentTier;activeLevel=0;updateDailyHud();document.getElementById('game').classList.add('daily-running');statusEl.textContent='Iedereen speelt hetzelfde parcours · 75 seconden';}
@@ -942,7 +999,7 @@ function update(dt){if(daily.active&&daily.advance(dt)){finishDailyRun('complete
    modeObstacles=modeObstacles.filter(o=>o.x+o.w>0);
   }else{
    grandma.y=ground-grandma.h;
-   if(modeSpawn<=0){modeObstacles.push({lane:Math.floor(random(0,3)),z:1.22,kind:Math.random()<.5?'barrier':'car'});modeSpawn=random(.8,1.15)}
+   if(modeSpawn<=0){modeObstacles.push({lane:Math.floor(random(0,3)),z:1.22,kind:replay.randomValue()<.5?'barrier':'car'});modeSpawn=random(.8,1.15)}
    for(const o of modeObstacles){o.z-=dt*(.43+elapsed*.0015);
     if(o.z<.10&&o.z>-.015&&o.lane===vehicleLane){
      if(!absorbWorldEventHit(o)){end();return}
@@ -1003,22 +1060,22 @@ if(daily.active){
 }
 if(!daily.active&&!vehicle&&spawnDistance>=nextDistance){
   const pool=allTypes.filter(t=>zoneTypes[currentTier%zoneTypes.length].includes(t.id)&&(elapsed>12||t.id!=='walker'));
-  const type=(pool.length?pool:types)[Math.floor(Math.random()*(pool.length?pool:types).length)];
-  const attackBonus=currentWorldRule().attackBonus||0;const attacking=(type.id==='cat'&&Math.random()<Math.min(.88,.55+attackBonus))||(type.id==='car'&&Math.random()<Math.min(.94,.72+attackBonus));
+  const type=(pool.length?pool:types)[Math.floor(replay.randomValue()*(pool.length?pool:types).length)];
+  const attackBonus=currentWorldRule().attackBonus||0;const attacking=(type.id==='cat'&&replay.randomValue()<Math.min(.88,.55+attackBonus))||(type.id==='car'&&replay.randomValue()<Math.min(.94,.72+attackBonus));
   const multiplier=attacking?(type.id==='car'?1.95:1.62):1;
   obstacles.push({type,x:W+8,y:ground-type.h,w:type.w,h:type.h,attacking,
     chargeX:W-(type.id==='car'?175:105),charging:false,multiplier,hit:false,nearMiss:false,nearMissCandidate:false});
   spawnDistance=0;
   // Afwisseling: soms dicht op elkaar, soms een ruim herstelmoment.
   // Het minimum groeit mee met de snelheid en de sprongduur.
-  const close=Math.random()<(challengeTime>0?.68:.43);
+  const close=replay.randomValue()<(challengeTime>0?.68:.43);
   const flightTime=2*690/1850;
   const minimum=speed*(flightTime+.42)+105;
   nextDistance=minimum+(close?random(0,75):random(100,230));
   lastGap=nextDistance;
 }
 if(!daily.active&&coinDistance<=0){
- const count=Math.random()<.35?5:3;
+ const count=replay.randomValue()<.35?5:3;
  const height=random(68,115);
  for(let i=0;i<count;i++)coinItems.push({x:W+35+i*43,y:ground-height-Math.sin(i/(count-1)*Math.PI)*25,height:height+Math.sin(i/(count-1)*Math.PI)*25,t:0,taken:false});
  coinDistance=random(1000,1700);
