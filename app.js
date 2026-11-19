@@ -45,7 +45,9 @@ function forceReplayDimensions(){
  if(!replay.tape||!['playback','record'].includes(replay.mode))return;
  const st=replay.tape.start;
  W=st.worldWidth;H=st.worldHeight;ground=st.ground;grandma.x=st.grandmaX;
- canvas.width=W;canvas.height=H;
+ if(state==='ready'&&replay.tick===0)grandma.y=ground-grandma.h;
+ if(canvas.width!==W)canvas.width=W;
+ if(canvas.height!==H)canvas.height=H;
 }
 function drawReplayGhost(){
  const snap=replay.ghostAt(replay.tick);
