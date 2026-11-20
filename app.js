@@ -102,9 +102,11 @@ function resizeGame(){
  const box=canvas.getBoundingClientRect();
  // Keep the canvas world at a constant logical height; expand the horizontal
  // field of view to match the full-width desktop instead of stretching art.
- H=mobile?Math.max(390,Math.round(560*box.height/Math.max(1,box.width))):390;
- W=mobile?560:Math.max(900,Math.round(H*box.width/Math.max(1,box.height)));
- ground=mobile?Math.round(H*.53):313;
+ // A single isotropic canvas scale: never independently stretch world X/Y.
+ // Portrait uses a 560:390 playfield; landscape expands the visible world width.
+ H=390;
+ W=mobile?(window.matchMedia('(orientation:portrait)').matches?560:Math.max(560,Math.round(H*box.width/Math.max(1,box.height)))):Math.max(900,Math.round(H*box.width/Math.max(1,box.height)));
+ ground=mobile?(window.matchMedia('(orientation:portrait)').matches?313:Math.round(H*.8)):313;
  canvas.width=W;canvas.height=H;
  grandma.x=mobile?67:105;
  if(wasGrounded)grandma.y=ground-grandma.h;
