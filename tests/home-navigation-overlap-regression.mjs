@@ -19,4 +19,9 @@ assert.ok(css.includes('Home v38: compact, single-viewport desktop menu'),'non-s
 assert.ok(css.includes('Home settings')||css.includes('Focused settings view:'),'dedicated settings layout');
 assert.ok(css.includes('#overlay.settings-focus:not(.storepage):not(.gameover)>.panel>:not(#menuContent)'),'home page hidden in settings');
 assert.ok(css.includes('#overlay.settings-focus .pre-run-settings'),'large settings controls');
-console.log('PASS structural home navigation, settings flow, old markup fallback and click handlers');
+assert.ok(html.includes('id="homeSettingsButton"'),'settings must have its own sixth tile');
+assert.ok(app.includes("getElementById('homeSettingsButton')?.addEventListener('click'"),'settings tile opens focused menu');
+assert.ok(css.includes('Home v39 — spacious 2 x 3 menu'),'v39 layout present');
+assert.ok(css.includes('grid-template-rows:repeat(3,minmax(0,1fr))!important'),'three navigation rows');
+assert.ok(css.includes('grid-column:auto!important'),'Extra\'s no longer spans two columns');
+console.log('PASS six-tile home, full-size settings, and accessible navigation');
