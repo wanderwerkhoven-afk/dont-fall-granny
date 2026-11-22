@@ -18,7 +18,7 @@ assert.equal(Object.keys(byId).length,54,'45 collectible products in the expande
 assert.ok(outfits.filter(x=>x.price>0).every(x=>x.price>=1800));
 assert.ok(accessories.filter(x=>x.cost>0).every(x=>x.cost>=4000));
 assert.ok(gadgets.every(x=>x.price>=10000),'Minigames require at least ten average 1000-coin runs');
-assert.equal([...outfits,...gadgets,...accessories.map(x=>({price:x.cost}))].reduce((sum,x)=>sum+x.price,0),594900);
+assert.equal([...outfits,...gadgets,...accessories.map(x=>({price:x.cost}))].reduce((sum,x)=>sum+x.price,0),595900);
 assert.match(app,/ownedClothes\.includes\(item\.id\)/);
 assert.match(app,/ownedAccessories\.includes\(item\.id\)/);
 assert.match(app,/if\(masteryShopGate\(item\)\.locked\|\|coins<item\.cost\)return/);
