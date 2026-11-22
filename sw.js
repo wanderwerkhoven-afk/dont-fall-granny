@@ -1,23 +1,23 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v48-phase-two-worlds';
+const CACHE_NAME = 'dont-trip-grandma-offline-v49-phase-two-wardrobe';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
   './style.css?v=42',
-  './game-meta.js?v=48',
+  './game-meta.js?v=49',
   './progression.js?v=10',
   './game-state.js?v=17',
   './run-results.js?v=17',
-  './world-events.js?v=48',
-  './world-mastery.js?v=48',
+  './world-events.js?v=49',
+  './world-mastery.js?v=49',
   './danger-soundscape.js?v=23',
   './daily-challenge.js?v=26',
   './replay-engine.js?v=29',
-  './app.js?v=48',
+  './app.js?v=49',
   './granny-expressions.js?v=14',
-  './storybook-worlds.js?v=48',
-  './levels.js?v=48',
+  './storybook-worlds.js?v=49',
+  './levels.js?v=49',
   './assets/hanger-spritesheet.svg'
 ];
 const offlineUrl = path => new URL(path, self.registration.scope).toString();
