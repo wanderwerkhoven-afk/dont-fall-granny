@@ -2451,3 +2451,66 @@ body:has(#overlay.hidden) .game>canvas{
 @media(prefers-reduced-motion:reduce){
  #overlay.progresspage .mastery-mission .mission-meter>span{transition:none}
 }
+
+
+/* Definitive Progressie mission cards — reuse Adventure Book sticker and meter
+   classes so the daily/weekly rows cannot fall back to the flat legacy grid. */
+#overlay.storepage.progresspage .progress-section button.mission-mastered.book-goal{
+ display:flex!important;
+ align-items:center!important;
+ gap:12px!important;
+ width:100%;
+ min-height:86px;
+ padding:12px 15px!important;
+ background:linear-gradient(120deg,#fff3cb,#fff9e9)!important;
+ border:2px solid #8f784c!important;
+ border-radius:14px!important;
+ box-shadow:3px 4px 0 #342b40!important;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered.weekly{
+ background:linear-gradient(120deg,#dcebd7,#f6f9e8)!important;
+ border-color:#71977b!important;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered.done{
+ background:linear-gradient(120deg,#d7eedb,#f6fbe5)!important;
+ border-color:#5e9976!important;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-sticker{
+ display:grid!important;place-items:center!important;
+ flex:0 0 48px!important;width:48px!important;height:48px!important;
+ border:2px solid #342b40!important;border-radius:50%!important;
+ background:#ffdb81!important;
+ box-shadow:2px 3px 0 #342b40!important;
+ font-size:28px!important;line-height:1!important;
+ filter:none!important;
+ transform:rotate(-8deg);
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered.weekly .book-sticker{background:#c7e3c7!important}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-goal-copy{
+ display:flex;flex:1;flex-direction:column;gap:4px;min-width:0;
+ text-align:left!important;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-goal-copy b{font-weight:900}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-goal-copy small{margin:0}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-meter{
+ display:block!important;width:100%!important;height:7px!important;
+ margin-top:4px;border-radius:8px;background:#b1a7a055!important;
+ overflow:hidden;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .book-meter>span{
+ display:block!important;height:100%;border-radius:8px;background:#d2a05b;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered.done .book-meter>span,
+#overlay.storepage.progresspage .progress-section button.mission-mastered.weekly .book-meter>span{background:#75a987}
+#overlay.storepage.progresspage .progress-section button.mission-mastered .mission-reward{
+ border:2px solid #342b40;border-radius:99px;padding:8px 12px;
+ background:#fff9e9;font-size:13px;white-space:nowrap;
+}
+#overlay.storepage.progresspage .progress-section button.mission-mastered.pinned{
+ outline:3px solid #ffbd42!important;outline-offset:2px!important;
+}
+@media(max-width:480px){
+ #overlay.storepage.progresspage .progress-section button.mission-mastered.book-goal{min-height:74px;padding:9px!important;gap:9px!important}
+ #overlay.storepage.progresspage .progress-section button.mission-mastered .book-sticker{flex-basis:39px!important;width:39px!important;height:39px!important;font-size:23px!important}
+ #overlay.storepage.progresspage .progress-section button.mission-mastered .mission-reward{padding:6px 7px;font-size:10px}
+}
