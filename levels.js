@@ -1,4 +1,4 @@
-/* Seven worlds, seven progressively longer levels per world. */
+/* Ten worlds, seven progressively longer levels per world. */
 (()=>{'use strict';
 const KEY='granny-levels-v2';
 const OLD_KEY='granny-levels-v1';
@@ -6,7 +6,8 @@ const GOALS=[600,900,1200,1500,1800,2100,2400];
 const WORLDS=[
  ['neighborhood','De rustige buurt'],['park','Het stadspark'],
  ['city','De grote stad'],['desert','De woestijn'],['night','De nacht'],
- ['candy','De snoepwereld'],['space','De ruimte']
+ ['candy','De snoepwereld'],['space','De ruimte'],
+ ['winter','Winterwonderland'],['neon','Neon 80’s'],['pirate','Piratenbaai']
 ];
 const LEVELS=WORLDS.flatMap(([id,name],worldIndex)=>GOALS.map((goal,levelIndex)=>({
  id:id+'-'+(levelIndex+1),name,worldIndex,levelIndex,
