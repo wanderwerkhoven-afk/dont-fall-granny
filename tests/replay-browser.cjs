@@ -10,12 +10,13 @@ const {chromium}=require('playwright');
    if(!await page.locator('#replayDebugPanel').isVisible())throw Error('Replay debug panel missing');
    if(!await page.locator('#copyReplay').isVisible()||!await page.locator('#loadReplay').isVisible())
     throw Error('COPY / LOAD REPLAY unavailable in debug mode');
-   await page.locator('.home-settings summary').click();
+   await page.locator('#homeSettingsButton').click();
    const button=page.locator('[data-toggle-setting="ghost"]');
    if(await button.count()!==1)throw Error('Ghost Granny toggle missing');
    await button.click();
    const ghostEnabled=await page.evaluate(()=>localStorage.getItem('granny-replay-ghost-enabled-v1'));
    if(ghostEnabled!=='true')throw Error('Ghost preference was not persisted');
+   await page.locator('.settings-close').click();
    await page.locator('#startBtn').click();
    const result=await page.evaluate(()=>{
     const debug=window.__grannyDebug;
