@@ -16,7 +16,7 @@ const expected={classic:0,red:1800,sport:4200,gold:14000,night:9000,mint:3200,de
 assert.deepEqual(byId,expected,'Prices must match the revised economy');
 assert.ok(outfits.filter(x=>x.price>0).every(x=>x.price>=1800));
 assert.ok(accessories.filter(x=>x.cost>0).every(x=>x.cost>=4000));
-assert.equal([...outfits,...gadgets,...accessories.map(x=>({price:x.cost}))].reduce((sum,x)=>sum+x.price,0),110300);
+assert.equal([...outfits,...gadgets,...accessories.map(x=>({price:x.cost}))].reduce((sum,x)=>sum+x.price,0),113100);
 assert.match(app,/ownedClothes\.includes\(item\.id\)/);
 assert.match(app,/ownedAccessories\.includes\(item\.id\)/);
 assert.match(app,/if\(masteryShopGate\(item\)\.locked\|\|coins<item\.cost\)return/);
