@@ -19,12 +19,12 @@ const {chromium}=require('playwright');
    await page.locator('#homeMainNav [data-open-page="progress"]').click();
    const book=page.locator('#adventureBook');
    if(!await book.isVisible())throw Error('Adventure Book missing');
-   if(await book.locator('.adventure-page').count()!==7)throw Error('Expected 7 world pages');
-   if(await book.locator('.book-goal').count()!==21)throw Error('Expected 21 permanent star goals');
+   if(await book.locator('.adventure-page').count()!==10)throw Error('Expected 10 world pages');
+   if(await book.locator('.book-goal').count()!==30)throw Error('Expected 30 permanent star goals');
    const earned=await book.locator('.book-goal.earned').count();
    if(earned!==2)throw Error('Legacy mastery was not migrated to 2 stars: '+earned);
    const total=await book.locator('.book-total').innerText();
-   if(!total.includes('2')||!total.includes('21'))throw Error('Wrong total stars: '+total);
+   if(!total.includes('2')||!total.includes('30'))throw Error('Wrong total stars: '+total);
    const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('grandma-meta-v1')));
    if(stored.stats.xp!==1234)throw Error('XP changed during migration');
    if(!stored.achievements.includes('first-run'))throw Error('Achievements overwritten');
@@ -35,7 +35,7 @@ const {chromium}=require('playwright');
    if(await page.locator('#adventureBook .book-goal.earned').count()!==2)
     throw Error('Mastery stars lost on reload');
    if(errors.length)throw Error('JavaScript errors: '+errors.join('; '));
-   console.log('PASS World Mastery Adventure Book: 7 pages, 21 goals, permanent migrated stars and intact XP/achievements '+viewport.width+'x'+viewport.height);
+   console.log('PASS World Mastery Adventure Book: 10 pages, 30 goals, permanent migrated stars and intact XP/achievements '+viewport.width+'x'+viewport.height);
   }finally{await page.close();}
  }
  await browser.close();
