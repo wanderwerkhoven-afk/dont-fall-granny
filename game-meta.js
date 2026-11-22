@@ -33,10 +33,10 @@ const unlocks=[
 const cosmetics=[
  {id:'cane-classic',type:'cane',icon:'🦯',name:'Klassieke wandelstok',cost:0},
  {id:'cane-gold',type:'cane',icon:'✨',name:'Gouden wandelstok',cost:180,masteryUnlock:{world:0,star:1}},
- {id:'glasses-heart',type:'glasses',icon:'💗',name:'Hartjesbril',cost:220},
- {id:'glasses-star',type:'glasses',icon:'⭐',name:'Sterrenbril',cost:300},
+ {id:'glasses-heart',type:'glasses',icon:'💗',name:'Hartjesbril',cost:220,masteryUnlock:{world:5,star:0}},
+ {id:'glasses-star',type:'glasses',icon:'⭐',name:'Sterrenbril',cost:300,masteryUnlock:{world:4,star:1}},
  {id:'companion-duck',type:'companion',icon:'🦆',name:'Wandel-eendje',cost:350,masteryUnlock:{world:1,star:1}},
- {id:'companion-cat',type:'companion',icon:'🐈',name:'Trouwe kat',cost:450}
+ {id:'companion-cat',type:'companion',icon:'🐈',name:'Trouwe kat',cost:450,masteryUnlock:{world:3,star:2}}
 ];
 const worldRules=[
  {id:'neighborhood',label:'Rustige start',speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0},
