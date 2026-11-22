@@ -393,7 +393,10 @@ const clothing=[
  {id:'winter',name:'Winterwonder',cost:8800,color:'#6da9cd',hair:'#f4f2f0',pattern:'stars',patternColor:'#fffdf5'},
  {id:'safari',name:'Safari superoma',cost:7900,color:'#bea16a',hair:'#eae1cf',pattern:'leaves',patternColor:'#587d4b'},
  {id:'neon',name:'Neon nachtwacht',cost:16500,color:'#54376a',hair:'#e6e3d9',pattern:'sparkles',patternColor:'#80ffba'},
- {id:'cherry',name:'Kersenfeest',cost:4800,color:'#b94b76',hair:'#f7eada',pattern:'dots',patternColor:'#fbe2b5'}
+ {id:'cherry',name:'Kersenfeest',cost:4800,color:'#b94b76',hair:'#f7eada',pattern:'dots',patternColor:'#fbe2b5'},
+ {id:'witch',name:'Heksen-Granny',cost:17500,color:'#684a8b',hair:'#d8d6e1',pattern:'stars',patternColor:'#ecb369'},
+ {id:'explorer',name:'Jungleverkenner',cost:19500,color:'#5b9871',hair:'#eadac7',pattern:'leaves',patternColor:'#d0e89d'},
+ {id:'carnival-queen',name:'Carnavalskoningin',cost:24000,color:'#d766a4',hair:'#f1d9bd',pattern:'sparkles',patternColor:'#fce99e'}
 ];
 const gadgets=[
  {id:'plane',name:'Vliegtuig',cost:12000,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
