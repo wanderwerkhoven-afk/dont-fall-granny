@@ -403,7 +403,7 @@ const gadgets=[
  {id:'booster',name:'Scootmobiel',cost:10000,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
-let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
+let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null,hat:'hat-none'};
 let metaState={stats:{runs:0,perfects:0,safes:0,nearMisses:0,coinsCollected:0,maxTier:1,bestCombo:0,totalDistance:0,accessoriesOwned:1,xp:0},records:{distance:0,combo:0,coins:0,perfects:0,tier:1},mastery:{},tiered:{},collections:[],daily:{key:'',progress:{},claimed:[]},weekly:{key:'',progress:{},claimed:[]},settings:{difficulty:'normal',startWorld:0,audio:true,music:false,sfx:null,visualWarnings:true,ghost:false,haptics:true,pinnedMission:null},achievements:[],onboardingSeen:false};
 try{ownedClothes=JSON.parse(localStorage.getItem('grandma-clothes'))||['classic'];selectedClothes=localStorage.getItem('grandma-outfit')||'classic';ownedGadgets=JSON.parse(localStorage.getItem('grandma-gadgets'))||[]}catch(e){}
 try{
@@ -541,7 +541,7 @@ function achievementProgress(a){
  return '';
 }
 function masteryShopGate(item,owned=false){
- const unlock=item?.masteryUnlock;
+ const unlock=item?.masteryUnlock||item?.masteryRequirement;
  if(!unlock||owned)return {locked:false,label:''};
  const world=WORLD_MASTERY.WORLD_MASTERY[unlock.world];
  const goal=world?.goals[unlock.star];
@@ -662,6 +662,57 @@ function drawOutfitPattern(outfit,x,y,bob){
  }
  ctx.restore();
 }
+// Scalable vector hat designs, shared by Granny's preview and shop cards.
+function hatSvgArt(item){
+ if(!item||item.hatStyle==='none')return '';
+ const c=item.hatColor||'#aa76b5',a=item.hatAccent||'#fff3cc',style=item.hatStyle;
+ const edge='#392d44',stroke='stroke="'+edge+'" stroke-width="2.8" stroke-linejoin="round"';
+ const crown=style==='witch'?'<path d="M31 17 L63 0 L76 17Z" fill="'+c+'" '+stroke+'/>':
+  style==='crown'?'<path d="M28 18 L27 3 L40 10 L52 0 L65 10 L79 3 L79 19Z" fill="'+c+'" '+stroke+'/>':
+  style==='party'?'<path d="M36 18 L55 0 L74 18Z" fill="'+c+'" '+stroke+'/>':
+  style==='pirate'?'<path d="M28 17 Q34 0 55 9 Q77 -1 83 17Z" fill="'+c+'" '+stroke+'/>':
+  style==='beret'?'<ellipse cx="55" cy="10" rx="31" ry="12" fill="'+c+'" '+stroke+'/>' :
+  style==='beanie'?'<path d="M29 18 Q26 0 55 1 Q84 0 81 18Z" fill="'+c+'" '+stroke+'/>' :
+  style==='cap'?'<path d="M30 16 Q31 1 55 2 Q77 2 80 16Z" fill="'+c+'" '+stroke+'/>' :
+  style==='cowboy'?'<path d="M31 16 L37 2 Q54 7 72 2 L79 16Z" fill="'+c+'" '+stroke+'/>' :
+  style==='sun'?'<path d="M31 16 Q31 0 55 2 Q79 0 79 16Z" fill="'+c+'" '+stroke+'/>' :
+  style==='bow'?'<path d="M31 16 Q34 0 55 3 Q77 0 80 16Z" fill="'+c+'" '+stroke+'/>' :
+  '<path d="M34 16 L36 2 Q55 -2 74 2 L76 16Z" fill="'+c+'" '+stroke+'/>';
+ const brim=style==='crown'||style==='party'||style==='beanie'?
+  '<path d="M29 16 Q55 22 81 16 L81 21 Q55 26 29 21Z" fill="'+a+'" '+stroke+'/>' :
+  style==='cap'?'<path d="M39 17 Q65 22 93 17 Q84 29 56 22Z" fill="'+a+'" '+stroke+'/>' :
+  '<ellipse cx="55" cy="18" rx="'+(['sun','cowboy','witch'].includes(style)?39:34)+'" ry="'+(['sun','cowboy'].includes(style)?7:5)+'" fill="'+(style==='beret'?c:a)+'" '+stroke+'/>';
+ const decoration=style==='bow'?'<path d="M46 10 Q25 -2 31 13 Q40 19 49 12 Q66 -3 75 9 Q72 19 49 12Z" fill="'+a+'" '+stroke+'/><circle cx="49" cy="12" r="4" fill="'+c+'"/>' :
+  style==='crown'?'<circle cx="54" cy="12" r="4" fill="#ea6d91"/>' :
+  style==='party'?'<circle cx="55" cy="1" r="5" fill="'+a+'"/><circle cx="54" cy="12" r="3" fill="'+a+'"/>' :
+  style==='beanie'?'<circle cx="55" cy="2" r="6" fill="'+a+'"/>' :
+  style==='pirate'?'<path d="M50 10 L60 10 M55 6 L55 14" stroke="'+a+'" stroke-width="3"/>' :
+  '<path d="M37 12 Q55 16 73 12" stroke="'+a+'" stroke-width="3" fill="none"/>';
+ return '<g class="granny-hat-art" aria-hidden="true">'+crown+brim+decoration+'</g>';
+}
+function drawGrannyHat(item,x,y,bob=0){
+ if(!item||item.hatStyle==='none')return;
+ // Draw hats after hair and facial features; their coordinates never change collision geometry.
+ ctx.save();ctx.translate(x+23,y+bob-1);
+ const c=item.hatColor||'#aa76b5',a=item.hatAccent||'#fff3cc',style=item.hatStyle;
+ const poly=(pts,color)=>{ctx.beginPath();pts.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.closePath();ctx.fillStyle=color;ctx.strokeStyle='#392d44';ctx.lineWidth=2.2;ctx.fill();ctx.stroke()};
+ const oval=(px,py,rx,ry,color)=>{ctx.beginPath();ctx.ellipse(px,py,rx,ry,0,0,Math.PI*2);ctx.fillStyle=color;ctx.strokeStyle='#392d44';ctx.lineWidth=2.2;ctx.fill();ctx.stroke()};
+ if(style==='witch')poly([[-22,1],[5,-25],[22,1]],c);
+ else if(style==='crown')poly([[-22,2],[-23,-15],[-12,-7],[0,-24],[12,-7],[23,-15],[22,2]],c);
+ else if(style==='party')poly([[-16,2],[0,-24],[16,2]],c);
+ else if(style==='pirate')poly([[-22,2],[-16,-12],[0,-6],[15,-14],[24,2]],c);
+ else if(style==='beret')oval(0,-6,24,12,c);
+ else if(style==='beanie')oval(0,-3,23,14,c);
+ else poly([[-21,2],[-17,-16],[16,-16],[21,2]],c);
+ if(['crown','party','beanie'].includes(style)){rounded(x+23-22,y+bob-2,1,1,1,'transparent');poly([[-23,1],[23,1],[23,7],[-23,7]],a)}
+ else oval(style==='cap'?10:0,3,style==='cap'?28:['sun','cowboy','witch'].includes(style)?32:27,style==='cap'?4:5,style==='beret'?c:a);
+ if(style==='bow'){oval(-11,-7,8,6,a);oval(11,-7,8,6,a);oval(0,-7,4,4,c);}
+ else if(style==='beanie'||style==='party')oval(0,-18,5,5,a);
+ else if(style==='crown')oval(0,-9,4,4,'#eb739c');
+ else if(style==='pirate'){line(-5,-7,5,-7,a,2.5);line(0,-12,0,-2,a,2.5);}
+ else line(-15,-1,15,-1,a,2.5);
+ ctx.restore();
+}
 function updateGrandmaOutfitPreview(){
  const outfit=clothing.find(item=>item.id===selectedClothes)||clothing[0];
  const hero=document.getElementById('menuGrandma');
@@ -674,10 +725,11 @@ function updateGrandmaOutfitPreview(){
  if(accessories){
   const iconFor=type=>META.cosmetics.find(item=>item.id===selectedAccessories[type])?.icon||'';
   const glasses=iconFor('glasses'),companion=iconFor('companion');
+  const hat=META.cosmetics.find(item=>item.id===selectedAccessories.hat&&item.type==='hat');
   const cane=selectedAccessories.cane!=='cane-classic'?iconFor('cane'):'';
-  accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(48 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
+  accessories.innerHTML=(hat?hatSvgArt(hat):'')+(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(48 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
  }
- hero.setAttribute('aria-label','Oma draagt: '+outfit.name);
+ hero.setAttribute('aria-label','Oma draagt: '+outfit.name+(selectedAccessories.hat&&selectedAccessories.hat!=='hat-none'?' met '+(META.cosmetics.find(item=>item.id===selectedAccessories.hat)?.name||'hoed'):'') );
 }
 
 const menuContent=document.getElementById('menuContent'),menuWallet=document.getElementById('menuWallet'),menuTabs=document.getElementById('menuTabs'),countdown=document.getElementById('countdown');
@@ -958,7 +1010,10 @@ function showMenu(page='home'){
  }
  if(page==='collection'){
   document.getElementById('menuKicker').textContent='OMA’S EXTRA’S  ✦  ACCESSOIRES';
-  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(Boolean).length+' accessoires</span></div><div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id,gate=masteryShopGate(item,owned);return '<div class="store-item '+(selected?'selected':'')+(gate.locked?' mastery-locked':'')+'"><div class="preview accessory-preview'+(item.type==='companion'?' companion-preview':'')+'">'+(item.type==='companion'?'<span class="companion-preview-icon" aria-hidden="true">'+item.icon+'</span>':item.icon)+'</div><b>'+item.name+'</b><small>'+item.type+'</small>'+(gate.locked?'<span class="mastery-lock-note">🔒 '+gate.label+'</span>':item.masteryUnlock&&!owned?'<span class="mastery-ready-note">★ MASTERY VRIJGESPEELD</span>':'')+'<button data-accessory="'+item.id+'" '+(selected||gate.locked||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':gate.locked?'🔒 VERDIEN MASTERY-STER':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
+  const sortedCosmetics=[...META.cosmetics].sort((a,b)=>Number(b.type==='hat')-Number(a.type==='hat'));
+  const filters=[['all','Alles'],['hat','Hoeden'],['cane','Wandelstokken'],['glasses','Brillen'],['companion','Vriendjes']];
+  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(id=>id&&id!=='hat-none').length+' accessoires</span></div><div class="cosmetic-filters" aria-label="Filter accessoires">'+filters.map(([id,label])=>'<button type="button" data-cosmetic-filter="'+id+'" aria-pressed="'+(id==='all')+'">'+label+(id==='hat'?' · '+sortedCosmetics.filter(x=>x.type==='hat'&&x.id!=='hat-none').length:'')+'</button>').join('')+'</div><div class="store-grid">'+sortedCosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id,gate=masteryShopGate(item,owned);return '<div data-cosmetic-type="'+item.type+'" class="store-item '+(selected?'selected':'')+(gate.locked?' mastery-locked':'')+'"><div class="preview accessory-preview'+(item.type==='companion'?' companion-preview':'')+'">'+(item.type==='hat'?'<svg viewBox="0 -6 110 46" width="110" height="65" role="img" aria-label="'+item.name+'">'+hatSvgArt(item)+'</svg>':item.type==='companion'?'<span class="companion-preview-icon" aria-hidden="true">'+item.icon+'</span>':item.icon)+'</div><b>'+item.name+'</b><small>'+(item.type==='hat'?'Hoed':item.type==='cane'?'Wandelstok':item.type==='glasses'?'Bril':'Companion')+'</small>'+(gate.locked?'<span class="mastery-lock-note">🔒 '+gate.label+'</span>':(item.masteryUnlock||item.masteryRequirement)&&!owned?'<span class="mastery-ready-note">★ MASTERY VRIJGESPEELD</span>':'')+'<button data-accessory="'+item.id+'" '+(selected||gate.locked||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':gate.locked?'🔒 VERDIEN MASTERY-STER':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
+  menuContent.querySelectorAll('[data-cosmetic-filter]').forEach(btn=>btn.addEventListener('click',()=>{const type=btn.dataset.cosmeticFilter;menuContent.querySelectorAll('[data-cosmetic-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));menuContent.querySelectorAll('[data-cosmetic-type]').forEach(card=>{card.hidden=type!=='all'&&card.dataset.cosmeticType!==type})}));
   menuContent.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{const item=META.cosmetics.find(x=>x.id===btn.dataset.accessory);if(!item)return;if(!ownedAccessories.includes(item.id)){if(masteryShopGate(item).locked||coins<item.cost)return;coins-=item.cost;ownedAccessories.push(item.id);saveCoins()}selectedAccessories[item.type]=item.id;saveMetaState();evaluateAchievements();showMenu('collection')}));
   return
  }
@@ -1372,7 +1427,8 @@ if(pose.tilt){
 }if(metaState.collections.includes('golden-granny')){for(let i=0;i<3;i++)ellipse(x-12-i*10,y+48+Math.sin(walk+i)*6,2.5,2.5,'#f4c64f')}if(metaState.collections.includes('star-style')){ctx.save();ctx.strokeStyle='#d7b6ff';ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.strokeRect(x-5,y-7,grandma.w+10,grandma.h+12);ctx.restore()}const squash=landingPulse&&!reducedRecoveryMotion.matches?Math.sin(landingPulse*Math.PI)*.08:0;if(squash){ctx.save();ctx.translate(x+grandma.w/2,y+grandma.h);ctx.scale(1+squash,1-squash);ctx.translate(-(x+grandma.w/2),-(y+grandma.h));}if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0){if(squash)ctx.restore();ctx.restore();return;}ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);drawOutfitPattern(outfit,x,y,bob);line(x+8,y+36+bob,x-1,y+50+bob-pose.armSwing*7,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob-pose.armSwing*7,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);grandmaExpressions.drawFace(ctx,x,y,bob,mood,reducedRecoveryMotion.matches);
  if(vehicle==='plane'){ctx.save();ctx.translate(x-37,y+37);rounded(0,0,128,24,12,'#d8e9f0');rounded(40,-17,44,20,8,'#6ea4c6');rounded(18,13,87,11,5,'#e49b60');ellipse(10,10,11,11,'#f6cb69');ctx.restore()}
  const equipped=type=>META.cosmetics.find(item=>item.id===selectedAccessories[type]);
- const caneItem=equipped('cane'),glassesItem=equipped('glasses'),companionItem=equipped('companion');
+ const caneItem=equipped('cane'),glassesItem=equipped('glasses'),companionItem=equipped('companion'),hatItem=equipped('hat');
+ drawGrannyHat(hatItem,x,y,bob);
  if(caneItem&&caneItem.id!=='cane-classic'){
   const caneColors={'cane-gold':'#d7a634','cane-rose':'#c66c84','cane-crystal':'#86bcd6','cane-rainbow':'#9c71b8'};
   line(x+48,y+43+bob,x+50,y+70,caneColors[caneItem.id]||'#d7a634',5);
