@@ -22,9 +22,11 @@ const THEMES=[
  {far:'#9bcfa1',mid:'#70b58b',near:'#4e956c',accent:'#f7d98e'},
  {far:'#b6cce2',mid:'#e8a7c8',near:'#a990ce',accent:'#ffdf88'}
 ];
-function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
+function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion,camera=null}){
  const zone=((tier%THEMES.length)+THEMES.length)%THEMES.length,p=THEMES[zone],t=reducedMotion?0:elapsed;
- const y=ground,parallax=[.045,.12,.24,.35];
+ const cameraX=!reducedMotion&&camera?Math.max(-5,Math.min(5,camera.parallaxX||0)):0;
+ const cameraY=!reducedMotion&&camera?Math.max(-3,Math.min(3,camera.parallaxY||0)):0;
+ const y=ground+cameraY,parallax=[.045,.12,.24,.35];
  const path=(points,color,weight=3)=>{
   ctx.beginPath();points.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));
   ctx.closePath();ctx.fillStyle=color;ctx.fill();ctx.strokeStyle=INK;ctx.lineWidth=weight;ctx.lineJoin='round';ctx.stroke();
@@ -47,14 +49,14 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
  // Infinite strip derived from absolute coordinates. A repeated sprite keeps
  // its global index, size, baseline and animation phase as it crosses the screen.
  const strip=(spacing,factor,paint)=>{
-  const displacement=travel*factor;
+  const displacement=travel*factor+cameraX*factor*2;
   const first=Math.floor(displacement/spacing)-2;
   const last=Math.ceil((displacement+W)/spacing)+2;
   for(let i=first;i<=last;i++)paint(i*spacing-displacement,i);
  };
  const hills=(factor,color,base,amplitude)=>{
   ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(0,y);
-  for(let x=0;x<=W+12;x+=12)ctx.lineTo(x,y-base+Math.sin((x+travel*factor)/220)*amplitude);
+  for(let x=0;x<=W+12;x+=12)ctx.lineTo(x,y-base+Math.sin((x+travel*factor+cameraX*factor*2)/220)*amplitude);
   ctx.lineTo(W,y);ctx.closePath();ctx.fill();
  };
  const house=(x,base,body,lit=false)=>{
