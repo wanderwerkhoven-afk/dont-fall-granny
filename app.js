@@ -91,7 +91,10 @@ const TIERS=[
  {name:'De ruimte',sky:['#10152f','#26224d','#4b376e'],hill:'#443c73',near:'#62518b',road:['#71618c','#9b83ac','#50456e'],building:'#3e3c71',tree:'#7771b0',sun:'#f1e4ff',icon:'🚀'},
  {name:'Winterwonderland',sky:['#a4d8f1','#dbf4fc','#f5fbff'],hill:'#cee8f2',near:'#e3f4fa',road:['#a6cee0','#e5f4f7','#91bfd4'],building:'#a9d2e1',tree:'#7dacc1',sun:'#fefcff',icon:'❄️'},
  {name:'Neon 80’s',sky:['#191339','#462264','#aa368f'],hill:'#53277c',near:'#773a92',road:['#402e6c','#794c9d','#342457'],building:'#553276',tree:'#fd62bf',sun:'#ff98d7',icon:'🕹️'},
- {name:'Piratenbaai',sky:['#78cddd','#b4eee3','#f9e7bb'],hill:'#5ab3ac',near:'#e9cc8e',road:['#a9794c','#d7a56b','#805938'],building:'#997857',tree:'#56a78a',sun:'#ffe6a2',icon:'🏴‍☠️'}
+ {name:'Piratenbaai',sky:['#78cddd','#b4eee3','#f9e7bb'],hill:'#5ab3ac',near:'#e9cc8e',road:['#a9794c','#d7a56b','#805938'],building:'#997857',tree:'#56a78a',sun:'#ffe6a2',icon:'🏴‍☠️'},
+ {name:'Halloweenland',sky:['#241b3d','#53406c','#a4777b'],hill:'#554668',near:'#705675',road:['#655269','#98748b','#483f5d'],building:'#4a405e',tree:'#795777',sun:'#ffcf91',icon:'🎃'},
+ {name:'De jungle',sky:['#88c9a4','#b9e3b0','#e1f3bd'],hill:'#69ad83',near:'#72bd85',road:['#9d8158','#d4b787','#826b4a'],building:'#6b9868',tree:'#3c8c64',sun:'#ffeaac',icon:'🌴'},
+ {name:'Het carnaval',sky:['#7ac7e6','#f5c1df','#ffe6b9'],hill:'#b9c6dd',near:'#f2c5bd',road:['#c69cb9','#eac6b8','#9a81ac'],building:'#cb85b5',tree:'#a58aca',sun:'#fff0a7',icon:'🎡'}
 ];
 let currentTier=0,tierFlash=0,transition=0,previousTier=0,coins=0,coinsRun=0,coinItems=[],coinDistance=420,boostTime=0,revives=0;
 let levelStartScore=0,lastLevelCelebrated=-1,activeLevel=0;
@@ -132,7 +135,10 @@ const zoneTypes=[
  ['asteroid','alien','satellite','moonrock'],
  ['snowman','snowball','icicle','sled'],
  ['boombox','cassette','arcade','disco-ball'],
- ['barrel','cannonball','crab','treasure']
+ ['barrel','cannonball','crab','treasure'],
+ ['haunted-pumpkin','tombstone','ghost-lantern','witch-hat'],
+ ['jungle-log','snake','monkey-banana','temple-stone'],
+ ['clown-shoe','popcorn','balloon-cart','carnival-drum']
 ];
 const extras=[
  {id:'log',w:57,h:35,emoji:'🪵'},{id:'mushroom',w:43,h:44,emoji:'🍄'},
@@ -143,7 +149,10 @@ const extras=[
  {id:'asteroid',w:47,h:44,emoji:'☄️'},{id:'alien',w:47,h:48,emoji:'👾'},{id:'satellite',w:54,h:52,emoji:'🛰️'},{id:'moonrock',w:49,h:37,emoji:'🪨'},
  {id:'snowman',w:45,h:56,emoji:'⛄'},{id:'snowball',w:42,h:41,emoji:'❄️'},{id:'icicle',w:44,h:56,emoji:'🧊'},{id:'sled',w:65,h:39,emoji:'🛷'},
  {id:'boombox',w:56,h:46,emoji:'📻'},{id:'cassette',w:47,h:38,emoji:'📼'},{id:'arcade',w:47,h:63,emoji:'🕹️'},{id:'disco-ball',w:44,h:45,emoji:'🪩'},
- {id:'barrel',w:48,h:54,emoji:'🛢️'},{id:'cannonball',w:43,h:43,emoji:'💣'},{id:'crab',w:46,h:38,emoji:'🦀'},{id:'treasure',w:54,h:43,emoji:'🧰'}
+ {id:'barrel',w:48,h:54,emoji:'🛢️'},{id:'cannonball',w:43,h:43,emoji:'💣'},{id:'crab',w:46,h:38,emoji:'🦀'},{id:'treasure',w:54,h:43,emoji:'🧰'},
+ {id:'haunted-pumpkin',w:46,h:43,emoji:'🎃'},{id:'tombstone',w:49,h:56,emoji:'🪦'},{id:'ghost-lantern',w:44,h:49,emoji:'👻'},{id:'witch-hat',w:48,h:48,emoji:'🧙'},
+ {id:'jungle-log',w:62,h:37,emoji:'🪵'},{id:'snake',w:51,h:38,emoji:'🐍'},{id:'monkey-banana',w:44,h:48,emoji:'🍌'},{id:'temple-stone',w:52,h:55,emoji:'🗿'},
+ {id:'clown-shoe',w:53,h:35,emoji:'👞'},{id:'popcorn',w:44,h:51,emoji:'🍿'},{id:'balloon-cart',w:52,h:59,emoji:'🎈'},{id:'carnival-drum',w:47,h:45,emoji:'🥁'}
 ];
 const allTypes=[...types,...extras];
 // Current single-file game has no separate Balance/Fall controllers: keep this small
@@ -1327,11 +1336,11 @@ function background(tierIndex=currentTier){
  const road=ctx.createLinearGradient(0,ground,0,H);
  tier.road.forEach((color,i)=>road.addColorStop(i/2,color));
  ctx.fillStyle=road;ctx.fillRect(0,ground,W,H-ground);
- ctx.fillStyle=[4,6,8].includes(zone)?'#28223f':'#493e49';
+ ctx.fillStyle=[4,6,8,10].includes(zone)?'#28223f':'#493e49';
  ctx.fillRect(0,ground,W,5);
  const depth=H-ground;
  ctx.save();ctx.beginPath();ctx.rect(0,ground,W,depth);ctx.clip();
- const pavement=[4,6,8].includes(zone)?'#b0a4cb55':'#9e786355';
+ const pavement=[4,6,8,10].includes(zone)?'#b0a4cb55':'#9e786355';
  for(let row=0;row<6;row++){
   const top=ground+depth*row/6,bottom=ground+depth*(row+1)/6;
   ctx.strokeStyle=pavement;ctx.lineWidth=1.15;
@@ -1344,7 +1353,7 @@ function background(tierIndex=currentTier){
  }
  const markingSpacing=125,phase=((travel%markingSpacing)+markingSpacing)%markingSpacing;
  for(let x=-markingSpacing-phase;x<W+markingSpacing;x+=markingSpacing)
-  rounded(x,ground+Math.min(29,depth*.3),43,4,2,[4,6,8].includes(zone)?'#d5c6e3':'#edbb94');
+  rounded(x,ground+Math.min(29,depth*.3),43,4,2,[4,6,8,10].includes(zone)?'#d5c6e3':'#edbb94');
  ctx.restore();
 }
 function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;const mood=grandmaExpressions.resolve({
@@ -1429,6 +1438,10 @@ function drawObstacle(o){
   R(3,h*.3,w-6,h*.67,6,'#a06b47');R(3,h*.19,w-6,h*.23,5,'#d9a65a');
   L(10,h*.34,10,h*.91,'#f5cf73',4);L(w-10,h*.34,w-10,h*.91,'#f5cf73',4);
   R(w*.43,h*.41,w*.14,h*.28,3,'#f7d768');
+ }else if(['haunted-pumpkin','tombstone','ghost-lantern','witch-hat','jungle-log','snake','monkey-banana','temple-stone','clown-shoe','popcorn','balloon-cart','carnival-drum'].includes(t)){
+  const palette=['haunted-pumpkin','tombstone','ghost-lantern','witch-hat'].includes(t)?'#806482':['jungle-log','snake','monkey-banana','temple-stone'].includes(t)?'#78a876':'#eb9dbe';
+  R(3,6,w-6,h-9,Math.min(12,h*.22),palette);
+  label(o.type.emoji,w/2,h*.47,Math.min(38,h*.75));
  }else if(t==='car'){
    // A bespoke compact car: animated wheels, headlamp, windshield and warning.
    if(o.charging){for(let i=0;i<3;i++)L(w+6+i*10,12+i*7,w+19+i*10,12+i*7,'#f7e5b0',2)}
@@ -1576,7 +1589,7 @@ function render(){
  // Tier is painted inside the world, rather than outside the game frame.
  if(state!=='recovery'){
   ctx.save();ctx.textAlign='center';
-  ctx.font='900 23px system-ui';ctx.fillStyle=([4,6,8].includes(currentTier%TIERS.length))?'#fff':'#493e49';
+  ctx.font='900 23px system-ui';ctx.fillStyle=([4,6,8,10].includes(currentTier%TIERS.length))?'#fff':'#493e49';
   ctx.globalAlpha=.82;
   ctx.fillText(`TIER ${currentTier+1}`,W/2,Math.max(108,ground*.35));
   ctx.font='800 15px system-ui';ctx.fillText(tier.name.toUpperCase(),W/2,Math.max(132,ground*.35+23));
