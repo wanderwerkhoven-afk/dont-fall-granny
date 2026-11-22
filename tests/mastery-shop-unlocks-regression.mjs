@@ -39,8 +39,8 @@ const outfitMatch=[...outfitSource.matchAll(/\{id:'([^']+)'[^\n]*?masteryUnlock:
 const mappedOutfits=outfitMatch.map(m=>({id:m[1],world:Number(m[2]),star:Number(m[3])}));
 const mappedAccessories=accessories.filter(x=>x.masteryUnlock).map(x=>({id:x.id,...x.masteryUnlock}));
 const all=[...mappedOutfits,...mappedAccessories];
-assert.equal(all.length,30,'All 30 World Mastery stars unlock distinct shop items');
-assert.equal(new Set(all.map(x=>x.world)).size,10,'Every world offers a shop reward');
+assert.equal(all.length,39,'All 39 World Mastery stars unlock distinct shop items');
+assert.equal(new Set(all.map(x=>x.world)).size,13,'Every world offers a shop reward');
 assert.equal(new Set(all.map(x=>x.world+':'+x.star)).size,all.length,'Each item has its own distinct mastery goal');
 assert.equal(new Set(all.map(x=>x.id)).size,all.length,'Item ids are unique');
 for(const item of all){
