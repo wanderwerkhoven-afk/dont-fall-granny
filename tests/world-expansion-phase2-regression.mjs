@@ -40,5 +40,6 @@ for(const id of ['haunted-pumpkin','tombstone','ghost-lantern','witch-hat','jung
  assert.match(app,new RegExp("id:'"+id+"'"),'Missing obstacle '+id);
  assert.match(app,new RegExp("t==='"+id+"'"),'Missing custom illustration '+id);
 }
+for(const id of ['witch','explorer','carnival-queen'])assert.match(app,new RegExp("id:'"+id+"'"),'Missing thematic outfit '+id);
 new Function(app);
-console.log('PASS phase two: 91 levels, saved progress, three scenes, twelve rendered hazards, nine exclusive collectibles, 39 mastery stars');
+console.log('PASS phase two: 91 levels, saved progress, three scenes, twelve rendered hazards, nine exclusive collectibles and three outfits, 39 mastery stars');
