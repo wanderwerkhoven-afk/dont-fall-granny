@@ -578,8 +578,8 @@ function renderAdventureBook(){
  }).join('');
  return '<section class="adventure-book" id="adventureBook" aria-label="Adventure Book World Mastery">'+
  '<div class="adventure-book-header"><div><small>OMA’S ADVENTURE BOOK</small>'+
- '<h3>World Mastery</h3><p>Verdien drie sterren per wereld en verzamel 21 unieke stickers. Alleen voor de sier — zonder gameplayvoordeel.</p></div>'+
- '<strong class="book-total">'+total+' <span>/ 21 ★</span></strong></div>'+
+ '<h3>World Mastery</h3><p>Verdien drie sterren per wereld en verzamel '+(WORLD_MASTERY.WORLD_MASTERY.length*3)+' unieke stickers. Speel exclusieve winkelitems vrij.</p></div>'+
+ '<strong class="book-total">'+total+' <span>/ '+(WORLD_MASTERY.WORLD_MASTERY.length*3)+' ★</span></strong></div>'+
  '<div class="adventure-pages">'+pages+'</div></section>';
 }
 function currentWorldRule(){return META.worldRules[currentTier%Math.max(1,META.worldRules.length)]||{speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0}}
