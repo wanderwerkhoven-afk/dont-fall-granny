@@ -2587,3 +2587,91 @@ body:has(#overlay.hidden) .game>canvas{
   min-height:220px!important;
  }
 }
+
+/* Home navigation / settings root-cause fix: both now live INSIDE #menuContent.
+ * There is no separate zero-height grid row to overlap. */
+@media(min-width:651px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover)>.panel{
+  grid-template-rows:auto auto auto auto max-content auto!important;
+  align-content:start!important;
+  overflow-y:auto!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent{
+  grid-column:1!important;
+  grid-row:5!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:12px!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:max-content!important;
+  height:auto!important;
+  overflow:visible!important;
+  margin:12px 0 0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.home-main-nav{
+  position:static!important;
+  grid-column:auto!important;grid-row:auto!important;
+  z-index:auto!important;
+  display:grid!important;
+  order:0!important;
+  align-content:start!important;
+  width:100%!important;
+  margin:0!important;
+  min-height:max-content!important;
+  flex:none!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.home-settings{
+  order:1!important;
+  position:static!important;
+  z-index:auto!important;
+  display:block!important;
+  width:100%!important;
+  margin:6px 0 0!important;
+  flex:none!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.daily-home-teaser{
+  order:2!important;position:relative!important;flex:none!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.home-hub{
+  display:none!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .app-version{
+  grid-column:1!important;grid-row:6!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) .menu-hero{
+  grid-column:2!important;grid-row:1 / 7!important;
+ }
+}
+@media(max-width:650px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent{
+  display:flex!important;flex-direction:column!important;gap:10px!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.home-main-nav{
+  order:0!important;position:static!important;display:grid!important;width:100%;
+  margin:0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.home-settings{
+  order:1!important;position:static!important;margin:8px 0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover) #menuContent>.daily-home-teaser{
+  order:2!important;position:relative!important;
+ }
+}
+/* Fallback also styles pre-update card markup, if an older cached JS
+   produces the traditional three-column mission rows. */
+#overlay.progresspage .progress-section .mission-card:not(.mission-mastered){
+ background:linear-gradient(115deg,#fff3cf,#fff9ec)!important;
+ border:2px solid #9b7d42!important;
+ box-shadow:3px 4px 0 #342b40!important;
+ min-height:85px;gap:12px!important;
+}
+#overlay.progresspage .progress-section .mission-card:not(.mission-mastered)>span:first-child{
+ display:grid;place-items:center;flex:none;width:48px;height:48px;
+ border:2px solid #342b40;border-radius:50%;
+ background:#ffdc84;box-shadow:2px 3px 0 #342b40;
+ font-size:28px!important;
+}
+#overlay.progresspage .progress-section .mission-card:not(.mission-mastered).done{
+ background:linear-gradient(115deg,#d7eedb,#fff9eb)!important;
+}
