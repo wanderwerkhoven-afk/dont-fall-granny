@@ -1438,10 +1438,52 @@ function drawObstacle(o){
   R(3,h*.3,w-6,h*.67,6,'#a06b47');R(3,h*.19,w-6,h*.23,5,'#d9a65a');
   L(10,h*.34,10,h*.91,'#f5cf73',4);L(w-10,h*.34,w-10,h*.91,'#f5cf73',4);
   R(w*.43,h*.41,w*.14,h*.28,3,'#f7d768');
- }else if(['haunted-pumpkin','tombstone','ghost-lantern','witch-hat','jungle-log','snake','monkey-banana','temple-stone','clown-shoe','popcorn','balloon-cart','carnival-drum'].includes(t)){
-  const palette=['haunted-pumpkin','tombstone','ghost-lantern','witch-hat'].includes(t)?'#806482':['jungle-log','snake','monkey-banana','temple-stone'].includes(t)?'#78a876':'#eb9dbe';
-  R(3,6,w-6,h-9,Math.min(12,h*.22),palette);
-  label(o.type.emoji,w/2,h*.47,Math.min(38,h*.75));
+ }else if(t==='haunted-pumpkin'){
+  E(w*.5,h*.62,w*.45,h*.36,'#e88a49');L(w*.5,h*.31,w*.56,3,'#537b5c',5);
+  polygon([[w*.26,h*.56],[w*.38,h*.43],[w*.43,h*.59]],'#503149');
+  polygon([[w*.58,h*.59],[w*.64,h*.43],[w*.76,h*.56]],'#503149');
+  L(w*.34,h*.75,w*.66,h*.75,'#503149',3);
+ }else if(t==='tombstone'){
+  R(4,8,w-8,h-9,15,'#978ea8');R(10,h*.38,w-20,4,2,'#6b607b');
+  L(w/2,h*.25,w/2,h*.56,'#e7e4dc',3);L(w*.36,h*.39,w*.64,h*.39,'#e7e4dc',3);
+ }else if(t==='ghost-lantern'){
+  E(w*.5,h*.39,w*.38,h*.37,'#f5edf8');R(6,h*.39,w-12,h*.5,9,'#f5edf8');
+  E(w*.37,h*.38,3,5,'#50415c');E(w*.64,h*.38,3,5,'#50415c');
+  L(w*.52,h*.68,w*.52,h*.83,'#b39bc6',3);
+ }else if(t==='witch-hat'){
+  polygon([[w*.1,h*.74],[w*.57,3],[w*.81,h*.74]],'#5c4b7b');
+  R(2,h*.69,w-4,9,4,'#433557');R(w*.3,h*.52,w*.38,7,2,'#d7ac64');
+ }else if(t==='jungle-log'){
+  R(3,7,w-6,h-9,10,'#956d4b');E(11,h*.53,7,10,'#d1a678');
+  for(let k=0;k<3;k++)L(24+k*9,12,31+k*9,h-8,'#664c3c',2);
+  E(w*.66,8,8,4,'#71b576');
+ }else if(t==='snake'){
+  ctx.strokeStyle='#68a965';ctx.lineWidth=11;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(7,h-7);ctx.bezierCurveTo(w*.2,h*.12,w*.65,h,w*.8,h*.28);ctx.stroke();
+  E(w*.8,h*.25,9,7,'#83bc76');E(w*.84,h*.20,2,2,'#302b3a');
+ }else if(t==='monkey-banana'){
+  R(5,h*.33,w-10,h*.57,7,'#a77850');
+  E(w*.5,h*.32,17,16,'#b8895d');E(w*.5,h*.35,11,10,'#e5be8d');
+  E(w*.37,h*.26,3,3,'#322d3b');E(w*.64,h*.26,3,3,'#322d3b');
+  L(w*.7,h*.7,w*.91,h*.35,'#e8ca62',6);
+ }else if(t==='temple-stone'){
+  R(4,7,w-8,h-9,5,'#a0a48b');R(10,16,w-20,12,3,'#c8c5a5');
+  L(w*.28,h*.54,w*.71,h*.54,'#767b65',3);
+  for(let k=0;k<3;k++)L(13+k*12,h*.69,13+k*12,h-4,'#7c826f',3);
+ }else if(t==='clown-shoe'){
+  polygon([[3,h-8],[14,7],[27,10],[32,h*.55],[w-5,h*.61],[w-4,h-5]],'#d36595');
+  E(w-11,h*.65,8,7,'#f9d96c');E(14,9,5,5,'#f9d96c');
+ }else if(t==='popcorn'){
+  polygon([[8,13],[w-8,13],[w-13,h-2],[13,h-2]],'#f8f1e7');
+  for(let k=0;k<3;k++)R(16+k*9,18,5,h-25,1,'#d96e83');
+  for(let k=0;k<4;k++)E(11+k*8,10+(k%2)*3,8,7,'#f5d18b');
+ }else if(t==='balloon-cart'){
+  R(5,h*.55,w-10,h*.3,4,'#b28bcb');E(12,h-4,6,6,'#424055');E(w-12,h-4,6,6,'#424055');
+  for(let k=0;k<3;k++){const px=10+k*15;L(px,h*.6,px,18,'#7f718b',2);E(px,12-(k%2)*5,8,12,['#eb83b2','#86cadb','#f3ca72'][k]);}
+ }else if(t==='carnival-drum'){
+  R(4,9,w-8,h-12,8,'#e89dba');E(w*.5,10,w*.42,7,'#f9e0aa');
+  for(let k=0;k<4;k++)L(8+k*10,15,8+k*10,h-7,'#fbe2c1',3);
+  E(w*.5,h-4,w*.42,5,'#9b83b8');
  }else if(t==='car'){
    // A bespoke compact car: animated wheels, headlamp, windshield and warning.
    if(o.charging){for(let i=0;i<3;i++)L(w+6+i*10,12+i*7,w+19+i*10,12+i*7,'#f7e5b0',2)}
