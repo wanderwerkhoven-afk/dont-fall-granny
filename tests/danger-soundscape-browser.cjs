@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   page.on('pageerror',error=>errors.push(error.stack||String(error)));
   try{
    await page.goto('http://127.0.0.1:8765/?debug=1',{waitUntil:'networkidle'});
-   await page.locator('.home-settings summary').click();
+   await page.locator('#homeSettingsButton').click();
    for(const key of ['music','sfx','visualWarnings']){
     if(await page.locator('[data-toggle-setting="'+key+'"]').count()!==1)
      throw Error('Independent '+key+' control missing');
@@ -20,7 +20,7 @@ const {chromium}=require('playwright');
    if(saved.music!==true||saved.sfx!==false||saved.visualWarnings!==false)
     throw Error('Independent preferences not persisted '+JSON.stringify(saved));
    await page.reload({waitUntil:'networkidle'});
-   await page.locator('.home-settings summary').click();
+   await page.locator('#homeSettingsButton').click();
    for(const [key,expected] of [['music','true'],['sfx','false'],['visualWarnings','false']]){
     const pressed=await page.locator('[data-toggle-setting="'+key+'"]').getAttribute('aria-pressed');
     if(pressed!==expected)throw Error('Reload lost '+key+' preference: '+pressed);
@@ -28,6 +28,7 @@ const {chromium}=require('playwright');
    await page.locator('[data-toggle-setting="music"]').click();
    await page.locator('[data-toggle-setting="sfx"]').click();
    await page.locator('[data-toggle-setting="visualWarnings"]').click();
+   await page.locator('.settings-close').click();
    await page.locator('#startBtn').click();
    await page.evaluate(()=>window.__grannyDebug.dangerTestObstacle('car',.74));
    let snap=await page.evaluate(()=>window.__grannyDebug.snapshot());
