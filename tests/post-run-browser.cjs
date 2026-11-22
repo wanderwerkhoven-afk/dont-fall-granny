@@ -11,8 +11,8 @@ const {chromium}=require('playwright');
    await page.waitForTimeout(150);
    await page.evaluate(()=>window.__grannyDebug.fall());
    await page.locator('#postRunOverlay.rescue-phase').waitFor();
-   // Both phases must use the same compact, grounded tray: no floating card
-   // and no change in position when Rescue turns into Result.
+   // Rescue and Result share a readable centered card after the v40 layout
+   // redesign. Verify both phases remain inside the gameplay viewport.
    const rescueBounds=await page.locator('.post-run-card').boundingBox();
    if(!await page.locator('#overlay').evaluate(el=>el.classList.contains('hidden')))
     throw Error('Legacy full-screen game-over menu replaced the world');
@@ -26,11 +26,14 @@ const {chromium}=require('playwright');
       active:window.__grannyDebug.snapshot()};
    });
    if(result.text!=='Oeps… daar gaat oma.')throw Error('Wrong result header');
-   const bottomGap=result.game.bottom-result.card.bottom;
-   if(bottomGap<3||bottomGap>60)throw Error('Post-run card is not anchored to the bottom: '+bottomGap+' '+JSON.stringify(viewport));
-   if(Math.abs(rescueBounds.y-result.card.y)>15)throw Error('Rescue-to-result card jumped vertically on '+JSON.stringify(viewport));
-   if(Math.abs(rescueBounds.x-result.card.x)>8)throw Error('Rescue-to-result card jumped horizontally on '+JSON.stringify(viewport));
-   if(viewport.height<520&&result.card.x<result.game.x+result.game.right*.15)throw Error('Landscape result bar covers Granny lane');
+   const cardCenterX=(result.card.x+result.card.right)/2,gameCenterX=(result.game.x+result.game.right)/2;
+   const cardCenterY=(result.card.y+result.card.bottom)/2,gameCenterY=(result.game.y+result.game.bottom)/2;
+   if(Math.abs(cardCenterX-gameCenterX)>16||Math.abs(cardCenterY-gameCenterY)>16)
+    throw Error('Post-run card is not centered: '+JSON.stringify(viewport)+' '+JSON.stringify(result));
+   const rescueCenterX=rescueBounds.x+rescueBounds.width/2;
+   const rescueCenterY=rescueBounds.y+rescueBounds.height/2;
+   if(Math.abs(rescueCenterY-cardCenterY)>16||Math.abs(rescueCenterX-cardCenterX)>16)
+    throw Error('Rescue-to-result card changed center on '+JSON.stringify(viewport));
 
    if(result.card.x<result.game.x-4||result.card.y<result.game.y-4||
       result.card.right>result.game.right+4||result.card.bottom>result.game.bottom+4)
