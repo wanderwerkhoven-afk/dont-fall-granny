@@ -71,7 +71,19 @@ const cosmetics=[
  {id:'companion-monkey',type:'companion',icon:'🐒',name:'Aapje Momo',cost:34000,masteryUnlock:{world:11,star:2}},
  {id:'glasses-carnival',type:'glasses',icon:'🎭',name:'Carnavalsmasker',cost:21000,masteryUnlock:{world:12,star:0}},
  {id:'cane-confetti',type:'cane',icon:'🎉',name:'Confettistok',cost:30000,masteryUnlock:{world:12,star:1}},
- {id:'companion-clown',type:'companion',icon:'🤡',name:'Clownvriend',cost:36000,masteryUnlock:{world:12,star:2}}
+ {id:'companion-clown',type:'companion',icon:'🤡',name:'Clownvriend',cost:36000,masteryUnlock:{world:12,star:2}},
+ {id:'hat-beret',type:'hat',icon:'🎨',name:'Bordeaux baret',cost:4200,hatStyle:'beret',hatColor:'#b54f65',hatAccent:'#f6ce99'},
+ {id:'hat-straw',type:'hat',icon:'👒',name:'Strohoed met lint',cost:5600,hatStyle:'straw',hatColor:'#e4bf78',hatAccent:'#ad5d77'},
+ {id:'hat-sun',type:'hat',icon:'☀️',name:'Zomerzonnehoed',cost:7200,hatStyle:'sun',hatColor:'#ecca9d',hatAccent:'#f391ad'},
+ {id:'hat-bow',type:'hat',icon:'🎀',name:'Strikjeshoed',cost:8900,hatStyle:'bow',hatColor:'#ca91cf',hatAccent:'#fff3c6'},
+ {id:'hat-winter',type:'hat',icon:'🧶',name:'Warme wintermuts',cost:11500,hatStyle:'beanie',hatColor:'#83b8d9',hatAccent:'#fff9f0',masteryRequirement:{world:7,star:0}},
+ {id:'hat-cowboy',type:'hat',icon:'🤠',name:'Cowboyhoed',cost:13500,hatStyle:'cowboy',hatColor:'#9e704c',hatAccent:'#f6d78a'},
+ {id:'hat-neon',type:'hat',icon:'🧢',name:'Neon 80’s cap',cost:16500,hatStyle:'cap',hatColor:'#6d3d9c',hatAccent:'#80f5dc',masteryRequirement:{world:8,star:1}},
+ {id:'hat-pirate',type:'hat',icon:'🏴‍☠️',name:'Piratensteek',cost:19000,hatStyle:'pirate',hatColor:'#3e405c',hatAccent:'#f5c37a',masteryRequirement:{world:9,star:0}},
+ {id:'hat-witch',type:'hat',icon:'🧙',name:'Heksenhoed',cost:22500,hatStyle:'witch',hatColor:'#5c4174',hatAccent:'#f2b96c',masteryRequirement:{world:10,star:1}},
+ {id:'hat-jungle',type:'hat',icon:'🌿',name:'Jungle safarihoed',cost:17000,hatStyle:'safari',hatColor:'#8b9365',hatAccent:'#e3c38f',masteryRequirement:{world:11,star:0}},
+ {id:'hat-crown',type:'hat',icon:'👑',name:'Koninklijke kroon',cost:32000,hatStyle:'crown',hatColor:'#eac04b',hatAccent:'#fbe89b',masteryRequirement:{world:6,star:1}},
+ {id:'hat-carnival',type:'hat',icon:'🎉',name:'Carnavalsprinses',cost:26500,hatStyle:'party',hatColor:'#ea79b1',hatAccent:'#fce88c',masteryRequirement:{world:12,star:1}}
 ];
 const worldRules=[
  {id:'neighborhood',label:'Rustige start',speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0},
