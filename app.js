@@ -201,6 +201,8 @@ function beginLastSecondGrab(){
  if(!flowTo(GameState.GRAB)){lastSecondGrab.reset();return false;}
  state='grab';
  document.getElementById('game').classList.add('grab-mode');
+ document.getElementById('jumpBtn').textContent='✋ GRIJP!';
+ haptic(14);
  statusEl.textContent='GRIJP! Tik op het juiste moment om je vast te houden!';
  return true;
 }
@@ -209,6 +211,7 @@ function resolveLastSecondGrab(success){
  const target=lastSecondGrab.target;
  lastSecondGrab.reset();
  document.getElementById('game').classList.remove('grab-mode');
+ document.getElementById('jumpBtn').textContent='↑ Spring!';
  if(!success){balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}
  balanceController.recover('safe');
  grandmaExpressions.react('safe');
@@ -268,7 +271,7 @@ function triggerRecovery(obstacle){
  if(daily.active){finishDailyRun('fall');return;}
  clearDangerWarnings();audioDirector.stop();
  // Decide once on collision; failed Recovery may expose this rare second chance.
- lastSecondGrab.offer(obstacle,replay.randomValue());
+ lastSecondGrab.offer(obstacle,lastSecondGrab.eligible(obstacle)?replay.randomValue():1);
  recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();flowTo(GameState.RECOVERY);state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
@@ -1038,7 +1041,7 @@ function start(){replayAccumulator=0;dailyFixedAccumulator=0;const loading=pendi
  resultPreviousAchievements=[...(metaState.achievements||[])];
  grandmaExpressions.react('fall');
  worldEvents.abort();updateWorldEventCard();
- recoveryWindow.reset();lastSecondGrab.reset();document.getElementById('game').classList.remove('recovery-mode','grab-mode');
+ recoveryWindow.reset();lastSecondGrab.reset();document.getElementById('jumpBtn').textContent='↑ Spring!';document.getElementById('game').classList.remove('recovery-mode','grab-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
  state='over';
  flowTo(GameState.FALLING);
