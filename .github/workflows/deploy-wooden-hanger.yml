@@ -58,6 +58,7 @@ jobs:
           node tests/world-events-regression.mjs
           node tests/world-mastery-regression.mjs
           node tests/mastery-shop-unlocks-regression.mjs
+          node tests/shop-economy-balance-regression.mjs
           node tests/danger-soundscape-regression.mjs
           node tests/daily-challenge-regression.mjs
           node tests/replay-regression.mjs
