@@ -8,7 +8,7 @@ const {WORLD_MASTERY,evaluate,progress,totalStars,normalizeStars}=win.GrannyWorl
 assert.equal(WORLD_MASTERY.length,10);
 assert.equal(new Set(WORLD_MASTERY.map(w=>w.id)).size,10);
 assert.equal(WORLD_MASTERY.reduce((sum,w)=>sum+w.goals.length,0),30);
-assert.equal(new Set(WORLD_MASTERY.flatMap(w=>w.goals.map(g=>g.sticker))).size,21);
+assert.equal(new Set(WORLD_MASTERY.flatMap(w=>w.goals.map(g=>g.sticker))).size,30);
 const m={distance:0,perfects:0,nearMisses:0,bestCombo:0};
 assert.deepEqual(normalizeStars(m),[false,false,false]);
 assert.deepEqual(evaluate(0,m),[]);
