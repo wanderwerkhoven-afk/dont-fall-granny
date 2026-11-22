@@ -651,9 +651,9 @@ function updateGrandmaOutfitPreview(){
  hero.querySelectorAll('[data-preview-hair]').forEach(part=>part.setAttribute('fill',outfit.hair));
  const accessories=hero.querySelector('[data-preview-accessories]');
  if(accessories){
-  const glasses=selectedAccessories.glasses==='glasses-heart'?'💗':selectedAccessories.glasses==='glasses-star'?'⭐':'';
-  const companion=selectedAccessories.companion==='companion-duck'?'🦆':selectedAccessories.companion==='companion-cat'?'🐈':'';
-  const cane=selectedAccessories.cane==='cane-gold'?'✨':'';
+  const iconFor=type=>META.cosmetics.find(item=>item.id===selectedAccessories[type])?.icon||'';
+  const glasses=iconFor('glasses'),companion=iconFor('companion');
+  const cane=selectedAccessories.cane!=='cane-classic'?iconFor('cane'):'';
   accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(48 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
  }
  hero.setAttribute('aria-label','Oma draagt: '+outfit.name);
@@ -1350,17 +1350,24 @@ if(pose.tilt){
  ctx.translate(-(x+23),-(y+grandma.h));
 }if(metaState.collections.includes('golden-granny')){for(let i=0;i<3;i++)ellipse(x-12-i*10,y+48+Math.sin(walk+i)*6,2.5,2.5,'#f4c64f')}if(metaState.collections.includes('star-style')){ctx.save();ctx.strokeStyle='#d7b6ff';ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.strokeRect(x-5,y-7,grandma.w+10,grandma.h+12);ctx.restore()}const squash=landingPulse&&!reducedRecoveryMotion.matches?Math.sin(landingPulse*Math.PI)*.08:0;if(squash){ctx.save();ctx.translate(x+grandma.w/2,y+grandma.h);ctx.scale(1+squash,1-squash);ctx.translate(-(x+grandma.w/2),-(y+grandma.h));}if(shield){ctx.strokeStyle='#f5a1d0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(x+23,y+35,36,48,0,0,Math.PI*2);ctx.stroke();label('✦',x+51,y-6,20)}if(invulnerable>0&&!vehicle&&Math.floor(invulnerable*12)%2===0){if(squash)ctx.restore();ctx.restore();return;}ellipse(x+23,ground+1,24,5,'#bda887');line(x+16,y+52+bob,x+12+(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);line(x+31,y+52+bob,x+34-(grandma.vy===0?Math.sin(walk)*5:0),y+68,'#493e49',6);rounded(x+3,y+27+bob,40,34,13,outfit.color);rounded(x+7,y+27+bob,32,25,10,outfit.color);drawOutfitPattern(outfit,x,y,bob);line(x+8,y+36+bob,x-1,y+50+bob-pose.armSwing*7,'#efc6a8',7);line(x+38,y+35+bob,x+47,y+47+bob-pose.armSwing*7,'#efc6a8',7);ellipse(x+23,y+16+bob,19,20,'#efc6a8');ellipse(x+20,y+0+bob,21,10,outfit.hair);ellipse(x+6,y+11+bob,7,12,outfit.hair);ellipse(x+37,y+10+bob,7,12,outfit.hair);ellipse(x+39,y+2+bob,8,9,outfit.hair);rounded(x+10,y+14+bob,27,9,4,'#493e49');rounded(x+12,y+15+bob,10,7,3,'#e9f4ee');rounded(x+25,y+15+bob,10,7,3,'#e9f4ee');line(x+21,y+18+bob,x+25,y+18+bob,'#493e49',2);grandmaExpressions.drawFace(ctx,x,y,bob,mood,reducedRecoveryMotion.matches);
  if(vehicle==='plane'){ctx.save();ctx.translate(x-37,y+37);rounded(0,0,128,24,12,'#d8e9f0');rounded(40,-17,44,20,8,'#6ea4c6');rounded(18,13,87,11,5,'#e49b60');ellipse(10,10,11,11,'#f6cb69');ctx.restore()}
- if(selectedAccessories.cane==='cane-gold')line(x+48,y+43+bob,x+50,y+70,'#d7a634',5);
- if(selectedAccessories.glasses==='glasses-heart'){label('💗',x+17,y+18+bob,11);label('💗',x+31,y+18+bob,11)}
- if(selectedAccessories.glasses==='glasses-star'){label('⭐',x+17,y+18+bob,10);label('⭐',x+31,y+18+bob,10)}
- // Companions are three times their previous display size and face Granny.
- // This is cosmetic only: no collision boxes or game balance are affected.
- if(selectedAccessories.companion==='companion-duck'||selectedAccessories.companion==='companion-cat'){
-  const duck=selectedAccessories.companion==='companion-duck';
+ const equipped=type=>META.cosmetics.find(item=>item.id===selectedAccessories[type]);
+ const caneItem=equipped('cane'),glassesItem=equipped('glasses'),companionItem=equipped('companion');
+ if(caneItem&&caneItem.id!=='cane-classic'){
+  const caneColors={'cane-gold':'#d7a634','cane-rose':'#c66c84','cane-crystal':'#86bcd6','cane-rainbow':'#9c71b8'};
+  line(x+48,y+43+bob,x+50,y+70,caneColors[caneItem.id]||'#d7a634',5);
+  label(caneItem.icon,x+51,y+39+bob,14);
+ }
+ if(glassesItem){
+  label(glassesItem.icon,x+17,y+18+bob,11);
+  label(glassesItem.icon,x+31,y+18+bob,11);
+ }
+ // Cosmetic companions follow Granny, face forward and never affect hitboxes.
+ if(companionItem){
+  const isDuck=companionItem.id==='companion-duck';
   ctx.save();
-  ctx.translate(x-51,ground-31-Math.abs(Math.sin(walk*(duck?.8:.65)))*4);
+  ctx.translate(x-51,ground-31-Math.abs(Math.sin(walk*(isDuck?.8:.65)))*4);
   ctx.scale(-1,1);
-  label(duck?'🦆':'🐈',0,0,duck?60:63);
+  label(companionItem.icon,0,0,isDuck?60:63);
   ctx.restore();
  }
  if(vehicle==='booster'){ctx.save();ctx.translate(x-20,y+35);rounded(0,0,86,30,12,'#6655a5');rounded(9,5,68,13,6,'#a2bce1');ellipse(5,15,10,10,'#33364e');ellipse(82,15,10,10,'#33364e');for(let i=0;i<3;i++)line(-8-i*13,10,0-i*13,20,'#f6b353',4);ctx.restore()}
