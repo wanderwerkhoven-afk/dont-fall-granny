@@ -4,9 +4,9 @@ const source=readFileSync('world-events.js','utf8');
 const main=readFileSync('app.js','utf8');
 const w={};new Function('window',source)(w);
 const {EVENTS,INTRO,OUTRO,ELIGIBLE_AT,PITY_AT,WorldEventDirector}=w.GrannyWorldEvents;
-assert.equal(EVENTS.length,7);
-assert.equal(new Set(EVENTS.map(e=>e.world)).size,7);
-assert.equal(new Set(EVENTS.map(e=>e.id)).size,7);
+assert.equal(EVENTS.length,10);
+assert.equal(new Set(EVENTS.map(e=>e.world)).size,10);
+assert.equal(new Set(EVENTS.map(e=>e.id)).size,10);
 for(const [i,ev] of EVENTS.entries()){
  assert.equal(ev.world,i);
  assert.ok(ev.duration>=8&&ev.duration<=12,'Invalid event duration '+ev.id);
@@ -35,7 +35,7 @@ function sim(world=0,pityStreak=0){
   snapshot:()=>({state,controllerState,vehicle,recovery,paused})
  };
 }
-for(let world=0;world<7;world++){
+for(let world=0;world<10;world++){
  const x=sim(world);
  x.step(29);
  assert.equal(x.e.used,true,'Scheduled event missing in world '+world);
@@ -100,4 +100,4 @@ assert.match(main,/saveWorldEventPity\(worldEvents\.noteRunEnded\(\)\)/);
 assert.doesNotMatch(main,/else if\(ownedGadgets\.length&&state==='playing'\)/);
 assert.match(main,/if\(!worldEvents\.active\)/);
 new Function(main);
-console.log('PASS seven unique World Events, 8-12s active phase, pause/recovery gating, one-per-run, cross-run pity, state transitions and syntax');
+console.log('PASS ten unique World Events, 8-12s active phase, pause/recovery gating, one-per-run, cross-run pity, state transitions and syntax');
