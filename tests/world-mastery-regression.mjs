@@ -50,6 +50,6 @@ assert.match(app,/function renderAdventureBook\(/);
 assert.match(app,/OMA’S ADVENTURE BOOK/);
 assert.match(app,/reconcileWorldMastery\(\);reset\(\);showMenu/);
 assert.match(app,/grandma-meta-v1/);
-assert.match(html,/world-mastery\.js\?v=47/);
+assert.match(html,/world-mastery\.js\?v=48/);
 new Function(app);
 console.log('PASS World Mastery: 13 worlds, 39 unique permanent cosmetic stars, per-world goals, migration and existing economy preserved');
