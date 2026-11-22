@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const css=readFileSync('style.css','utf8');
+const source=readFileSync('run-results.js','utf8');
+const html=readFileSync('index.html','utf8');
+const app=readFileSync('app.js','utf8');
+new Function(source);new Function(app);
+const current=css.slice(css.lastIndexOf('/* v40: readable post-run screen'));
+assert.ok(current.includes('height:auto!important;min-height:0!important'),'no fixed clipped result height');
+assert.ok(current.includes('max-height:calc(100% - 42px)!important'),'gameover visible within frame');
+assert.ok(current.includes('.post-run-result>.post-run-link'),'home action styled');
+assert.ok(current.includes('.post-run-rescue-actions button'),'rescue actions styled');
+assert.ok(current.includes('width:100%!important;max-width:none!important'),'settings fill columns');
+assert.ok(current.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important'),'settings two columns');
+assert.ok(current.includes('grid-template-columns:1fr!important'),'small screens single column');
+assert.ok(source.includes("id=\"postRunRetry\"")&&source.includes("id=\"postRunHome\""));
+assert.ok(html.includes('id="homeSettingsButton"'));
+console.log('PASS result layout, rescue actions, settings grid and responsive controls');
