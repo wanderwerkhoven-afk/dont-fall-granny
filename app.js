@@ -225,6 +225,14 @@ function resolveLastSecondGrab(success){
 }
 function drawLastSecondGrab(){
  if(state==='grab'){
+  // Granny stretches for the actual nearby grab target; keep the gesture
+  // readable even if the original obstacle is partly behind her.
+  const gripX=grandma.x+grandma.w+17,gripY=grandma.y+23;
+  ctx.save();ctx.strokeStyle='#493e49';ctx.lineWidth=8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(grandma.x+grandma.w-7,grandma.y+36);
+  ctx.quadraticCurveTo(gripX+3,gripY-18,gripX+18,gripY-4);ctx.stroke();
+  ctx.strokeStyle='#f2c7aa';ctx.lineWidth=5;ctx.stroke();
+  ctx.fillStyle='#ffdc70';ctx.beginPath();ctx.arc(gripX+19,gripY-4,8,0,Math.PI*2);ctx.fill();ctx.restore();
   const cx=grandma.x+grandma.w+35,cy=grandma.y-40;
   ctx.save();ctx.fillStyle='#fff8df';ctx.strokeStyle='#493e49';ctx.lineWidth=3;
   ctx.beginPath();ctx.roundRect(cx-70,cy-34,180,69,13);ctx.fill();ctx.stroke();
@@ -238,6 +246,10 @@ function drawLastSecondGrab(){
  if(grabCelebration>0&&!reducedRecoveryMotion.matches){
   ctx.save();
   const t=1-grabCelebration/.75,angle=-.2*Math.sin(Math.PI*t);
+  ctx.strokeStyle='#493e49';ctx.lineWidth=8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(grandma.x+grandma.w-5,grandma.y+39);
+  ctx.quadraticCurveTo(grandma.x+grandma.w+15,grandma.y-7,grandma.x+grandma.w+40,grandma.y+2+Math.sin(t*12)*7);ctx.stroke();
+  ctx.strokeStyle='#f2c7aa';ctx.lineWidth=5;ctx.stroke();
   ctx.translate(grandma.x+grandma.w/2,grandma.y+grandma.h/2);ctx.rotate(angle);
   ctx.fillStyle='#ffe278';ctx.strokeStyle='#493e49';ctx.lineWidth=3;
   ctx.beginPath();ctx.roundRect(15,-49,83,24,8);ctx.fill();ctx.stroke();
