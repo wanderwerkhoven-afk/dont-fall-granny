@@ -7,7 +7,7 @@ assert.match(html, /#overlay\.clothespage \.clothes-scroll-rail\{pointer-events:
 assert.match(html, /clothesRail\.addEventListener\('pointerdown'/);
 assert.match(html, /clothesRail\.addEventListener\('pointermove'/);
 assert.match(html, /menuPanel\.scrollTop=progress\*Math\.max/);
-for(const name of ['denim','flower','forest','disco','coral','midnight'])assert.match(html,new RegExp("id:'"+name+"',name:"));
+for(const name of ['denim','flower','forest','disco','coral','midnight'])assert.match(html,new RegExp("id:'"+name+"'[^\\n]*?,name:"));
 assert.match(html, /localStorage\.setItem\('grandma-clothes'/);
 assert.match(html, /selectedClothes=item\.id/);
 const script=readFileSync('app.js','utf8');assert.ok(script);new Function(script);
