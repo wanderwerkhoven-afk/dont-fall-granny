@@ -31,7 +31,10 @@ const unlocks=[
  {distance:3000,icon:'🚀',label:'Ruimte',detail:'Lagere zwaartekracht'},
  {distance:3500,icon:'❄️',label:'Winterwonderland',detail:'IJzige obstakels'},
  {distance:4000,icon:'🕹️',label:'Neon 80’s',detail:'Retro arcade-chaos'},
- {distance:4500,icon:'🏴‍☠️',label:'Piratenbaai',detail:'Kisten, krabben en kanonskogels'}
+ {distance:4500,icon:'🏴‍☠️',label:'Piratenbaai',detail:'Kisten, krabben en kanonskogels'},
+ {distance:5000,icon:'🎃',label:'Halloweenland',detail:'Spookachtige hindernissen'},
+ {distance:5500,icon:'🌴',label:'De jungle',detail:'Lianen en tropische beesten'},
+ {distance:6000,icon:'🎡',label:'Het carnaval',detail:'Kermis, confetti en circus'}
 ];
 const cosmetics=[
  {id:'cane-classic',type:'cane',icon:'🦯',name:'Klassieke wandelstok',cost:0},
@@ -59,7 +62,16 @@ const cosmetics=[
  {id:'companion-robot',type:'companion',icon:'🤖',name:'Arcadebot',cost:27500,masteryUnlock:{world:8,star:2}},
  {id:'glasses-pirate',type:'glasses',icon:'🏴‍☠️',name:'Piratenooglap',cost:17500,masteryUnlock:{world:9,star:0}},
  {id:'cane-hook',type:'cane',icon:'🪝',name:'Kapiteinshaak',cost:24500,masteryUnlock:{world:9,star:1}},
- {id:'companion-parrot',type:'companion',icon:'🦜',name:'Papegaai Polly',cost:30000,masteryUnlock:{world:9,star:2}}
+ {id:'companion-parrot',type:'companion',icon:'🦜',name:'Papegaai Polly',cost:30000,masteryUnlock:{world:9,star:2}},
+ {id:'glasses-pumpkin',type:'glasses',icon:'🎃',name:'Pompoenbril',cost:18000,masteryUnlock:{world:10,star:0}},
+ {id:'cane-ghost',type:'cane',icon:'👻',name:'Spookwandelstok',cost:26500,masteryUnlock:{world:10,star:1}},
+ {id:'companion-bat',type:'companion',icon:'🦇',name:'Vleermuisvriend',cost:32000,masteryUnlock:{world:10,star:2}},
+ {id:'glasses-leaf',type:'glasses',icon:'🍃',name:'Junglebril',cost:19000,masteryUnlock:{world:11,star:0}},
+ {id:'cane-flower',type:'cane',icon:'🌺',name:'Tropenwandelstok',cost:28000,masteryUnlock:{world:11,star:1}},
+ {id:'companion-monkey',type:'companion',icon:'🐒',name:'Aapje Momo',cost:34000,masteryUnlock:{world:11,star:2}},
+ {id:'glasses-carnival',type:'glasses',icon:'🎭',name:'Carnavalsmasker',cost:21000,masteryUnlock:{world:12,star:0}},
+ {id:'cane-confetti',type:'cane',icon:'🎉',name:'Confettistok',cost:30000,masteryUnlock:{world:12,star:1}},
+ {id:'companion-clown',type:'companion',icon:'🤡',name:'Clownvriend',cost:36000,masteryUnlock:{world:12,star:2}}
 ];
 const worldRules=[
  {id:'neighborhood',label:'Rustige start',speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0},
@@ -71,7 +83,10 @@ const worldRules=[
  {id:'space',label:'Lage zwaartekracht',speed:1.03,gravity:1320,jump:-585,coinValue:1,candyRate:1.1,attackBonus:.08},
  {id:'winter',label:'IJzige route',speed:1.02,gravity:1820,jump:-675,coinValue:1,candyRate:1.05,attackBonus:.07},
  {id:'neon',label:'Arcade rush',speed:1.10,gravity:1850,jump:-700,coinValue:1,candyRate:1,attackBonus:.12},
- {id:'pirate',label:'Piratendek',speed:1.05,gravity:1850,jump:-690,coinValue:1,candyRate:.96,attackBonus:.10}
+ {id:'pirate',label:'Piratendek',speed:1.05,gravity:1850,jump:-690,coinValue:1,candyRate:.96,attackBonus:.10},
+ {id:'halloween',label:'Spooknacht',speed:1.04,gravity:1810,jump:-690,coinValue:1,candyRate:1,attackBonus:.09},
+ {id:'jungle',label:'Jungletocht',speed:1.06,gravity:1750,jump:-680,coinValue:1,candyRate:.95,attackBonus:.1},
+ {id:'carnival',label:'Kermispret',speed:1.09,gravity:1850,jump:-695,coinValue:1,candyRate:.92,attackBonus:.12}
 ];
 const tieredAchievements=[
  {id:'perfects',icon:'✨',name:'Stalen zenuwen',stat:'perfects',tiers:[10,50,150,500]},
@@ -98,7 +113,10 @@ const worldChallenges=[
  {id:'meteor-rain',label:'Meteorenregen',icon:'🚀'},
  {id:'ice-slide',label:'IJskou',icon:'❄️'},
  {id:'retro-rush',label:'Retro Rush',icon:'🕹️'},
- {id:'pirate-plunder',label:'Schattenjacht',icon:'🏴‍☠️'}
+ {id:'pirate-plunder',label:'Schattenjacht',icon:'🏴‍☠️'},
+ {id:'haunted-rush',label:'Spookparade',icon:'🎃'},
+ {id:'jungle-dash',label:'Junglekoorts',icon:'🌴'},
+ {id:'carnival-chaos',label:'Kermischaos',icon:'🎡'}
 ];
 const collectionSets=[
  {id:'golden-granny',name:'Gouden Granny',requires:['gold','cane-gold'],reward:'gold-trail'},
