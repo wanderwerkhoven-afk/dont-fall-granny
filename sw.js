@@ -1,5 +1,5 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v51-storybook-camera';
+const CACHE_NAME = 'dont-trip-grandma-offline-v52-boot-repair';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
@@ -14,7 +14,7 @@ const APP_SHELL = [
   './danger-soundscape.js?v=23',
   './daily-challenge.js?v=26',
   './replay-engine.js?v=29',
-  './app.js?v=51',
+  './app.js?v=52',
   './granny-expressions.js?v=14',
   './storybook-worlds.js?v=51',
   './storybook-camera.js?v=51',
