@@ -880,7 +880,8 @@ function showMenu(page='home'){
   settingsPanel?.addEventListener('toggle',()=>{
    overlay.classList.toggle('settings-focus',settingsPanel.open);
    if(settingsPanel.open)settingsPanel.querySelector('.settings-close')?.focus();
-   else menuContent.querySelector('.home-settings>summary')?.focus();
+   else document.getElementById('homeSettingsButton')?.focus();
+   document.getElementById('homeSettingsButton')?.setAttribute('aria-expanded',String(settingsPanel.open));
   });
   settingsPanel?.querySelector('.settings-close')?.addEventListener('click',()=>{settingsPanel.open=false;});
   const dsel=document.getElementById('difficultySelect'),wsel=document.getElementById('worldSelect');
@@ -940,6 +941,11 @@ function showMenu(page='home'){
  requestAnimationFrame(()=>{syncClothesRailOffset();syncClothesHanger();refreshHangerAnimation()});
 }
 menuContent.addEventListener('click',e=>{const tile=e.target.closest('[data-open-page]');if(!tile||menuPage!=='home')return;showMenu(tile.dataset.openPage);overlay.querySelector('.panel').scrollTop=0;});
+document.getElementById('homeSettingsButton')?.addEventListener('click',()=>{
+ if(menuPage!=='home')return;
+ const details=menuContent.querySelector('.home-settings');
+ if(details){details.open=true;}
+});
 document.getElementById('homeMainNav')?.addEventListener('click',event=>{
  const tile=event.target.closest('[data-open-page]');
  if(!tile||menuPage!=='home')return;
