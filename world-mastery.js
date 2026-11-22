@@ -1,4 +1,4 @@
-/* Improvement 13 — World Mastery: 21 permanent stars and cosmetic stickers.
+/* Improvement 13 — World Mastery: 39 permanent stars and cosmetic stickers.
  * Pure helpers; never changes XP, coin wallet, missions or achievements.
  */
 (()=>{
@@ -13,7 +13,10 @@ const WORLD_MASTERY=Object.freeze([
  {id:'space',name:'De ruimte',icon:'🚀',color:'#b6b1df',goals:[{key:'distance',target:1200,label:'Wandel 1.200 meter',sticker:'Sterrenreis',symbol:'🪐'},{key:'perfects',target:5,label:'Maak 5 Perfect Saves',sticker:'Kosmische Oma',symbol:'👩‍🚀'},{key:'nearMisses',target:8,label:'Maak 8 Near Misses',sticker:'Supernova',symbol:'🌟'}]},
  {id:'winter',name:'Winterwonderland',icon:'❄️',color:'#cde8f2',goals:[{key:'distance',target:1300,label:'Wandel 1.300 meter',sticker:'IJswandelaar',symbol:'❄️'},{key:'perfects',target:5,label:'Maak 5 Perfect Saves',sticker:'Sneeuwkoningin',symbol:'👑'},{key:'nearMisses',target:9,label:'Maak 9 Near Misses',sticker:'Poolvos',symbol:'🦊'}]},
  {id:'neon',name:'Neon 80’s',icon:'🕹️',color:'#d7a4ef',goals:[{key:'distance',target:1400,label:'Wandel 1.400 meter',sticker:'Retro Runner',symbol:'🕶️'},{key:'perfects',target:6,label:'Maak 6 Perfect Saves',sticker:'Arcade Queen',symbol:'🎮'},{key:'nearMisses',target:9,label:'Maak 9 Near Misses',sticker:'Disco Licht',symbol:'💿'}]},
- {id:'pirate',name:'Piratenbaai',icon:'🏴‍☠️',color:'#efd5a0',goals:[{key:'distance',target:1500,label:'Wandel 1.500 meter',sticker:'Zeeschuimer',symbol:'⚓'},{key:'perfects',target:6,label:'Maak 6 Perfect Saves',sticker:'Schatzoeker',symbol:'💎'},{key:'nearMisses',target:10,label:'Maak 10 Near Misses',sticker:'Papegaaienheld',symbol:'🦜'}]}
+ {id:'pirate',name:'Piratenbaai',icon:'🏴‍☠️',color:'#efd5a0',goals:[{key:'distance',target:1500,label:'Wandel 1.500 meter',sticker:'Zeeschuimer',symbol:'⚓'},{key:'perfects',target:6,label:'Maak 6 Perfect Saves',sticker:'Schatzoeker',symbol:'💎'},{key:'nearMisses',target:10,label:'Maak 10 Near Misses',sticker:'Papegaaienheld',symbol:'🦜'}]},
+ {id:'halloween',name:'Halloweenland',icon:'🎃',color:'#bba3d3',goals:[{key:'distance',target:1600,label:'Wandel 1.600 meter',sticker:'Pompoenwandeling',symbol:'🎃'},{key:'perfects',target:7,label:'Maak 7 Perfect Saves',sticker:'Spookkoningin',symbol:'👻'},{key:'nearMisses',target:11,label:'Maak 11 Near Misses',sticker:'Vleermuisheld',symbol:'🦇'}]},
+ {id:'jungle',name:'De jungle',icon:'🌴',color:'#9bcf9c',goals:[{key:'distance',target:1700,label:'Wandel 1.700 meter',sticker:'Junglepad',symbol:'🌿'},{key:'perfects',target:7,label:'Maak 7 Perfect Saves',sticker:'Tropenheld',symbol:'🌺'},{key:'nearMisses',target:12,label:'Maak 12 Near Misses',sticker:'Apenstreken',symbol:'🐒'}]},
+ {id:'carnival',name:'Het carnaval',icon:'🎡',color:'#f1b9cd',goals:[{key:'distance',target:1800,label:'Wandel 1.800 meter',sticker:'Kermiskoningin',symbol:'🎡'},{key:'perfects',target:8,label:'Maak 8 Perfect Saves',sticker:'Confettikampioen',symbol:'🎉'},{key:'nearMisses',target:12,label:'Maak 12 Near Misses',sticker:'Clownenstreken',symbol:'🎪'}]}
 ]);
 function normalizeStars(entry={}){
  const raw=entry&&typeof entry.stars==='object'?entry.stars:{};
