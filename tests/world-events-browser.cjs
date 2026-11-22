@@ -17,7 +17,7 @@ const {chromium}=require('playwright');
    await page.locator('#startBtn').click();
    await page.evaluate(index=>{
     window.__grannyDebug.setWorldForTest(index);
-    window.__grannyDebug.advanceWorldEventForTest(19+index*1.6);
+    window.__grannyDebug.advanceWorldEventForTest(18+(index%7)*1.6+.5);
    },world);
    let snap=await page.evaluate(()=>window.__grannyDebug.snapshot());
    const expected=['buurt_scooter','park_scooter','stad_scooter','woestijn_plane','nacht_plane','snoep_scooter','ruimte_plane','winter_scooter','neon_plane','pirate_scooter'][world];
