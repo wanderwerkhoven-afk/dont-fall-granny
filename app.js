@@ -629,7 +629,7 @@ function updateGrandmaOutfitPreview(){
   const glasses=selectedAccessories.glasses==='glasses-heart'?'💗':selectedAccessories.glasses==='glasses-star'?'⭐':'';
   const companion=selectedAccessories.companion==='companion-duck'?'🦆':selectedAccessories.companion==='companion-cat'?'🐈':'';
   const cane=selectedAccessories.cane==='cane-gold'?'✨':'';
-  accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(-18 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
+  accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(48 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
  }
  hero.setAttribute('aria-label','Oma draagt: '+outfit.name);
 }
