@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const app=readFileSync('app.js','utf8'),css=readFileSync('style.css','utf8');
+new Function(app);
+const a=app.indexOf('  const missionCard=(m,kind)=>'),b=app.indexOf('  menuContent.innerHTML=',a);
+assert.ok(a>=0&&b>a);
+const s=app.slice(a,b);
+for(const x of ['metaState[kind]','box.claimed.includes(m.id)','data-pin-mission','mastery-mission','mission-sticker','mission-meter','m.reward'])assert.ok(s.includes(x),x);
+assert.ok(s.includes("kind==='daily'&&metaState.settings.pinnedMission===m.id"));
+assert.ok(s.includes('Math.min(100,p/m.goal*100)'));
+for(const x of ['.mastery-mission.weekly','.mastery-mission.done','.mastery-mission.pinned'])assert.ok(css.includes(x),x);
+console.log('PASS mastery-style daily/weekly mission cards and existing mission logic');
