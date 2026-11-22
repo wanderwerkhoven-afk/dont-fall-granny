@@ -28,9 +28,9 @@ for(const x of a.filter(x=>x>0&&x<650)){
  assert.ok(b.some(y=>Math.abs(y-(x-40*.12))<.001),'House jumped instead of scrolling smoothly at '+x);
 }
 // All worlds render safely, including Reduced Motion, and never use Math.random.
-for(let i=0;i<10;i++)for(const motion of [true,false]){
+for(let i=0;i<13;i++)for(const motion of [true,false]){
  const result=scene(i,1000,5,motion);
  assert.ok(result.rects.length+result.circles.length>0,'World '+i+' is empty');
 }
 assert.doesNotMatch(code,/Math\.random\(/);
-console.log('PASS ten calm deterministic storybook worlds, stable house scrolling and Reduced Motion');
+console.log('PASS thirteen deterministic storybook worlds, stable house scrolling and Reduced Motion');
