@@ -57,6 +57,7 @@ jobs:
           node tests/run-result-regression.mjs
           node tests/world-events-regression.mjs
           node tests/world-expansion-phase1-regression.mjs
+          node tests/world-expansion-phase2-regression.mjs
           node tests/world-mastery-regression.mjs
           node tests/mastery-shop-unlocks-regression.mjs
           node tests/shop-economy-balance-regression.mjs
