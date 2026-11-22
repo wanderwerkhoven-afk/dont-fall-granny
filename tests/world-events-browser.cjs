@@ -4,7 +4,10 @@ const {chromium}=require('playwright');
  for(const [viewport,world] of [
   [{width:1280,height:800},2],
   [{width:393,height:852},0],
-  [{width:844,height:390},6]
+  [{width:844,height:390},6],
+  [{width:1280,height:800},7],
+  [{width:1280,height:800},8],
+  [{width:1280,height:800},9]
  ]){
   const page=await browser.newPage({viewport,isMobile:viewport.width<900,hasTouch:true});
   const errors=[];
@@ -17,7 +20,7 @@ const {chromium}=require('playwright');
     window.__grannyDebug.advanceWorldEventForTest(19+index*1.6);
    },world);
    let snap=await page.evaluate(()=>window.__grannyDebug.snapshot());
-   const expected=['buurt_scooter','park_scooter','stad_scooter','woestijn_plane','nacht_plane','snoep_scooter','ruimte_plane'][world];
+   const expected=['buurt_scooter','park_scooter','stad_scooter','woestijn_plane','nacht_plane','snoep_scooter','ruimte_plane','winter_scooter','neon_plane','pirate_scooter'][world];
    if(snap.worldEvent.id!==expected||snap.worldEvent.eventCount!==1)
     throw Error('Event missing or wrong world '+JSON.stringify({world,snap}));
    if(snap.flow!=='special_mode'||snap.state!=='playing')
