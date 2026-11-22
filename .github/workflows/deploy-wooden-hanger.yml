@@ -53,6 +53,7 @@ jobs:
           node tests/recovery-skill-check.mjs
           node tests/recovery-risk-loop.mjs
           node tests/storybook-worlds-regression.mjs
+          node tests/storybook-camera-regression.mjs
           node tests/granny-expressions-regression.mjs
           node tests/run-result-regression.mjs
           node tests/world-events-regression.mjs
