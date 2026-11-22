@@ -5,7 +5,11 @@ const WORLD_MASTERY=window.GrannyWorldMastery;
 const LEVELS=window.GrannyLevels;
 const grandmaExpressions=new window.GrannyExpressions.GrannyExpressionController();
 const worldEvents=new window.GrannyWorldEvents.WorldEventDirector();
-const storybookCamera=new window.GrannyStorybookCamera.StorybookCamera();
+// The game must still start when an older offline cache has not yet
+// downloaded the optional camera module. Camera failure must never block play.
+const storybookCamera=window.GrannyStorybookCamera?.StorybookCamera
+ ? new window.GrannyStorybookCamera.StorybookCamera()
+ : {reset(){},step(){},frame(){return {y:0,parallaxX:0,parallaxY:0}}};
 const replay=new window.GrannyReplay.ReplayEngine();
 let pendingReplayTape=null,replayAccumulator=0,replayInitialOutfit=null,replayEconomySnapshot=null,replayStepping=false;
 let replayLevelCompleted=new Set();
