@@ -2370,3 +2370,17 @@ body:has(#overlay.hidden) .game>canvas{
  .shell{max-width:100%;box-sizing:border-box}
  #overlay:not(.hidden) .panel{max-width:100%}
 }
+
+/* Companion previews: 3× the previous 31px accessory icon, facing Granny. */
+#overlay.collectionpage .accessory-preview.companion-preview{
+ overflow:hidden;
+ font-size:93px!important;
+ line-height:1;
+}
+#overlay.collectionpage .companion-preview-icon{
+ display:block;
+ line-height:1;
+ transform:scaleX(-1);
+ transform-origin:center;
+ user-select:none;
+}
