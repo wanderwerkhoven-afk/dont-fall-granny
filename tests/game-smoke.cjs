@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   console.log({navCount,initiallyVisible,kicker,errors});
   if(navCount!==6)throw Error('Expected 6 navigation buttons including settings');
   if(!initiallyVisible)throw Error('Start button not visible');
-  if(!kicker.includes('49 LEVELS'))throw Error('Game did not initialize; kicker='+kicker);
+  if(!kicker.includes('70 LEVELS'))throw Error('Game did not initialize; kicker='+kicker);
   // Every secondary screen must preserve navigation and accessible controls.
   for(const [key,title] of [['clothes','kledingkast'],['gadgets','Gadget garage'],['progress','progressie'],['collection','accessoires']]){
     await page.locator('#homeMainNav [data-open-page="'+key+'"]').click();
