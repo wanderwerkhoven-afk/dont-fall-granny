@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const css=readFileSync('style.css','utf8'),app=readFileSync('app.js','utf8'),html=readFileSync('index.html','utf8');
+new Function(app);
+const rule=css.slice(css.indexOf('/* Home menu structural fix:'));
+assert.ok(rule.includes('grid-template-rows:auto auto auto auto max-content max-content auto!important'),'navigation row must not collapse');
+assert.ok(rule.includes('grid-row:5!important'),'navigation row');
+assert.ok(rule.includes('grid-row:6!important'),'settings row');
+assert.ok(rule.includes('overflow-y:auto!important'),'scroll when content exceeds viewport');
+assert.ok(rule.includes('.home-settings>summary'),'settings control visible');
+for(const page of ['clothes','gadgets','progress','collection'])assert.ok(html.includes('data-open-page="'+page+'"'));
+for(const handler of ["document.getElementById('homeMainNav')?.addEventListener('click'","startBtn.addEventListener('click',activate)","menuTabs.addEventListener('click'","window.GrannyStorybook.installMap("])assert.ok(app.includes(handler));
+console.log('PASS home routing markup, handlers, and non-collapsing settings layout');
