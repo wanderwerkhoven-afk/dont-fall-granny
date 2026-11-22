@@ -13,7 +13,7 @@ const { chromium } = require('playwright');
   const initiallyVisible=await page.locator('#startBtn').isVisible();
   const kicker=await page.locator('#menuKicker').innerText();
   console.log({navCount,initiallyVisible,kicker,errors});
-  if(navCount!==5)throw Error('Expected 5 navigation buttons');
+  if(navCount!==6)throw Error('Expected 6 navigation buttons including settings');
   if(!initiallyVisible)throw Error('Start button not visible');
   if(!kicker.includes('49 LEVELS'))throw Error('Game did not initialize; kicker='+kicker);
   // Every secondary screen must preserve navigation and accessible controls.
