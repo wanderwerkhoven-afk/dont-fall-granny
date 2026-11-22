@@ -3179,3 +3179,96 @@ body:has(#overlay.hidden) .game>canvas{
  .game .post-run-overlay .post-run-result>.post-run-link{width:100%!important}
  #overlay.settings-focus .pre-run-settings{grid-template-columns:1fr!important}
 }
+
+
+/* v41 — Store pages have no sidebar navigation. One quiet back action only.
+   Applies consistently to Outfits, Gadgets, Progressie and Extra's. */
+@media (min-width:651px){
+ #overlay.storepage:not(.hidden)>.panel{
+  grid-template-rows:auto auto minmax(0,1fr) auto!important;
+  row-gap:clamp(12px,1.8vh,23px)!important;
+ }
+ #overlay.storepage .menu-tabs{
+  grid-column:1!important;grid-row:1!important;
+  display:block!important;align-self:start!important;
+  position:static!important;margin:0!important;
+  padding:0!important;background:none!important;
+  overflow:visible!important;
+ }
+ #overlay.storepage .store-brand{
+  grid-column:1!important;grid-row:2!important;
+  align-self:start!important;margin:0!important;
+  padding:0!important;
+ }
+ #overlay.storepage .menu-hero{
+  grid-column:1!important;grid-row:3!important;
+  height:100%!important;min-height:155px!important;
+  max-height:min(40vh,345px)!important;
+  align-self:start!important;
+ }
+ #overlay.storepage .menu-meta{
+  grid-column:1!important;grid-row:4!important;
+  align-self:start!important;
+  margin:0 0 5px!important;
+ }
+ #overlay.storepage #menuContent{
+  grid-column:2!important;grid-row:1 / 5!important;
+ }
+}
+#overlay.storepage .menu-tabs button:not(.menu-back){
+ display:none!important;
+}
+#overlay.storepage .menu-tabs .menu-back{
+ display:inline-flex!important;
+ align-items:center;justify-content:center;
+ width:auto!important;max-width:100%!important;
+ min-height:43px!important;
+ padding:8px 15px!important;
+ border:2px solid #29243a!important;
+ border-radius:999px!important;
+ background:#fffaf1!important;
+ box-shadow:2px 2px 0 #29243a!important;
+ color:#29243a!important;
+ font:850 clamp(12px,.95vw,15px)/1.2 system-ui!important;
+ white-space:nowrap;
+ cursor:pointer;
+}
+#overlay.storepage .menu-tabs .menu-back:hover{
+ background:#ffedc3!important;
+}
+#overlay.storepage .menu-tabs .menu-back:focus-visible{
+ outline:3px solid #29799d!important;outline-offset:3px!important;
+}
+#overlay.storepage .store-brand h2{
+ margin:0 0 9px!important;
+ font-size:clamp(27px,2.45vw,43px)!important;
+}
+#overlay.storepage .store-brand p{
+ max-width:40ch;
+ font-size:clamp(12px,.95vw,16px)!important;
+}
+#overlay.storepage .menu-meta{
+ gap:9px!important;
+}
+#overlay.storepage #menuWallet,
+#overlay.storepage .menu-record{
+ padding:8px 11px!important;
+ font-size:clamp(11px,.85vw,14px)!important;
+}
+@media(max-width:650px){
+ #overlay.storepage:not(.hidden)>.panel{
+  display:flex!important;flex-direction:column!important;
+  gap:10px!important;align-items:stretch!important;
+ }
+ #overlay.storepage .menu-tabs{
+  order:-1!important;position:static!important;
+  flex:0 0 auto!important;display:block!important;
+  padding:0!important;margin:0!important;
+  background:transparent!important;
+ }
+ #overlay.storepage .store-brand{order:0!important}
+ #overlay.storepage .menu-hero{order:1!important;flex:0 0 auto!important}
+ #overlay.storepage .menu-meta{order:2!important;flex:0 0 auto!important}
+ #overlay.storepage #menuContent{order:3!important;flex:1 1 auto!important}
+ #overlay.storepage .menu-tabs .menu-back{min-height:44px!important}
+}
