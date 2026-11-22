@@ -1260,17 +1260,30 @@ function background(tierIndex=currentTier){
    reducedMotion:reducedRecoveryMotion.matches
   });
  }
- // Quiet road surface: one horizon line and sparse, stable road markings.
+ // Restore the original illustrated paving: subtle perspective rows and
+ // staggered tiles, synchronized to the same travel distance as obstacles.
  const road=ctx.createLinearGradient(0,ground,0,H);
  tier.road.forEach((color,i)=>road.addColorStop(i/2,color));
  ctx.fillStyle=road;ctx.fillRect(0,ground,W,H-ground);
- ctx.fillStyle=zone===4||zone===6?'#39334e':'#56445a';
- ctx.fillRect(0,ground,W,4);
- const spacing=215;
- const phase=((travel%spacing)+spacing)%spacing;
- ctx.fillStyle=zone===4||zone===6?'#d8c9e388':'#f5dfc288';
- for(let x=-spacing-phase;x<W+spacing;x+=spacing)
-  rounded(x,ground+Math.min(35,(H-ground)*.23),42,3,2,ctx.fillStyle);
+ ctx.fillStyle=zone===4||zone===6?'#28223f':'#493e49';
+ ctx.fillRect(0,ground,W,5);
+ const depth=H-ground;
+ ctx.save();ctx.beginPath();ctx.rect(0,ground,W,depth);ctx.clip();
+ const pavement=zone===4||zone===6?'#b0a4cb55':'#9e786355';
+ for(let row=0;row<6;row++){
+  const top=ground+depth*row/6,bottom=ground+depth*(row+1)/6;
+  ctx.strokeStyle=pavement;ctx.lineWidth=1.15;
+  ctx.beginPath();ctx.moveTo(0,bottom);ctx.lineTo(W,bottom);ctx.stroke();
+  const spacing=140+row*17;
+  const shift=((travel%spacing)+spacing)%spacing;
+  for(let x=-spacing*2-shift+(row%2)*spacing/2;x<W+spacing;x+=spacing){
+   ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+  }
+ }
+ const markingSpacing=125,phase=((travel%markingSpacing)+markingSpacing)%markingSpacing;
+ for(let x=-markingSpacing-phase;x<W+markingSpacing;x+=markingSpacing)
+  rounded(x,ground+Math.min(29,depth*.3),43,4,2,zone===4||zone===6?'#d5c6e3':'#edbb94');
+ ctx.restore();
 }
 function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;const mood=grandmaExpressions.resolve({
  state,vehicle,airborne:Math.abs(grandma.vy)>25,
