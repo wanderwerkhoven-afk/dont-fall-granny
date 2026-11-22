@@ -158,6 +158,86 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
   path([[x+10,y-7],[x+83,y-81-(i%2)*12],[x+146,y-7]],i%2?'#928bb8':'#77789b');
   circle(x+91,y-52,6,'#aaa7cc',0);
  });
+ // Bring back the layered detail of the early world backgrounds, without
+ // their modulo-wrapped props (which used to pop or overlap at the viewport edge).
+ // Every ornament is decorative, has a persistent world-space index and stays
+ // behind Granny and gameplay obstacles.
+ if(zone===0){
+  strip(295,.18,(x,i)=>{
+   const base=y-15;
+   round(x+8,base-82,63,82,6,i%2?'#dcb7a6':'#b8ccc2',2);
+   path([[x+2,base-82],[x+40,base-110],[x+77,base-82]],'#ad7a79',2);
+   for(let j=0;j<2;j++)round(x+18+j*30,base-61,18,21,3,IVORY,1.5);
+  });
+  strip(235,.31,(x,i)=>{
+   const b=y+3;line(x,b,x,b-49,'#806e63',4);
+   circle(x,b-62,22,i%2?'#85b898':'#a3c9a6',2);
+  });
+ }
+ if(zone===1){
+  strip(225,.17,(x,i)=>{
+   const b=y-12,h=78+(Math.abs(i)%3)*16;
+   line(x+14,b,x+14,b-h*.65,'#6a7661',5);
+   for(let j=0;j<3;j++)path([[x-13+j*3,b-h*(.25+j*.19)],[x+14,b-h*(.91+j*.06)],[x+41-j*3,b-h*(.25+j*.19)]],j%2?'#4e9976':'#68a881',2);
+  });
+  strip(585,.28,(x,i)=>{round(x+15,y-20,120,8,3,'#ecd5ad',2);for(let j=0;j<3;j++)round(x+25+j*45,y-20,7,21,2,'#c1a889',1);});
+ }
+ if(zone===2){
+  strip(278,.075,(x,i)=>{
+   const h=145+(Math.abs(i*37)%74);
+   round(x+5,y-h,74,h,3,i%2?'#8d9fb9':'#a9b8c9',1.5);
+   for(let j=0;j<3;j++)for(let k=0;k<4;k++)round(x+16+j*19,y-h+16+k*29,9,13,1,'#ffe5ae',0);
+  });
+  strip(275,.3,(x,i)=>{
+   line(x+32,y,x+32,y-87,'#6a6a83',5);
+   circle(x+32,y-91,12,'#fff0bb',2);
+  });
+ }
+ if(zone===3){
+  strip(325,.14,(x,i)=>{
+   const b=y-54;
+   path([[x,b],[x+52,b-76-(Math.abs(i)%3)*12],[x+109,b]],'#c98c62',1.5);
+   path([[x+23,b-18],[x+52,b-62],[x+79,b-18]],'#e2ac78',0);
+  });
+  strip(330,.32,(x,i)=>{
+   const b=y+3,h=54+(Math.abs(i)%3)*11;
+   line(x+31,b,x+31,b-h,'#5e956f',11);
+   line(x+31,b-h*.44,x+7,b-h*.44,'#5e956f',8);
+   line(x+7,b-h*.44,x+7,b-h*.78,'#5e956f',8);
+   line(x+31,b-h*.64,x+51,b-h*.64,'#5e956f',8);
+   line(x+51,b-h*.64,x+51,b-h*.89,'#5e956f',8);
+  });
+ }
+ if(zone===4){
+  strip(245,.15,(x,i)=>{
+   path([[x,y],[x+27,y-95-(Math.abs(i)%3)*11],[x+66,y]],'#353350',2);
+   round(x+25,y-42,14,24,2,'#ffda91',1);
+  });
+  strip(345,.34,(x,i)=>{circle(x+43,y-96-(Math.abs(i)%2)*28,2.8,'#ffe49b',0);});
+ }
+ if(zone===5){
+  strip(295,.18,(x,i)=>{
+   round(x+10,y-95,76,95,13,i%2?'#f2b1c8':'#d5a8da',2);
+   round(x+18,y-82,60,16,5,IVORY,0);
+   round(x+18,y-43,60,13,5,IVORY,0);
+  });
+  strip(310,.32,(x,i)=>{
+   line(x+42,y,x+42,y-77,'#fff2db',7);
+   circle(x+42,y-90,24,i%2?'#f8aabf':'#bfa8f1',2);
+   circle(x+34,y-98,9,'#fff4d4',0);
+  });
+ }
+ if(zone===6){
+  strip(315,.13,(x,i)=>{
+   round(x+14,y-80,76,80,20,i%2?'#817ca6':'#9c92bc',2);
+   round(x+25,y-65,54,32,12,'#bce0e8',2);
+   circle(x+32,y-9,7,'#c9c2e6',1);circle(x+73,y-9,7,'#c9c2e6',1);
+  });
+  strip(440,.28,(x,i)=>{
+   circle(x+45,y-157-(Math.abs(i)%3)*14,8,'#f2e6ce',0);
+   circle(x+49,y-160-(Math.abs(i)%3)*14,3,'#c8b8dd',0);
+  });
+ }
  // Signature actors have exactly one fixed lane, sparse spacing and smooth cycles.
  if(zone===0)strip(760,parallax[3],(x,i)=>{walker(x+56,y-6,i);
   round(x+4,y-25,112,8,3,'#fae6d0',2);for(let n=0;n<3;n++)round(x+14+n*42,y-25,8,29,3,'#f7e3ce',2);
