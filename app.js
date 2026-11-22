@@ -351,21 +351,21 @@ function drawRecoveryFeedback(){
 function saveCoins(){if(replay.mode==='playback')return;if(typeof menuWallet!=='undefined')menuWallet.textContent='🪙 '+coins+' munten';coinsEl.textContent='🪙 '+coins;try{localStorage.setItem('dont-trip-grandma-coins',coins)}catch(e){}}
 const clothing=[
  {id:'classic',name:'Klassieke oma',cost:0,color:'#ad78a4',hair:'#e6e4e3'},
- {id:'red',name:'Rode jas',cost:250,color:'#e35d67',hair:'#e6e4e3',pattern:'stripes',patternColor:'#ffe0e2'},
- {id:'sport',masteryUnlock:{world:2,star:0},name:'Sportieve oma',cost:325,color:'#3e8db7',hair:'#f0e9d5',pattern:'chevron',patternColor:'#d8eef8'},
- {id:'gold',masteryUnlock:{world:6,star:1},name:'Gouden outfit',cost:700,color:'#edb74c',hair:'#fff3d0',pattern:'stars',patternColor:'#ffeab0'},
- {id:'night',masteryUnlock:{world:4,star:0},name:'Nachtloper',cost:825,color:'#6250a5',hair:'#b4c4ec',pattern:'dots',patternColor:'#def7ed'},
- {id:'mint',masteryUnlock:{world:1,star:0},name:'Mintgroen',cost:375,color:'#4eb79b',hair:'#f3e9e1',pattern:'dots',patternColor:'#def7ed'},
- {id:'denim',masteryUnlock:{world:2,star:2},name:'Denim diva',cost:425,color:'#426c9e',hair:'#f2e4cf',pattern:'checks',patternColor:'#d8e6f5'},
- {id:'flower',name:'Bloemenfeest',cost:475,masteryUnlock:{world:0,star:0},color:'#ed87ac',hair:'#f8f0de',pattern:'flowers',patternColor:'#fff2cd'},
- {id:'forest',masteryUnlock:{world:1,star:2},name:'Boswandeling',cost:550,color:'#477a53',hair:'#ded9ca',pattern:'leaves',patternColor:'#d2e8bd'},
- {id:'disco',masteryUnlock:{world:5,star:1},name:'Disco oma',cost:950,color:'#b55dcd',hair:'#f9e6ac',pattern:'sparkles',patternColor:'#fbe9ae'},
- {id:'coral',masteryUnlock:{world:3,star:0},name:'Koraal chic',cost:625,color:'#f4866a',hair:'#e6e4e3',pattern:'waves',patternColor:'#ffe3d8'},
- {id:'midnight',masteryUnlock:{world:6,star:0},name:'Middernacht',cost:1200,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
+ {id:'red',name:'Rode jas',cost:1800,color:'#e35d67',hair:'#e6e4e3',pattern:'stripes',patternColor:'#ffe0e2'},
+ {id:'sport',masteryUnlock:{world:2,star:0},name:'Sportieve oma',cost:4200,color:'#3e8db7',hair:'#f0e9d5',pattern:'chevron',patternColor:'#d8eef8'},
+ {id:'gold',masteryUnlock:{world:6,star:1},name:'Gouden outfit',cost:14000,color:'#edb74c',hair:'#fff3d0',pattern:'stars',patternColor:'#ffeab0'},
+ {id:'night',masteryUnlock:{world:4,star:0},name:'Nachtloper',cost:9000,color:'#6250a5',hair:'#b4c4ec',pattern:'dots',patternColor:'#def7ed'},
+ {id:'mint',masteryUnlock:{world:1,star:0},name:'Mintgroen',cost:3200,color:'#4eb79b',hair:'#f3e9e1',pattern:'dots',patternColor:'#def7ed'},
+ {id:'denim',masteryUnlock:{world:2,star:2},name:'Denim diva',cost:5200,color:'#426c9e',hair:'#f2e4cf',pattern:'checks',patternColor:'#d8e6f5'},
+ {id:'flower',name:'Bloemenfeest',cost:2800,masteryUnlock:{world:0,star:0},color:'#ed87ac',hair:'#f8f0de',pattern:'flowers',patternColor:'#fff2cd'},
+ {id:'forest',masteryUnlock:{world:1,star:2},name:'Boswandeling',cost:4400,color:'#477a53',hair:'#ded9ca',pattern:'leaves',patternColor:'#d2e8bd'},
+ {id:'disco',masteryUnlock:{world:5,star:1},name:'Disco oma',cost:11500,color:'#b55dcd',hair:'#f9e6ac',pattern:'sparkles',patternColor:'#fbe9ae'},
+ {id:'coral',masteryUnlock:{world:3,star:0},name:'Koraal chic',cost:6500,color:'#f4866a',hair:'#e6e4e3',pattern:'waves',patternColor:'#ffe3d8'},
+ {id:'midnight',masteryUnlock:{world:6,star:0},name:'Middernacht',cost:16000,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
 ];
 const gadgets=[
- {id:'plane',name:'Vliegtuig',cost:45,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
- {id:'booster',name:'Scootmobiel',cost:35,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
+ {id:'plane',name:'Vliegtuig',cost:1200,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
+ {id:'booster',name:'Scootmobiel',cost:1000,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
