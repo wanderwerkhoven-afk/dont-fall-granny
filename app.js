@@ -878,7 +878,20 @@ function showMenu(page='home'){
  if(page==='progress'){
   document.getElementById('menuKicker').textContent='OMA’S TROFEEËNKAST  ✦  MISSIES & MIJLPALEN';
   const daily=activeMissions(META.missionPool,3,metaState.daily.key),weekly=activeMissions(META.weeklyPool,2,metaState.weekly.key),rank=currentRank(),next=nextRank();
-  const missionCard=(m,kind)=>{const box=metaState[kind],p=Math.min(m.goal,box.progress[m.id]||0),done=box.claimed.includes(m.id),pinned=kind==='daily'&&metaState.settings.pinnedMission===m.id;return '<button class="mission-card '+(done?'done ':'')+(pinned?'pinned':'')+'" type="button" '+(kind==='daily'?'data-pin-mission="'+m.id+'"':'')+'><span>'+m.icon+'</span><div><b>'+m.label+'</b><small>'+p+' / '+m.goal+(done?' · VOLTOOID':'')+(pinned?' · 📌 HUD':'')+'</small></div><strong>+'+m.reward+' 🪙</strong></button>'};
+  const missionCard=(m,kind)=>{
+   const box=metaState[kind],p=Math.min(m.goal,box.progress[m.id]||0);
+   const done=box.claimed.includes(m.id),pinned=kind==='daily'&&metaState.settings.pinnedMission===m.id;
+   const pct=m.goal>0?Math.max(0,Math.min(100,p/m.goal*100)):0;
+   const label=done?'VOLTOOID':p+' / '+m.goal;
+   const pinText=pinned?' · 📌 HUD':'';
+   return '<button class="mission-card mastery-mission '+kind+(done?' done':'')+(pinned?' pinned':'')+
+    '" type="button" '+(kind==='daily'?'data-pin-mission="'+m.id+'"':'')+
+    ' aria-label="'+m.label+' · '+label+(pinned?' · Vastgepind':'')+'">'+
+    '<span class="mission-sticker" aria-hidden="true">'+m.icon+'</span>'+
+    '<span class="mission-copy"><b>'+m.label+'</b><small>'+label+pinText+'</small>'+
+    '<span class="mission-meter" aria-hidden="true"><span style="width:'+pct.toFixed(1)+'%"></span></span></span>'+
+    '<strong class="mission-reward">+'+m.reward+' 🪙</strong></button>';
+  };
   menuContent.innerHTML='<section class="progress-section"><div class="rank-card"><b>LV '+(rank?.level||1)+' · '+(rank?.name||'Buurtwandelaar')+'</b><small>XP '+(metaState.stats.xp||0)+(next?' / '+next.xp:' · MAX RANK')+'</small></div>'+renderAdventureBook()+'<h3>Vandaag · tik om te pinnen</h3>'+daily.map(m=>missionCard(m,'daily')).join('')+'<h3>Deze week</h3>'+weekly.map(m=>missionCard(m,'weekly')).join('')+'<h3>Achievement tiers</h3><div class="achievement-grid">'+(META.tieredAchievements||[]).map(a=>{const tier=metaState.tiered[a.id]||0,value=metaState.stats[a.stat]||0,nextGoal=a.tiers[Math.min(tier,a.tiers.length-1)];return '<div class="achievement-card '+(tier?'done':'')+'"><span>'+a.icon+'</span><b>'+a.name+'</b><small>'+(PROG.tierLabel?PROG.tierLabel(tier):tier)+' · '+value+'/'+nextGoal+'</small><strong>Brons → Zilver → Goud → Holo</strong></div>'}).join('')+'</div><h3>Records</h3><div class="records-grid"><span>🏁 '+metaState.records.distance+' m</span><span>🔥 '+metaState.records.combo+'</span><span>🪙 '+metaState.records.coins+'</span><span>✨ '+metaState.records.perfects+'</span></div>' +'<h3>Wereld-roadmap</h3><div class="unlock-roadmap">'+META.unlocks.map(u=>'<div class="unlock-step '+(best>=u.distance?'done':'')+'"><span>'+u.icon+'</span><div><b>'+u.distance+' m · '+u.label+'</b><small>'+u.detail+'</small></div></div>').join('')+'</div></section>';menuContent.querySelectorAll('[data-pin-mission]').forEach(b=>b.addEventListener('click',()=>{metaState.settings.pinnedMission=b.dataset.pinMission;saveMetaState();showMenu('progress')}));return
  }
  if(page==='collection'){
