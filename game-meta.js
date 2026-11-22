@@ -28,7 +28,10 @@ const unlocks=[
  {distance:1500,icon:'🌵',label:'Woestijn',detail:'Windvlagen veranderen het tempo'},
  {distance:2000,icon:'🌙',label:'Nacht',detail:'Near misses leveren extra focus'},
  {distance:2500,icon:'🍬',label:'Snoepwereld',detail:'Munten zijn extra veel waard'},
- {distance:3000,icon:'🚀',label:'Ruimte',detail:'Lagere zwaartekracht'}
+ {distance:3000,icon:'🚀',label:'Ruimte',detail:'Lagere zwaartekracht'},
+ {distance:3500,icon:'❄️',label:'Winterwonderland',detail:'IJzige obstakels'},
+ {distance:4000,icon:'🕹️',label:'Neon 80’s',detail:'Retro arcade-chaos'},
+ {distance:4500,icon:'🏴‍☠️',label:'Piratenbaai',detail:'Kisten, krabben en kanonskogels'}
 ];
 const cosmetics=[
  {id:'cane-classic',type:'cane',icon:'🦯',name:'Klassieke wandelstok',cost:0},
@@ -47,7 +50,16 @@ const cosmetics=[
  {id:'companion-dog',type:'companion',icon:'🐕',name:'Wandelhondje',cost:9200},
  {id:'companion-owl',type:'companion',icon:'🦉',name:'Uiltje Luna',cost:12500},
  {id:'companion-fox',type:'companion',icon:'🦊',name:'Vosje Vinnie',cost:14800},
- {id:'companion-unicorn',type:'companion',icon:'🦄',name:'Eenhoornvriend',cost:22000}
+ {id:'companion-unicorn',type:'companion',icon:'🦄',name:'Eenhoornvriend',cost:22000},
+ {id:'glasses-snow',type:'glasses',icon:'🥽',name:'Sneeuwbril',cost:12500,masteryUnlock:{world:7,star:0}},
+ {id:'cane-ice',type:'cane',icon:'❄️',name:'IJskristalstok',cost:17500,masteryUnlock:{world:7,star:1}},
+ {id:'companion-husky',type:'companion',icon:'🐺',name:'Sneeuwhusky',cost:22000,masteryUnlock:{world:7,star:2}},
+ {id:'glasses-retro',type:'glasses',icon:'🕶️',name:'Retro neonbril',cost:16000,masteryUnlock:{world:8,star:0}},
+ {id:'cane-neon',type:'cane',icon:'⚡',name:'Neonwandelstok',cost:23000,masteryUnlock:{world:8,star:1}},
+ {id:'companion-robot',type:'companion',icon:'🤖',name:'Arcadebot',cost:27500,masteryUnlock:{world:8,star:2}},
+ {id:'glasses-pirate',type:'glasses',icon:'🏴‍☠️',name:'Piratenooglap',cost:17500,masteryUnlock:{world:9,star:0}},
+ {id:'cane-hook',type:'cane',icon:'🪝',name:'Kapiteinshaak',cost:24500,masteryUnlock:{world:9,star:1}},
+ {id:'companion-parrot',type:'companion',icon:'🦜',name:'Papegaai Polly',cost:30000,masteryUnlock:{world:9,star:2}}
 ];
 const worldRules=[
  {id:'neighborhood',label:'Rustige start',speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0},
@@ -56,7 +68,10 @@ const worldRules=[
  {id:'desert',label:'Woestijnwind · golvend tempo',speed:1,gravity:1780,jump:-675,coinValue:1,candyRate:1.05,attackBonus:0,wind:true},
  {id:'night',label:'Nachtfocus · near miss bonus',speed:1.02,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:.05,focusBonus:.01},
  {id:'candy',label:'Sugar rush · dubbele munten',speed:1.04,gravity:1850,jump:-700,coinValue:2,candyRate:.9,attackBonus:.05},
- {id:'space',label:'Lage zwaartekracht',speed:1.03,gravity:1320,jump:-585,coinValue:1,candyRate:1.1,attackBonus:.08}
+ {id:'space',label:'Lage zwaartekracht',speed:1.03,gravity:1320,jump:-585,coinValue:1,candyRate:1.1,attackBonus:.08},
+ {id:'winter',label:'IJzige route',speed:1.02,gravity:1820,jump:-675,coinValue:1,candyRate:1.05,attackBonus:.07},
+ {id:'neon',label:'Arcade rush',speed:1.10,gravity:1850,jump:-700,coinValue:1,candyRate:1,attackBonus:.12},
+ {id:'pirate',label:'Piratendek',speed:1.05,gravity:1850,jump:-690,coinValue:1,candyRate:.96,attackBonus:.10}
 ];
 const tieredAchievements=[
  {id:'perfects',icon:'✨',name:'Stalen zenuwen',stat:'perfects',tiers:[10,50,150,500]},
@@ -80,7 +95,10 @@ const worldChallenges=[
  {id:'desert-storm',label:'Zandstorm',icon:'🌵'},
  {id:'night-scare',label:'Nachtvlucht',icon:'🌙'},
  {id:'sugar-rush',label:'Sugar Rush',icon:'🍬'},
- {id:'meteor-rain',label:'Meteorenregen',icon:'🚀'}
+ {id:'meteor-rain',label:'Meteorenregen',icon:'🚀'},
+ {id:'ice-slide',label:'IJskou',icon:'❄️'},
+ {id:'retro-rush',label:'Retro Rush',icon:'🕹️'},
+ {id:'pirate-plunder',label:'Schattenjacht',icon:'🏴‍☠️'}
 ];
 const collectionSets=[
  {id:'golden-granny',name:'Gouden Granny',requires:['gold','cane-gold'],reward:'gold-trail'},
