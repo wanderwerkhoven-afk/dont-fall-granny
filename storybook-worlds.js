@@ -4,9 +4,9 @@
  */
 (()=>{'use strict';
 const INK='#392d44', IVORY='#fff5db', TAU=Math.PI*2;
-const NAMES=['De rustige buurt','Het stadspark','De grote stad','De woestijn','De nacht','De snoepwereld','De ruimte'];
-const SIGNATURE=['Wandelaars achter de hekjes','Eenden op de vijver','Zacht oplichtende winkels','Langzame stofwolkjes','Warme ramen en vuurvliegjes','Zacht zwevende snoepjes','Een grote planeet'];
-const COLORS=['#badfd5','#b8d9ad','#a9b9d3','#f1c58e','#48486c','#f2c7df','#383456'];
+const NAMES=['De rustige buurt','Het stadspark','De grote stad','De woestijn','De nacht','De snoepwereld','De ruimte','Winterwonderland','Neon 80’s','Piratenbaai'];
+const SIGNATURE=['Wandelaars achter de hekjes','Eenden op de vijver','Zacht oplichtende winkels','Langzame stofwolkjes','Warme ramen en vuurvliegjes','Zacht zwevende snoepjes','Een grote planeet','Sneeuw en ijskristallen','Arcade en neonlichten','Piratenboten en palmbomen'];
+const COLORS=['#badfd5','#b8d9ad','#a9b9d3','#f1c58e','#48486c','#f2c7df','#383456','#cae9f5','#5f2b89','#f2cc8e'];
 const THEMES=[
  {far:'#c7d9d2',mid:'#f3d4bf',near:'#7da78e',accent:'#f0ba85'},
  {far:'#b1d4b4',mid:'#82b6a1',near:'#528d72',accent:'#f1cc88'},
@@ -14,10 +14,13 @@ const THEMES=[
  {far:'#eac39b',mid:'#d9a576',near:'#789675',accent:'#f8e2af'},
  {far:'#5c5b81',mid:'#6a607d',near:'#454762',accent:'#ffe2a3'},
  {far:'#f2d8e7',mid:'#e8b5d5',near:'#95c6b5',accent:'#ffe2a8'},
- {far:'#565576',mid:'#aaa0c9',near:'#7b83a6',accent:'#f4dea7'}
+ {far:'#565576',mid:'#aaa0c9',near:'#7b83a6',accent:'#f4dea7'},
+ {far:'#cee8f5',mid:'#b1d5e7',near:'#ecf9fe',accent:'#baf3ff'},
+ {far:'#3f2a67',mid:'#713f8f',near:'#ae489d',accent:'#ff83ce'},
+ {far:'#82d1d4',mid:'#e2c78b',near:'#65b2a1',accent:'#ffdf9b'}
 ];
 function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
- const zone=((tier%7)+7)%7,p=THEMES[zone],t=reducedMotion?0:elapsed;
+ const zone=((tier%THEMES.length)+THEMES.length)%THEMES.length,p=THEMES[zone],t=reducedMotion?0:elapsed;
  const y=ground,parallax=[.045,.12,.24,.35];
  const path=(points,color,weight=3)=>{
   ctx.beginPath();points.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));
@@ -103,7 +106,7 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
    circle(x+38,yy,zone===6?1.8:1.5,IVORY,0);
   });
  }
- if(zone===0||zone===1||zone===3||zone===5)hills(parallax[0],p.far,90,13);
+ if(zone===0||zone===1||zone===3||zone===5||zone===7||zone===9)hills(parallax[0],p.far,90,13);
  else hills(parallax[0],p.far,72,8);
  // The signature focal element has a stable position with only gentle motion.
  if(zone===3)circle(W*.81,y*.24,41,'#fff0b2',0);
@@ -238,6 +241,49 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
    circle(x+49,y-160-(Math.abs(i)%3)*14,3,'#c8b8dd',0);
   });
  }
+ // Three distinct phase-one worlds, with deterministic world-space props.
+ if(zone===7){
+  strip(350,.11,(x,i)=>{const b=y-6;
+   path([[x,b],[x+68,b-142-(Math.abs(i)%3)*18],[x+142,b]],'#e7f6fb',2);
+   path([[x+31,b-29],[x+68,b-142-(Math.abs(i)%3)*18],[x+109,b-29]],'#b7d8e9',0);
+  });
+  strip(420,.25,(x,i)=>{const b=y-5;
+   round(x+59,b-90,15,90,5,'#9b7f78',2);
+   for(let j=0;j<3;j++)path([[x+18+j*9,b-47-j*24],[x+66,b-158-j*5],[x+117-j*9,b-47-j*24]],j%2?'#a2cfcc':'#8db9c1',2);
+   circle(x+66,b-164,6,'#f7fcff',0);
+  });
+  strip(215,.08,(x,i)=>{const yy=36+(Math.abs(i*37)%150);circle(x+35,yy,2.7,'#fff',0);});
+ }
+ if(zone===8){
+  strip(260,.12,(x,i)=>{const b=y-12,h=95+(Math.abs(i)%4)*28;
+   round(x+12,b-h,90,h,5,i%2?'#473069':'#624081',2);
+   for(let j=0;j<3;j++)round(x+26+j*23,b-h+16,12,26,3,j%2?'#f77cc3':'#66e2ef',0);
+  });
+  strip(400,.3,(x,i)=>{const b=y-8;
+   round(x+40,b-108,113,108,9,'#4c276b',3);
+   round(x+51,b-91,89,39,7,'#69e4e8',2);
+   line(x+52,b-44,x+140,b-44,'#f574c4',5);
+   circle(x+90,b-23,11,'#ffbbdc',2);
+  });
+  strip(190,.06,(x,i)=>circle(x+31,32+(Math.abs(i*27)%115),2.2,i%2?'#ff9eda':'#8dffff',0));
+ }
+ if(zone===9){
+  hills(.10,'#75c4b9',52,13);
+  strip(410,.16,(x,i)=>{const b=y-9;
+   round(x+15,b-39,175,39,8,'#9b6e4e',2);
+   line(x+100,b-42,x+100,b-173,'#6e5347',6);
+   path([[x+101,b-163],[x+101,b-61],[x+183,b-81]],'#fff3d2',2);
+   path([[x+111,b-174],[x+159,b-174],[x+138,b-155]],'#30233b',2);
+   line(x+15,b-28,x+190,b-28,'#e7bb7b',4);
+  });
+  strip(460,.3,(x,i)=>{const b=y-6;
+   line(x+60,b,x+60,b-139,'#896956',9);
+   for(let j=0;j<4;j++)path([[x+61,b-128+j*10],[x+6+j*4,b-162+j*7],[x+43,b-101]],'#5fae86',2);
+   for(let j=0;j<4;j++)path([[x+61,b-128+j*10],[x+116-j*4,b-163+j*7],[x+80,b-101]],'#72c5a1',2);
+   round(x+135,b-35,65,35,7,'#b48657',2);
+   line(x+146,b-23,x+185,b-23,'#f5d392',3);
+  });
+ }
  // Signature actors have exactly one fixed lane, sparse spacing and smooth cycles.
  if(zone===0)strip(760,parallax[3],(x,i)=>{walker(x+56,y-6,i);
   round(x+4,y-25,112,8,3,'#fae6d0',2);for(let n=0;n<3;n++)round(x+14+n*42,y-25,8,29,3,'#f7e3ce',2);
@@ -271,11 +317,11 @@ function installMap(getProgress,pause,onSelect){
  let previousFocus=null;
  function refresh(){
   const {score,best,currentTier,startTierOffset}=getProgress();
-  const index=Math.min(6,Math.max(0,currentTier%7));
+  const index=Math.min(NAMES.length-1,Math.max(0,currentTier%NAMES.length));
   const campaign=window.GrannyLevels?.getLevels()||[];
   const worlds=window.GrannyLevels?.getWorlds()||[];
-  bar.style.width=(campaign.filter(l=>l.completed).length/49*100).toFixed(2)+'%';
-  summary.textContent=campaign.filter(l=>l.completed).length+'/49 levels behaald · Deze run: '+Math.floor(score)+' m';
+  bar.style.width=(campaign.filter(l=>l.completed).length/Math.max(1,campaign.length)*100).toFixed(2)+'%';
+  summary.textContent=campaign.filter(l=>l.completed).length+'/'+campaign.length+' levels behaald · Deze run: '+Math.floor(score)+' m';
   const artwork=[
    '<rect x="7" y="57" width="126" height="44" rx="9" fill="#8ac58e"/><path d="M15 62V39L37 22L59 39V62Z" fill="#fbd2b4" stroke="#352b49" stroke-width="4"/><path d="M7 40L37 17L67 40" fill="none" stroke="#352b49" stroke-width="5" stroke-linejoin="round"/><rect x="28" y="43" width="16" height="19" rx="3" fill="#97cee0"/><path d="M77 62V33L103 16L126 33V62" fill="#ffe7c6" stroke="#352b49" stroke-width="4"/><path d="M70 35L103 12L133 35" fill="none" stroke="#352b49" stroke-width="5"/><path d="M8 78H134M20 70V92M53 70V92M86 70V92M119 70V92" stroke="#fff0da" stroke-width="6"/>',
    '<path d="M0 80Q35 51 75 77T150 74V103H0Z" fill="#7ebd95"/><path d="M19 85V43M113 83V40" stroke="#4b7354" stroke-width="8"/><circle cx="19" cy="33" r="25" fill="#6cae78" stroke="#352b49" stroke-width="4"/><circle cx="113" cy="34" r="28" fill="#94ca86" stroke="#352b49" stroke-width="4"/><ellipse cx="76" cy="90" rx="40" ry="11" fill="#88cbd4"/><ellipse cx="71" cy="84" rx="15" ry="9" fill="#fff6ce" stroke="#352b49" stroke-width="3"/><circle cx="83" cy="77" r="7" fill="#fff6ce"/><path d="M88 77L97 80L88 83" fill="#f8be66"/>',
@@ -283,10 +329,13 @@ function installMap(getProgress,pause,onSelect){
    '<circle cx="119" cy="24" r="17" fill="#ffedaa"/><path d="M0 80Q29 43 65 78Q105 28 150 78V103H0Z" fill="#d89c66"/><path d="M0 92Q48 63 85 93T150 88V104H0Z" fill="#e7ba7d"/><path d="M64 94V42M64 68H43V54M64 58H84V42" fill="none" stroke="#518668" stroke-width="10" stroke-linecap="round"/><path d="M15 98L29 84L42 98" fill="#c58e6c" stroke="#352b49" stroke-width="3"/>',
    '<rect x="0" y="67" width="150" height="37" fill="#3e3a63"/><circle cx="119" cy="25" r="19" fill="#fff1b9"/><path d="M12 69V45L36 27L60 45V69M75 69V38L105 20L136 38V69" fill="#595477" stroke="#2b274a" stroke-width="4"/><rect x="24" y="47" width="15" height="16" rx="3" fill="#ffd68e"/><rect x="96" y="43" width="14" height="18" rx="3" fill="#ffd68e"/><circle cx="16" cy="17" r="3" fill="#ffe28c"/><circle cx="72" cy="22" r="3" fill="#ffe28c"/><circle cx="128" cy="68" r="4" fill="#ffe28c"/>',
    '<path d="M0 84Q31 48 73 83T150 70V105H0Z" fill="#e8a4d0"/><rect x="17" y="47" width="47" height="56" rx="13" fill="#f4b0c1" stroke="#352b49" stroke-width="4"/><path d="M18 58H63M18 73H63" stroke="#fff0e2" stroke-width="8"/><path d="M107 97V54" stroke="#fff2da" stroke-width="8"/><circle cx="107" cy="39" r="23" fill="#ffb6d0" stroke="#352b49" stroke-width="4"/><path d="M96 31Q110 46 122 29" fill="none" stroke="#fff2da" stroke-width="6"/><circle cx="72" cy="20" r="7" fill="#ffdf9c"/>',
-   '<circle cx="110" cy="42" r="37" fill="#a99acf" stroke="#352b49" stroke-width="4"/><ellipse cx="110" cy="42" rx="51" ry="14" transform="rotate(-22 110 42)" fill="none" stroke="#ffe6ba" stroke-width="6"/><circle cx="42" cy="27" r="9" fill="#fff5d7"/><path d="M23 90L42 58L62 90Z" fill="#78799f" stroke="#352b49" stroke-width="4"/><circle cx="22" cy="20" r="3" fill="#fff"/><circle cx="68" cy="12" r="3" fill="#fff"/><circle cx="132" cy="91" r="3" fill="#fff"/>'
+   '<circle cx="110" cy="42" r="37" fill="#a99acf" stroke="#352b49" stroke-width="4"/><ellipse cx="110" cy="42" rx="51" ry="14" transform="rotate(-22 110 42)" fill="none" stroke="#ffe6ba" stroke-width="6"/><circle cx="42" cy="27" r="9" fill="#fff5d7"/><path d="M23 90L42 58L62 90Z" fill="#78799f" stroke="#352b49" stroke-width="4"/><circle cx="22" cy="20" r="3" fill="#fff"/><circle cx="68" cy="12" r="3" fill="#fff"/><circle cx="132" cy="91" r="3" fill="#fff"/>',
+   '<path d="M0 91L31 31L61 80L89 20L140 92" fill="#dfedf8" stroke="#4d6f8a" stroke-width="4"/><path d="M31 31L21 51L41 51ZM89 20L76 46L102 46Z" fill="#fff"/><path d="M118 92V47M104 75L118 43L133 75" stroke="#4f9c8c" stroke-width="8"/>',
+   '<rect width="150" height="105" fill="#342052"/><path d="M0 100L71 32L150 100" fill="none" stroke="#ff72d3" stroke-width="4"/><path d="M0 100L52 48L150 100" fill="none" stroke="#6ceef5" stroke-width="4"/><circle cx="107" cy="30" r="19" fill="#f78cbf"/><rect x="16" y="49" width="48" height="56" fill="#62458b" stroke="#67ddec" stroke-width="4"/>',
+   '<rect width="150" height="105" fill="#a3e5e4"/><path d="M0 90Q25 69 55 86T150 82V105H0" fill="#67b8aa"/><path d="M18 89H127L115 101H32Z" fill="#ac7955" stroke="#392d44" stroke-width="4"/><path d="M70 89V15L117 73H70Z" fill="#fff2cc" stroke="#392d44" stroke-width="3"/><path d="M70 15L111 20L88 35Z" fill="#433044"/>'
   ];
   list.className='world-map-route world-map-illustrated';
-  list.innerHTML='<svg class="world-map-winding-road" viewBox="0 0 100 1140" preserveAspectRatio="none" aria-hidden="true"><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#352b49" stroke-width="18" stroke-linecap="round"/><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#fff1cb" stroke-width="12" stroke-linecap="round" stroke-dasharray="3 3"/></svg>'+
+  list.innerHTML='<svg class="world-map-winding-road" viewBox="0 0 100 1650" preserveAspectRatio="none" aria-hidden="true"><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095 S82 1278 40 1390 S20 1490 68 1595" fill="none" stroke="#352b49" stroke-width="18" stroke-linecap="round"/><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#fff1cb" stroke-width="12" stroke-linecap="round" stroke-dasharray="3 3"/></svg>'+
   NAMES.map((name,i)=>{
     const world=worlds[i]||{levels:[],unlocked:i===0,completed:false,completedCount:0};
     const unlocked=world.unlocked,active=i===index,visited=world.completed;
