@@ -12,4 +12,11 @@ assert.ok(app.includes("const persistentHomeNav=document.getElementById('homeMai
 assert.ok(app.includes('if(persistentHomeNav)menuContent.prepend(persistentHomeNav)'));
 for(const page of ['clothes','gadgets','progress','collection'])assert.ok(html.includes('data-open-page="'+page+'"'));
 for(const handler of ["document.getElementById('homeMainNav')?.addEventListener('click'","startBtn.addEventListener('click',activate)","menuTabs.addEventListener('click'","window.GrannyStorybook.installMap("])assert.ok(app.includes(handler));
+assert.ok(app.includes("overlay.classList.toggle('settings-focus',settingsPanel.open)"),'settings focus state');
+assert.ok(app.includes("settingsPanel.open=false"),'close focused settings');
+assert.ok(app.includes("e.key==='Escape'"),'keyboard close');
+assert.ok(css.includes('Home v38: compact, single-viewport desktop menu'),'non-scrolling home layout');
+assert.ok(css.includes('Home settings')||css.includes('Focused settings view:'),'dedicated settings layout');
+assert.ok(css.includes('#overlay.settings-focus:not(.storepage):not(.gameover)>.panel>:not(#menuContent)'),'home page hidden in settings');
+assert.ok(css.includes('#overlay.settings-focus .pre-run-settings'),'large settings controls');
 console.log('PASS structural home navigation, settings flow, old markup fallback and click handlers');
