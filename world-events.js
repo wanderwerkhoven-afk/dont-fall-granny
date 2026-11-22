@@ -10,7 +10,10 @@ const EVENTS=Object.freeze([
  {id:'woestijn_plane',world:3,title:'De woestijn · Zandstormvlucht',mode:'plane',duration:10,icon:'✈️',accent:'#f4c790',caption:'Fladder boven de zandstorm'},
  {id:'nacht_plane',world:4,title:'De nacht · Maanvlucht',mode:'plane',duration:9,icon:'🌙',accent:'#b2acd5',caption:'Vlieg langs de maan'},
  {id:'snoep_scooter',world:5,title:'De snoepwereld · Suiker-Slalom',mode:'booster',duration:11,icon:'🍬',accent:'#f4c3de',caption:'Ontwijk de snoepkraampjes'},
- {id:'ruimte_plane',world:6,title:'De ruimte · Sterrenvlucht',mode:'plane',duration:12,icon:'🚀',accent:'#c3bae9',caption:'Zweef tussen ruimterotsen'}
+ {id:'ruimte_plane',world:6,title:'De ruimte · Sterrenvlucht',mode:'plane',duration:12,icon:'🚀',accent:'#c3bae9',caption:'Zweef tussen ruimterotsen'},
+ {id:'winter_scooter',world:7,title:'Winterwonderland · IJsslalom',mode:'booster',duration:11,icon:'❄️',accent:'#cfebf7',caption:'Slalom langs sneeuwbanken'},
+ {id:'neon_plane',world:8,title:'Neon 80’s · Arcadevlucht',mode:'plane',duration:11,icon:'🕹️',accent:'#dd86dc',caption:'Vlieg door de retro neonlucht'},
+ {id:'pirate_scooter',world:9,title:'Piratenbaai · Schatkistenslalom',mode:'booster',duration:12,icon:'🏴‍☠️',accent:'#edcc91',caption:'Race over de piratensteiger'}
 ]);
 const INTRO=.85,OUTRO=.75;
 const ELIGIBLE_AT=18, PITY_AT=35, PITY_DISTANCE=680;
