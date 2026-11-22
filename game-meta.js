@@ -72,6 +72,7 @@ const cosmetics=[
  {id:'glasses-carnival',type:'glasses',icon:'🎭',name:'Carnavalsmasker',cost:21000,masteryUnlock:{world:12,star:0}},
  {id:'cane-confetti',type:'cane',icon:'🎉',name:'Confettistok',cost:30000,masteryUnlock:{world:12,star:1}},
  {id:'companion-clown',type:'companion',icon:'🤡',name:'Clownvriend',cost:36000,masteryUnlock:{world:12,star:2}},
+ {id:'hat-none',type:'hat',icon:'◌',name:'Geen hoed',cost:0,hatStyle:'none',hatColor:'#ffffff',hatAccent:'#ffffff'},
  {id:'hat-beret',type:'hat',icon:'🎨',name:'Bordeaux baret',cost:4200,hatStyle:'beret',hatColor:'#b54f65',hatAccent:'#f6ce99'},
  {id:'hat-straw',type:'hat',icon:'👒',name:'Strohoed met lint',cost:5600,hatStyle:'straw',hatColor:'#e4bf78',hatAccent:'#ad5d77'},
  {id:'hat-sun',type:'hat',icon:'☀️',name:'Zomerzonnehoed',cost:7200,hatStyle:'sun',hatColor:'#ecca9d',hatAccent:'#f391ad'},
