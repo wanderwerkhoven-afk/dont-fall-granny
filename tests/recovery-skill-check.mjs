@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const html=readFileSync('index.html','utf8')+'\n'+readFileSync('style.css','utf8')+'\n'+readFileSync('app.js','utf8');
 const script=readFileSync('app.js','utf8');
 assert.ok(script);new Function(script);
-const snippet=script.split('class RecoveryWindowController{')[1]?.split('\nclass LastSecondGrabController{')[0];
+const snippet=script.split('class RecoveryWindowController{')[1]?.split('\nclass BalanceController{')[0];
 assert.ok(snippet,'skill controller found');
 const Controller=new Function('class RecoveryWindowController{'+snippet+';return RecoveryWindowController;')();
 const w=new Controller();
