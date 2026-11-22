@@ -178,15 +178,85 @@ class NearMissController{
  consumeFocus(){const focus=this.focus;this.focus=0;this.streak=0;return focus;}
  reset(){this.focus=0;this.streak=0;}
 }
+// A collision only offers a grab when its obstacle can plausibly be held.
+ // Rarity is seeded by the replay RNG; the skill window itself is deterministic.
+class LastSecondGrabController{
+ constructor(){this.reset();}
+ reset(){this.active=false;this.elapsed=0;this.duration=.52;this.target=null;this.used=false;}
+ eligible(obstacle){return !!obstacle&&['walker','bike','bin','log'].includes(obstacle.type?.id);}
+ offer(obstacle,roll){
+  this.reset();
+  if(!this.eligible(obstacle)||roll>=.17)return false;
+  this.target={x:obstacle.x,y:obstacle.y,w:obstacle.w,h:obstacle.h,id:obstacle.type.id};
+  return true;
+ }
+ begin(){if(!this.target||this.used)return false;this.active=true;this.elapsed=0;this.used=true;return true;}
+ tick(dt){if(!this.active)return false;this.elapsed+=Math.max(0,dt);return this.elapsed>=this.duration;}
+ resolve(){if(!this.active)return false;this.active=false;return this.elapsed>=.19&&this.elapsed<=.36;}
+}
+const lastSecondGrab=new LastSecondGrabController();
+let grabCelebration=0;
+function beginLastSecondGrab(){
+ if(!lastSecondGrab.begin())return false;
+ if(!flowTo(GameState.GRAB)){lastSecondGrab.reset();return false;}
+ state='grab';
+ document.getElementById('game').classList.add('grab-mode');
+ statusEl.textContent='GRIJP! Tik op het juiste moment om je vast te houden!';
+ return true;
+}
+function resolveLastSecondGrab(success){
+ if(state!=='grab')return;
+ const target=lastSecondGrab.target;
+ lastSecondGrab.reset();
+ document.getElementById('game').classList.remove('grab-mode');
+ if(!success){balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}
+ balanceController.recover('safe');
+ grandmaExpressions.react('safe');
+ perfectRunAlive=false;resetCombo();
+ safeRun++;if(replay.mode!=='playback')metaState.stats.safes++;
+ recoveryBoost=0;recoverySlow=1.75;recoveryFeedback=1.35;
+ recoveryFeedbackText='VASTGEGRABBELD!';
+ grabCelebration=reducedRecoveryMotion.matches?0:.75;
+ invulnerable=1.5;grandma.vy=0;grandma.y=ground-grandma.h;
+ if(target)obstacles=obstacles.filter(o=>!(o.hit&&o.type.id===target.id&&Math.abs(o.x-target.x)<4));
+ flowTo(GameState.RUNNING);state='playing';
+ statusEl.textContent='Oma hangt aan haar wandelstok! Net op tijd gered.';
+ playFeedback('safe');haptic([20,35,20]);evaluateAchievements();
+}
+function drawLastSecondGrab(){
+ if(state==='grab'){
+  const cx=grandma.x+grandma.w+35,cy=grandma.y-40;
+  ctx.save();ctx.fillStyle='#fff8df';ctx.strokeStyle='#493e49';ctx.lineWidth=3;
+  ctx.beginPath();ctx.roundRect(cx-70,cy-34,180,69,13);ctx.fill();ctx.stroke();
+  ctx.textAlign='center';ctx.fillStyle='#493e49';ctx.font='900 17px system-ui';
+  ctx.fillText('GRIJP!  TIK NU',cx+20,cy-7);
+  ctx.fillStyle='#e6bacf';ctx.fillRect(cx-51,cy+5,142,13);
+  ctx.fillStyle='#6dbe93';ctx.fillRect(cx-51+142*(.19/.52),cy+5,142*(.17/.52),13);
+  ctx.fillStyle='#493e49';ctx.fillRect(cx-51+142*Math.min(1,lastSecondGrab.elapsed/.52)-2,cy+2,4,19);
+  ctx.restore();
+ }
+ if(grabCelebration>0&&!reducedRecoveryMotion.matches){
+  ctx.save();
+  const t=1-grabCelebration/.75,angle=-.2*Math.sin(Math.PI*t);
+  ctx.translate(grandma.x+grandma.w/2,grandma.y+grandma.h/2);ctx.rotate(angle);
+  ctx.fillStyle='#ffe278';ctx.strokeStyle='#493e49';ctx.lineWidth=3;
+  ctx.beginPath();ctx.roundRect(15,-49,83,24,8);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#493e49';ctx.textAlign='center';ctx.font='900 12px system-ui';
+  ctx.fillText('HANG ON!',56,-33);
+  ctx.restore();
+ }
+}
 const recoveryWindow=new RecoveryWindowController();
 const balanceController=new BalanceController();
 const nearMissController=new NearMissController();
 const reducedRecoveryMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 let recoveryBoost=0,recoverySlow=0,recoveryFeedback=0,recoveryFeedbackText='',recoverySettle=0,recoveryCameraSettle=0;
-function triggerRecovery(){
+function triggerRecovery(obstacle){
  if(state!=='playing'||vehicle)return;
  if(daily.active){finishDailyRun('fall');return;}
  clearDangerWarnings();audioDirector.stop();
+ // Decide once on collision; failed Recovery may expose this rare second chance.
+ lastSecondGrab.offer(obstacle,replay.randomValue());
  recoveryWindow.begin(score,nearMissController.consumeFocus());balanceController.hit();flowTo(GameState.RECOVERY);state='recovery';
  document.getElementById('game').classList.add('recovery-mode');
  statusEl.textContent='BALANS! Tik wanneer de wijzer in het geel staat.';
@@ -194,6 +264,7 @@ function triggerRecovery(){
 function finishRecovery(result){
  document.getElementById('game').classList.remove('recovery-mode');
  recoveryWindow.reset();
+ if(result==='miss'&&beginLastSecondGrab())return;
  if(result==='miss'){balanceController.fail();perfectRunAlive=false;resetCombo();playFeedback('fail');haptic([35,45,55]);end();return;}
  balanceController.recover(result);
  grandmaExpressions.react(result==='perfect'?'perfect':'safe');
@@ -211,6 +282,10 @@ function finishRecovery(result){
 function attemptRecovery(){
  if(state!=='recovery')return false;
  finishRecovery(recoveryWindow.resolve());return true;
+}
+function updateLastSecondGrab(dt){
+ grandmaExpressions.update(dt);
+ if(lastSecondGrab.tick(dt))resolveLastSecondGrab(false);
 }
 function updateRecovery(dt){grandmaExpressions.update(dt);if(recoveryWindow.tick(dt))finishRecovery('miss');}
 function drawRecoveryMeter(){
@@ -930,7 +1005,7 @@ window.addEventListener('resize',()=>{syncClothesHanger();setHangerFrame(hangerF
 document.addEventListener('visibilitychange',refreshHangerAnimation);
 hangerReduceMotion.addEventListener?.('change',refreshHangerAnimation);
 setHangerFrame(hangerFrame);
-function random(a,b){return a+replay.randomValue()*(b-a)}function reset(){replayAccumulator=0;clearDangerWarnings();audioDirector.stop();worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
+function random(a,b){return a+replay.randomValue()*(b-a)}function reset(){replayAccumulator=0;clearDangerWarnings();audioDirector.stop();worldEvents.reset(getWorldEventPity());updateWorldEventCard();grandmaExpressions.reset();recoveryWindow.reset();lastSecondGrab.reset();grabCelebration=0;document.getElementById('game').classList.remove('grab-mode');balanceController.reset();nearMissController.reset();document.getElementById('game').classList.remove('recovery-mode');recoveryBoost=0;recoverySlow=0;recoveryFeedback=0;recoverySettle=0;recoveryCameraSettle=0;document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!';modeObstacles=[];modeSpawn=0;modeDistance=0;modeGraceTime=0;vehicle=null;vehicleTime=0;vehicleSpawnWait=25;vehicleCooldown=25;vehicleLane=1;vehicleVelocity=0;activeLevel=LEVELS.getSelected();startTierOffset=LEVELS.LEVELS[activeLevel].worldIndex;currentTier=startTierOffset;levelStartScore=0;lastLevelCelebrated=-1;previousTier=currentTier;transition=0;tierFlash=0;score=0;coinsRun=0;revives=0;boostTime=0;runFinalized=false;perfectRunAlive=true;comebackTime=0;magnetTime=0;comboBurstTime=0;worldEventTime=0;worldEventCooldown=18;challengeTime=0;challengeTier=-1;lastMasteryScore=0;combo=0;comboPeak=0;perfectRun=0;safeRun=0;nearMissRun=0;landingPulse=0;rewardPopups=[];updateComboHud();coinItems=[];coinDistance=420;shop.style.display='none';shield=0;speed=245;travel=0;lastGap=0;obstacles=[];candies=[];particles=[];grandma.y=ground-grandma.h;grandma.vy=0;spawnDistance=0;nextDistance=520;candyDistance=1100;elapsed=0;invulnerable=0;flash=0;scoreEl.textContent='0 m';document.getElementById('tierFill').style.width='0%';document.getElementById('tierNow').textContent='WERELD '+(currentTier+1)+' · LEVEL '+(LEVELS.LEVELS[activeLevel].number);document.getElementById('tierNext').textContent='DOEL · '+LEVELS.LEVELS[activeLevel].goal+' M';statusEl.textContent='Pak snoepjes om een beschermschild te verdienen.';pauseBtn.textContent='⏸ Pauze'}
 function start(){replayAccumulator=0;dailyFixedAccumulator=0;const loading=pendingReplayTape;pendingReplayTape=null;const dailyRequested=loading?!!loading.start.dailyDate:pendingDaily;pendingDaily=false;stopDeathTimer();dailyResultCard.hidden=true;document.getElementById('game').classList.remove('daily-finished','post-run-active');showMenu('home');reset();audioDirector.unlock();
  daily.active=false;daily.finished=false;
  if(loading){activeLevel=loading.start.activeLevel;currentTier=loading.start.world;startTierOffset=currentTier;worldEvents.reset(loading.start.pity||0);replayInitialOutfit=selectedClothes;}
@@ -951,7 +1026,7 @@ function start(){replayAccumulator=0;dailyFixedAccumulator=0;const loading=pendi
  resultPreviousAchievements=[...(metaState.achievements||[])];
  grandmaExpressions.react('fall');
  worldEvents.abort();updateWorldEventCard();
- recoveryWindow.reset();document.getElementById('game').classList.remove('recovery-mode');
+ recoveryWindow.reset();lastSecondGrab.reset();document.getElementById('game').classList.remove('recovery-mode','grab-mode');
  if(vehicle){vehicle=null;vehicleTime=0;modeObstacles=[];document.getElementById('game').classList.remove('scooter-mode');document.getElementById('jumpBtn').textContent='↑ Spring!'}
  state='over';
  flowTo(GameState.FALLING);
@@ -986,14 +1061,14 @@ function revive(boost=false){
 }
 reviveBtn.addEventListener('click',()=>revive(false));
 boostBtn.addEventListener('click',()=>revive(true));
-function pause(){if(state==='recovery')return;if(state==='playing'){clearDangerWarnings();audioDirector.stop();flowTo(GameState.PAUSED);worldEventCard.hidden=true;showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';audioDirector.unlock();updateWorldEventCard();overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if((state==='playing'||state==='recovery')&&replay.queue('jump'))return;if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
+function pause(){if(state==='recovery'||state==='grab')return;if(state==='playing'){clearDangerWarnings();audioDirector.stop();flowTo(GameState.PAUSED);worldEventCard.hidden=true;showMenu('home');state='paused';title.textContent='PAUZE';text.textContent='Even op adem komen. Je run staat veilig stil.';startBtn.textContent='▶ VERDER SPELEN';overlay.classList.remove('hidden');resizeGame();pauseBtn.textContent='▶ Hervat'}else if(state==='paused'){flowTo(worldEvents.inEvent?GameState.SPECIAL_MODE:GameState.RUNNING);state='playing';audioDirector.unlock();updateWorldEventCard();overlay.classList.add('hidden');resizeGame();pauseBtn.textContent='⏸ Pauze';last=performance.now();requestAnimationFrame(frame)}}function jump(){if((state==='playing'||state==='recovery'||state==='grab')&&replay.queue('jump'))return;if(state==='grab'){resolveLastSecondGrab(lastSecondGrab.resolve());return}if(state==='recovery'){attemptRecovery();return}if(state!=='playing'&&vehicle)return;if(vehicle&&!worldEvents.active)return;if(vehicle==='plane'){vehicleVelocity=-390;return}if(vehicle==='booster'){return}if(state==='over')return;if(state==='ready'){start();return}if(state==='paused'){pause();return}if(grandma.y>=ground-grandma.h-1){grandma.vy=currentWorldRule().jump||-690;grandma.y-=1;playFeedback('jump')}}function activate(){if(state==='over')retryRun();else if(state==='paused')pause();else start()}
 startBtn.addEventListener('click',activate);pauseBtn.addEventListener('click',pause);canvas.addEventListener('pointerdown',e=>{e.preventDefault();if(vehicle!=='booster')jump()});document.getElementById('jumpBtn').addEventListener('pointerdown',e=>{e.preventDefault();jump()});
 function steerScooter(direction){if(state==='playing'&&replay.queue(direction<0?'left':'right'))return;if(state==='playing'&&worldEvents.active&&vehicle==='booster')vehicleLane=Math.max(0,Math.min(2,vehicleLane+direction))}
 for(const [id,direction] of [['leftBtn',-1],['rightBtn',1]])document.getElementById(id).addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();steerScooter(direction)});
 document.addEventListener('keydown',e=>{if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)jump()}else if(['ArrowLeft','KeyA'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(-1)}else if(['ArrowRight','KeyD'].includes(e.code)&&vehicle==='booster'){e.preventDefault();if(!e.repeat)steerScooter(1)}else if(e.code==='KeyP'){e.preventDefault();pause()}});document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='playing')pause()});
 function rectHit(a,b,pad=5){return a.x+pad<b.x+b.w-pad&&a.x+a.w-pad>b.x+pad&&a.y+pad<b.y+b.h-pad&&a.y+a.h-pad>b.y+pad}
 function puff(x,y,color){for(let i=0;i<Math.ceil(W/100)+5;i++)particles.push({x,y,vx:random(-120,120),vy:random(-170,-30),life:random(.35,.75),color})}
-function update(dt){if(daily.active&&daily.advance(dt)){finishDailyRun('completed');return;}grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);if(daily.active)speed=daily.config.speed;travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta&&!daily.active&&replay.mode!=='playback'){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}// Exactly one world-specific sequence per run; the pity threshold is based
+function update(dt){if(daily.active&&daily.advance(dt)){finishDailyRun('completed');return;}grandmaExpressions.update(dt);elapsed+=dt;walk+=dt*11;updateTutorial();landingPulse=Math.max(0,landingPulse-dt*4);magnetTime=Math.max(0,magnetTime-dt);comboBurstTime=Math.max(0,comboBurstTime-dt);comebackTime=Math.max(0,comebackTime-dt);worldEventTime=Math.max(0,worldEventTime-dt);challengeTime=Math.max(0,challengeTime-dt);worldEventCooldown-=dt;for(const p of rewardPopups){p.life-=dt;p.y-=22*dt}rewardPopups=rewardPopups.filter(p=>p.life>0);recoveryBoost=Math.max(0,recoveryBoost-dt);recoverySlow=Math.max(0,recoverySlow-dt);recoveryFeedback=Math.max(0,recoveryFeedback-dt);recoverySettle=Math.max(0,recoverySettle-dt);recoveryCameraSettle=Math.max(0,recoveryCameraSettle-dt);grabCelebration=Math.max(0,grabCelebration-dt);const worldRule=currentWorldRule();const wind=worldRule.wind?1+Math.sin(elapsed*.9)*.055:1;speed=(245+elapsed*2.15+Math.max(0,elapsed-35)*.65)*(recoverySlow>0?.78:1)+(recoveryBoost>0?65:0);speed*=worldRule.speed*wind*difficultyRule().speed*worldEventSpeed()*(challengeTime>0?1.12:1);if(daily.active)speed=daily.config.speed;travel+=speed*dt;score=Math.floor(travel/14);scoreEl.textContent=score+' m';boostTime=Math.max(0,boostTime-dt);const masteryDelta=Math.max(0,score-lastMasteryScore);if(masteryDelta&&!daily.active&&replay.mode!=='playback'){addWorldMastery('distance',masteryDelta);lastMasteryScore=score}// Exactly one world-specific sequence per run; the pity threshold is based
  // on eligible running time/distance and never consumes recovery or pause time.
  if(!daily.active)tickWorldEvent(dt);
  if(daily.active)updateDailyHud();
@@ -1127,7 +1202,7 @@ for(const o of obstacles){
   o.hit=true;
   if(invulnerable>0||boostTime>0)continue;
   if(shield){shield=0;perfectRunAlive=false;resetCombo();invulnerable=1.25;flash=.6;puff(grandma.x+25,grandma.y+25,'#ffcc65');statusEl.textContent='🍬 Snoepje gebruikt! Combo gereset.'}
-  else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery();return}
+  else{puff(grandma.x+20,grandma.y+25,'#e88999');triggerRecovery(o);return}
  }
 }
 for(const o of obstacles){
@@ -1365,27 +1440,28 @@ for(const c of coinItems){
  ellipse(0,0,12,12,'#f8ad2c');ellipse(0,0,9,9,'#ffe17a');
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
-for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
+for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawLastSecondGrab();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
 let dailyFixedAccumulator=0;
 function replayStep(){
  replayStepping=true;
  replay.beforeTick(applyReplayInput);
- if(state==='recovery')updateRecovery(window.GrannyReplay.DT);
+ if(state==='grab')updateLastSecondGrab(window.GrannyReplay.DT);
+ else if(state==='recovery')updateRecovery(window.GrannyReplay.DT);
  else if(state==='playing')update(window.GrannyReplay.DT);
  replay.afterTick(replayFrame());replayStepping=false;
  if(state==='over')finishReplayRecording();
 }
 function frame(now){
- if(state!=='playing'&&state!=='recovery')return;
+ if(state!=='playing'&&state!=='recovery'&&state!=='grab')return;
  const raw=Math.max(0,(now-last)/1000);
  last=now;replayAccumulator+=Math.min(raw,.25);
  let steps=0;
- while((state==='playing'||state==='recovery')&&replayAccumulator>=window.GrannyReplay.DT&&steps<15){
+ while((state==='playing'||state==='recovery'||state==='grab')&&replayAccumulator>=window.GrannyReplay.DT&&steps<15){
   replayStep();replayAccumulator-=window.GrannyReplay.DT;steps++;
  }
  render();
  if(typeof updateReplayDebugPanel==='function')updateReplayDebugPanel();
- if(state==='playing'||state==='recovery')requestAnimationFrame(frame);
+ if(state==='playing'||state==='recovery'||state==='grab')requestAnimationFrame(frame);
 }
 if(window.GrannyStorybook)window.GrannyStorybook.installMap(
  ()=>({score,best,currentTier,startTierOffset,state}),pause,
@@ -1447,7 +1523,9 @@ function updateReplayDebugPanel(){
   dailyAdvanceForTest:seconds=>{if(daily.active){daily.elapsed=Math.min(daily.config.duration,daily.elapsed+Math.max(0,seconds));if(daily.elapsed>=daily.config.duration)finishDailyRun('completed');}},
   exportReplay:()=>replay.tape?JSON.stringify(replay.tape):null,
   loadReplay:json=>{const tape=window.GrannyReplay.ensureTape(json);if(state!=='ready')returnHome();pendingReplayTape=tape;start();return true;},
-  replayStepForTest:(count=1)=>{for(let i=0;i<count&&(state==='playing'||state==='recovery');i++)replayStep();render();},
+  grabTestForTest:()=>{if(state!=='playing')return false;lastSecondGrab.offer({type:{id:'walker'},x:grandma.x+40,y:ground-62,w:65,h:62},0);balanceController.hit();flowTo(GameState.RECOVERY);state='recovery';finishRecovery('miss');return state==='grab';},
+  grabInfoForTest:()=>({active:lastSecondGrab.active,elapsed:lastSecondGrab.elapsed,flow:runFlow.current}),
+  replayStepForTest:(count=1)=>{for(let i=0;i<count&&(state==='playing'||state==='recovery'||state==='grab');i++)replayStep();render();},
   replayInfo:()=>({mode:replay.mode,tick:replay.tick,seed:replay.tape?.seed,
     ruleset:replay.tape?.ruleset,error:replay.error,ghost:replay.ghostEnabled,
     inputCount:replay.inputs.length,frameCount:replay.frames.length}),
