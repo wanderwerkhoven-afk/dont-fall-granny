@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'app.js'
+      - 'storybook-camera.js'
+      - 'tests/boot-browser.cjs'
       - 'index.html'
       - 'style.css'
       - 'storybook-worlds.js'
@@ -42,6 +44,7 @@ jobs:
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/granny-http.log 2>&1 &
           sleep 2
+          node tests/boot-browser.cjs
           node tests/game-smoke.cjs
           node tests/post-run-browser.cjs
           node tests/world-events-browser.cjs
