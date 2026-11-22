@@ -627,9 +627,9 @@ function updateGrandmaOutfitPreview(){
  const accessories=hero.querySelector('[data-preview-accessories]');
  if(accessories){
   const glasses=selectedAccessories.glasses==='glasses-heart'?'💗':selectedAccessories.glasses==='glasses-star'?'⭐':'';
-  const companion=selectedAccessories.companion==='companion-duck'?'🐥':selectedAccessories.companion==='companion-cat'?'🐈':'';
+  const companion=selectedAccessories.companion==='companion-duck'?'🦆':selectedAccessories.companion==='companion-cat'?'🐈':'';
   const cane=selectedAccessories.cane==='cane-gold'?'✨':'';
-  accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="11" y="114" font-size="17">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
+  accessories.innerHTML=(glasses?'<text x="55" y="43" text-anchor="middle" font-size="12">'+glasses+'</text>':'')+(companion?'<text x="-9" y="119" font-size="51" transform="translate(-18 0) scale(-1 1)">'+companion+'</text>':'')+(cane?'<text x="92" y="80" font-size="12">'+cane+'</text>':'');
  }
  hero.setAttribute('aria-label','Oma draagt: '+outfit.name);
 }
@@ -883,7 +883,7 @@ function showMenu(page='home'){
  }
  if(page==='collection'){
   document.getElementById('menuKicker').textContent='OMA’S EXTRA’S  ✦  ACCESSOIRES';
-  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(Boolean).length+' accessoires</span></div><div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id;return '<div class="store-item '+(selected?'selected':'')+'"><div class="preview accessory-preview">'+item.icon+'</div><b>'+item.name+'</b><small>'+item.type+'</small><button data-accessory="'+item.id+'" '+(selected||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
+  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(Boolean).length+' accessoires</span></div><div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id;return '<div class="store-item '+(selected?'selected':'')+'"><div class="preview accessory-preview'+(item.type==='companion'?' companion-preview':'')+'">'+(item.type==='companion'?'<span class="companion-preview-icon" aria-hidden="true">'+item.icon+'</span>':item.icon)+'</div><b>'+item.name+'</b><small>'+item.type+'</small><button data-accessory="'+item.id+'" '+(selected||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
   menuContent.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{const item=META.cosmetics.find(x=>x.id===btn.dataset.accessory);if(!item)return;if(!ownedAccessories.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedAccessories.push(item.id);saveCoins()}selectedAccessories[item.type]=item.id;saveMetaState();evaluateAchievements();showMenu('collection')}));
   return
  }
@@ -1274,8 +1274,16 @@ if(pose.tilt){
  if(selectedAccessories.cane==='cane-gold')line(x+48,y+43+bob,x+50,y+70,'#d7a634',5);
  if(selectedAccessories.glasses==='glasses-heart'){label('💗',x+17,y+18+bob,11);label('💗',x+31,y+18+bob,11)}
  if(selectedAccessories.glasses==='glasses-star'){label('⭐',x+17,y+18+bob,10);label('⭐',x+31,y+18+bob,10)}
- if(selectedAccessories.companion==='companion-duck')label('🐥',x-20,ground-12-Math.abs(Math.sin(walk*.8))*4,20);
- if(selectedAccessories.companion==='companion-cat')label('🐈',x-23,ground-13-Math.abs(Math.sin(walk*.65))*3,21);
+ // Companions are three times their previous display size and face Granny.
+ // This is cosmetic only: no collision boxes or game balance are affected.
+ if(selectedAccessories.companion==='companion-duck'||selectedAccessories.companion==='companion-cat'){
+  const duck=selectedAccessories.companion==='companion-duck';
+  ctx.save();
+  ctx.translate(x-51,ground-31-Math.abs(Math.sin(walk*(duck?.8:.65)))*4);
+  ctx.scale(-1,1);
+  label(duck?'🦆':'🐈',0,0,duck?60:63);
+  ctx.restore();
+ }
  if(vehicle==='booster'){ctx.save();ctx.translate(x-20,y+35);rounded(0,0,86,30,12,'#6655a5');rounded(9,5,68,13,6,'#a2bce1');ellipse(5,15,10,10,'#33364e');ellipse(82,15,10,10,'#33364e');for(let i=0;i<3;i++)line(-8-i*13,10,0-i*13,20,'#f6b353',4);ctx.restore()}
  if(squash)ctx.restore();
  ctx.restore();
