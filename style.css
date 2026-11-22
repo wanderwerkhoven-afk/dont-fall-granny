@@ -2985,3 +2985,197 @@ body:has(#overlay.hidden) .game>canvas{
   min-height:65px!important;
  }
 }
+
+
+/* v40: readable post-run screen, with controls always above the game boundary.
+   Override the retired bottom tray's fixed 156px height and 43% cap. */
+.game .post-run-overlay .post-run-card,
+.game .post-run-overlay .post-run-card[data-size=compact],
+.game .post-run-overlay .post-run-card[data-size=standard],
+.game .post-run-overlay .post-run-card[data-size=celebration]{
+ position:absolute!important;
+ top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+ transform:translate(-50%,-50%)!important;
+ width:min(940px,calc(100% - 64px))!important;
+ height:auto!important;min-height:0!important;
+ max-height:calc(100% - 42px)!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)!important;
+ grid-template-rows:auto auto auto!important;
+ gap:clamp(11px,1.8vh,21px) clamp(20px,3vw,40px)!important;
+ padding:clamp(18px,2.4vw,34px)!important;
+ align-items:center!important;
+ overflow-y:auto!important;overscroll-behavior:contain;
+ border:3px solid #29243a!important;border-radius:25px!important;
+ box-shadow:5px 7px 0 #29243a!important;
+ background:linear-gradient(140deg,#fffaf0,#fff1dc)!important;
+}
+.game .post-run-overlay .post-run-tag{
+ grid-column:1!important;grid-row:1!important;
+ align-self:end;font-size:12px!important;letter-spacing:1.8px;
+}
+.game .post-run-overlay .post-run-card h2{
+ grid-column:1!important;grid-row:2!important;
+ font:1000 clamp(24px,3vw,42px)/1.07 system-ui!important;
+ margin:0!important;
+}
+.game .post-run-overlay .post-run-distance{
+ grid-column:1!important;grid-row:3!important;
+ justify-content:flex-start!important;
+ font-size:clamp(38px,5vw,69px)!important;
+}
+.game .post-run-overlay .post-run-record{
+ grid-column:1!important;grid-row:4!important;
+ text-align:left!important;font-size:13px!important;
+}
+.game .post-run-overlay .post-run-rescue,
+.game .post-run-overlay .post-run-result{
+ grid-column:2!important;grid-row:1 / 5!important;
+ display:grid!important;align-items:center;
+ gap:12px!important;width:100%!important;
+ padding:0!important;
+}
+.game .post-run-overlay .post-run-rescue[hidden],
+.game .post-run-overlay .post-run-result[hidden]{display:none!important}
+.game .post-run-overlay .post-run-result{
+ grid-template-columns:1fr!important;
+ grid-template-rows:auto auto auto auto!important;
+}
+.game .post-run-overlay .post-run-highlights{
+ grid-column:1!important;grid-row:1!important;
+ justify-content:flex-start!important;align-self:start!important;
+ display:flex;gap:8px!important;
+}
+.game .post-run-overlay .post-run-highlight{
+ padding:8px 11px!important;
+ font:800 clamp(12px,1.1vw,15px)/1.2 system-ui!important;
+ background:#fffef7;border:2px solid #29243a;border-radius:11px;
+}
+.game .post-run-overlay .post-run-reward:not([hidden]){
+ grid-column:1!important;grid-row:2!important;
+ padding:10px!important;
+}
+.game .post-run-overlay .post-run-retry{
+ grid-column:1!important;grid-row:3!important;
+ min-height:58px!important;
+ font-size:clamp(15px,1.45vw,20px)!important;
+ border-radius:15px!important;
+ background:#ffd574!important;
+}
+.game .post-run-overlay .post-run-result>.post-run-link{
+ grid-column:1!important;grid-row:4!important;
+ justify-self:stretch!important;
+ min-height:46px!important;
+ padding:11px!important;
+ border:2px solid #29243a!important;
+ border-radius:13px!important;
+ background:#fffdf6!important;
+ font:900 14px system-ui!important;
+ box-shadow:2px 3px 0 #29243a!important;
+}
+.game .post-run-overlay .post-run-rescue{
+ grid-template-columns:70px minmax(0,1fr)!important;
+ grid-template-rows:auto auto auto!important;
+}
+.game .post-run-overlay .post-run-timer{
+ grid-column:1!important;grid-row:1/3!important;
+ width:66px!important;height:66px!important;font-size:20px!important;
+}
+.game .post-run-overlay .post-run-rescue p{
+ grid-column:2!important;grid-row:1!important;
+ font:800 15px/1.4 system-ui!important;
+}
+.game .post-run-overlay .post-run-rescue-actions{
+ grid-column:2!important;grid-row:2!important;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.game .post-run-overlay .post-run-rescue-actions button{
+ min-height:52px!important;font-size:clamp(11px,1vw,14px)!important;
+}
+.game .post-run-overlay .post-run-rescue>.post-run-link{
+ grid-column:2!important;grid-row:3!important;
+ min-height:42px;justify-self:stretch;
+ border:2px solid #29243a;border-radius:11px;background:#fffdf6;
+}
+
+/* Settings are a real two-column control board, not a narrow centered form. */
+@media(min-width:651px){
+ #overlay.settings-focus:not(.storepage):not(.gameover)>.panel{
+  display:flex!important;flex-direction:column!important;
+  justify-content:center!important;
+  padding:clamp(12px,2vh,22px) clamp(20px,2.7vw,42px)!important;
+ }
+ #overlay.settings-focus:not(.storepage):not(.gameover) #menuContent{
+  flex:none!important;max-width:1040px!important;margin:auto!important;
+ }
+ #overlay.settings-focus .settings-head{
+  margin:0 0 clamp(12px,2vh,20px)!important;
+  padding:0 0 clamp(11px,1.6vh,18px)!important;
+ }
+ #overlay.settings-focus .home-settings .pre-run-card{
+  width:100%!important;max-width:none!important;
+  gap:clamp(10px,1.4vh,17px)!important;
+  padding:clamp(14px,2vh,23px)!important;
+ }
+ #overlay.settings-focus .home-settings .pre-run-card>div:first-child{
+  width:100%!important;max-width:none!important;
+ }
+ #overlay.settings-focus .pre-run-settings{
+  width:100%!important;max-width:none!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:clamp(10px,1.5vh,15px)!important;
+  margin:0!important;padding:0!important;
+ }
+ #overlay.settings-focus .pre-run-settings label{width:100%!important;max-width:none!important}
+ #overlay.settings-focus .pre-run-settings select,
+ #overlay.settings-focus .pre-run-settings button{
+  max-width:none!important;min-height:clamp(43px,6vh,56px)!important;
+ }
+}
+@media(max-height:650px) and (min-width:651px){
+ #overlay.settings-focus:not(.storepage):not(.gameover)>.panel{justify-content:flex-start!important}
+ #overlay.settings-focus .settings-head h2{font-size:30px!important}
+ #overlay.settings-focus .home-settings .pre-run-card{gap:9px!important;padding:13px!important}
+ .game .post-run-overlay .post-run-card,
+ .game .post-run-overlay .post-run-card[data-size=compact],
+ .game .post-run-overlay .post-run-card[data-size=standard],
+ .game .post-run-overlay .post-run-card[data-size=celebration]{
+  width:calc(100% - 24px)!important;
+  padding:12px 15px!important;gap:6px 16px!important;
+ }
+ .game .post-run-overlay .post-run-card h2{font-size:clamp(18px,2.5vw,27px)!important}
+ .game .post-run-overlay .post-run-distance{font-size:clamp(30px,4vw,46px)!important}
+ .game .post-run-overlay .post-run-highlights{gap:4px!important}
+ .game .post-run-overlay .post-run-highlight{padding:4px 7px!important;font-size:11px!important}
+ .game .post-run-overlay .post-run-retry{min-height:44px!important}
+}
+@media(max-width:650px){
+ .game .post-run-overlay .post-run-card,
+ .game .post-run-overlay .post-run-card[data-size=compact],
+ .game .post-run-overlay .post-run-card[data-size=standard],
+ .game .post-run-overlay .post-run-card[data-size=celebration]{
+  width:calc(100% - 24px)!important;
+  max-height:calc(100% - 24px - env(safe-area-inset-bottom,0px))!important;
+  display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;gap:8px!important;
+  padding:15px!important;
+ }
+ .game .post-run-overlay .post-run-tag,
+ .game .post-run-overlay .post-run-card h2,
+ .game .post-run-overlay .post-run-distance,
+ .game .post-run-overlay .post-run-record,
+ .game .post-run-overlay .post-run-rescue,
+ .game .post-run-overlay .post-run-result{
+  grid-column:auto!important;grid-row:auto!important;
+ }
+ .game .post-run-overlay .post-run-card h2{font-size:clamp(21px,6vw,28px)!important}
+ .game .post-run-overlay .post-run-distance{font-size:clamp(32px,8vw,48px)!important}
+ .game .post-run-overlay .post-run-rescue,
+ .game .post-run-overlay .post-run-result{display:flex!important;flex-direction:column!important}
+ .game .post-run-overlay .post-run-rescue[hidden],
+ .game .post-run-overlay .post-run-result[hidden]{display:none!important}
+ .game .post-run-overlay .post-run-highlights{justify-content:flex-start!important}
+ .game .post-run-overlay .post-run-retry,
+ .game .post-run-overlay .post-run-result>.post-run-link{width:100%!important}
+ #overlay.settings-focus .pre-run-settings{grid-template-columns:1fr!important}
+}
