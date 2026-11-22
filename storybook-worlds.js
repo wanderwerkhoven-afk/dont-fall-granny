@@ -4,9 +4,9 @@
  */
 (()=>{'use strict';
 const INK='#392d44', IVORY='#fff5db', TAU=Math.PI*2;
-const NAMES=['De rustige buurt','Het stadspark','De grote stad','De woestijn','De nacht','De snoepwereld','De ruimte','Winterwonderland','Neon 80’s','Piratenbaai'];
-const SIGNATURE=['Wandelaars achter de hekjes','Eenden op de vijver','Zacht oplichtende winkels','Langzame stofwolkjes','Warme ramen en vuurvliegjes','Zacht zwevende snoepjes','Een grote planeet','Sneeuw en ijskristallen','Arcade en neonlichten','Piratenboten en palmbomen'];
-const COLORS=['#badfd5','#b8d9ad','#a9b9d3','#f1c58e','#48486c','#f2c7df','#383456','#cae9f5','#5f2b89','#f2cc8e'];
+const NAMES=['De rustige buurt','Het stadspark','De grote stad','De woestijn','De nacht','De snoepwereld','De ruimte','Winterwonderland','Neon 80’s','Piratenbaai','Halloweenland','De jungle','Het carnaval'];
+const SIGNATURE=['Wandelaars achter de hekjes','Eenden op de vijver','Zacht oplichtende winkels','Langzame stofwolkjes','Warme ramen en vuurvliegjes','Zacht zwevende snoepjes','Een grote planeet','Sneeuw en ijskristallen','Arcade en neonlichten','Piratenboten en palmbomen','Spookhuizen en pompoenen','Tropische bladeren en tempels','Reuzenrad en kleurige tenten'];
+const COLORS=['#badfd5','#b8d9ad','#a9b9d3','#f1c58e','#48486c','#f2c7df','#383456','#cae9f5','#5f2b89','#f2cc8e','#715178','#80b18b','#f1abc7'];
 const THEMES=[
  {far:'#c7d9d2',mid:'#f3d4bf',near:'#7da78e',accent:'#f0ba85'},
  {far:'#b1d4b4',mid:'#82b6a1',near:'#528d72',accent:'#f1cc88'},
@@ -17,7 +17,10 @@ const THEMES=[
  {far:'#565576',mid:'#aaa0c9',near:'#7b83a6',accent:'#f4dea7'},
  {far:'#cee8f5',mid:'#b1d5e7',near:'#ecf9fe',accent:'#baf3ff'},
  {far:'#3f2a67',mid:'#713f8f',near:'#ae489d',accent:'#ff83ce'},
- {far:'#82d1d4',mid:'#e2c78b',near:'#65b2a1',accent:'#ffdf9b'}
+ {far:'#82d1d4',mid:'#e2c78b',near:'#65b2a1',accent:'#ffdf9b'},
+ {far:'#504163',mid:'#745573',near:'#7d5a78',accent:'#f5ad77'},
+ {far:'#9bcfa1',mid:'#70b58b',near:'#4e956c',accent:'#f7d98e'},
+ {far:'#b6cce2',mid:'#e8a7c8',near:'#a990ce',accent:'#ffdf88'}
 ];
 function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
  const zone=((tier%THEMES.length)+THEMES.length)%THEMES.length,p=THEMES[zone],t=reducedMotion?0:elapsed;
@@ -284,6 +287,41 @@ function draw(ctx,{tier,travel,W,ground,elapsed,reducedMotion}){
    line(x+146,b-23,x+185,b-23,'#f5d392',3);
   });
  }
+ // Phase two foreground scenery: deterministic strips, no collision geometry.
+ if(zone===10){
+  strip(420,.13,(x,i)=>{const b=y-8;
+   round(x+25,b-108,130,106,9,i%2?'#54435e':'#6b506a',2);
+   path([[x+18,b-106],[x+91,b-166],[x+166,b-106]],'#3b314c');
+   round(x+54,b-72,30,39,5,'#f5bb76',2);round(x+100,b-72,25,39,5,'#f7b17b',2);
+  });
+  strip(360,.30,(x,i)=>{const b=y-6;
+   line(x+61,b,x+61,b-100,'#4f3d56',8);
+   circle(x+43,b-114,35,'#5b5273');circle(x+77,b-128,30,'#4f4967');
+   circle(x+98,b-16,12,'#e4a367');
+  });
+  strip(290,.07,(x,i)=>circle(x+12,42+Math.abs(i*19)%105,2,'#f9dbba',0));
+ }
+ if(zone===11){
+  strip(380,.13,(x,i)=>{const b=y-6;round(x+37,b-136,24,136,8,'#54765b',2);
+   for(let k=0;k<3;k++){circle(x+26+k*27,b-130-(k%2)*27,40,k%2?'#4f9b6e':'#64ad75',2);}
+  });
+  strip(500,.31,(x,i)=>{const b=y-4;round(x+21,b-88,116,84,6,'#b8a075',2);
+   round(x+36,b-75,87,11,2,'#d9c493',2);round(x+58,b-47,43,43,4,'#756b58',2);
+   for(let k=0;k<3;k++)line(x+150+k*12,b-144,x+142+k*9,b-37,'#4e9b65',4);
+  });
+ }
+ if(zone===12){
+  strip(480,.12,(x,i)=>{const b=y-5;
+   circle(x+112,b-127,70,'#f2d5e5',2);
+   for(let k=0;k<8;k++){const a=k*Math.PI/4;circle(x+112+Math.cos(a)*55,b-127+Math.sin(a)*55,8,k%2?'#e47dba':'#72c4db',2);}
+   line(x+112,b-127,x+112,b,'#886f98',6);
+  });
+  strip(390,.30,(x,i)=>{const b=y-5;
+   path([[x+5,b-18],[x+86,b-130],[x+169,b-18]],i%2?'#f6c27e':'#ed8ab7');
+   for(let k=0;k<4;k++)line(x+21+k*39,b-22,x+21+k*39,b-55,'#fdf0cd',3);
+   round(x+24,b-18,129,18,4,'#a585c3',2);
+  });
+ }
  // Signature actors have exactly one fixed lane, sparse spacing and smooth cycles.
  if(zone===0)strip(760,parallax[3],(x,i)=>{walker(x+56,y-6,i);
   round(x+4,y-25,112,8,3,'#fae6d0',2);for(let n=0;n<3;n++)round(x+14+n*42,y-25,8,29,3,'#f7e3ce',2);
@@ -332,10 +370,13 @@ function installMap(getProgress,pause,onSelect){
    '<circle cx="110" cy="42" r="37" fill="#a99acf" stroke="#352b49" stroke-width="4"/><ellipse cx="110" cy="42" rx="51" ry="14" transform="rotate(-22 110 42)" fill="none" stroke="#ffe6ba" stroke-width="6"/><circle cx="42" cy="27" r="9" fill="#fff5d7"/><path d="M23 90L42 58L62 90Z" fill="#78799f" stroke="#352b49" stroke-width="4"/><circle cx="22" cy="20" r="3" fill="#fff"/><circle cx="68" cy="12" r="3" fill="#fff"/><circle cx="132" cy="91" r="3" fill="#fff"/>',
    '<path d="M0 91L31 31L61 80L89 20L140 92" fill="#dfedf8" stroke="#4d6f8a" stroke-width="4"/><path d="M31 31L21 51L41 51ZM89 20L76 46L102 46Z" fill="#fff"/><path d="M118 92V47M104 75L118 43L133 75" stroke="#4f9c8c" stroke-width="8"/>',
    '<rect width="150" height="105" fill="#342052"/><path d="M0 100L71 32L150 100" fill="none" stroke="#ff72d3" stroke-width="4"/><path d="M0 100L52 48L150 100" fill="none" stroke="#6ceef5" stroke-width="4"/><circle cx="107" cy="30" r="19" fill="#f78cbf"/><rect x="16" y="49" width="48" height="56" fill="#62458b" stroke="#67ddec" stroke-width="4"/>',
-   '<rect width="150" height="105" fill="#a3e5e4"/><path d="M0 90Q25 69 55 86T150 82V105H0" fill="#67b8aa"/><path d="M18 89H127L115 101H32Z" fill="#ac7955" stroke="#392d44" stroke-width="4"/><path d="M70 89V15L117 73H70Z" fill="#fff2cc" stroke="#392d44" stroke-width="3"/><path d="M70 15L111 20L88 35Z" fill="#433044"/>'
+   '<rect width="150" height="105" fill="#a3e5e4"/><path d="M0 90Q25 69 55 86T150 82V105H0" fill="#67b8aa"/><path d="M18 89H127L115 101H32Z" fill="#ac7955" stroke="#392d44" stroke-width="4"/><path d="M70 89V15L117 73H70Z" fill="#fff2cc" stroke="#392d44" stroke-width="3"/><path d="M70 15L111 20L88 35Z" fill="#433044"/>',
+   '<rect width="150" height="105" fill="#59436d"/><circle cx="113" cy="20" r="15" fill="#f7d194"/><path d="M10 94V50L35 21L63 50V94M67 94V45L99 15L130 45V94" fill="#785873" stroke="#392d44" stroke-width="4"/><rect x="29" y="56" width="16" height="24" fill="#ffcf9a"/><path d="M6 100Q75 77 146 100" fill="#bc845e"/>',
+   '<rect width="150" height="105" fill="#a4d7aa"/><circle cx="34" cy="28" r="29" fill="#5caa72"/><circle cx="114" cy="25" r="36" fill="#4a9869"/><path d="M29 103V37M117 105V32" stroke="#7a7251" stroke-width="10"/><rect x="50" y="58" width="61" height="45" rx="6" fill="#c9ac79"/><rect x="69" y="74" width="23" height="29" fill="#676956"/>',
+   '<rect width="150" height="105" fill="#f0c8df"/><circle cx="107" cy="44" r="34" fill="none" stroke="#9166b0" stroke-width="5"/><path d="M107 9V79M72 44H142" stroke="#9166b0" stroke-width="4"/><path d="M75 105L107 54L140 105" fill="none" stroke="#9166b0" stroke-width="6"/><path d="M10 91L39 28L70 91Z" fill="#ffcf7e" stroke="#392d44" stroke-width="3"/><path d="M24 91V62M53 91V62" stroke="#f9eece" stroke-width="6"/>'
   ];
   list.className='world-map-route world-map-illustrated';
-  list.innerHTML='<svg class="world-map-winding-road" viewBox="0 0 100 1650" preserveAspectRatio="none" aria-hidden="true"><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095 S82 1278 40 1390 S20 1490 68 1595" fill="none" stroke="#352b49" stroke-width="18" stroke-linecap="round"/><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095" fill="none" stroke="#fff1cb" stroke-width="12" stroke-linecap="round" stroke-dasharray="3 3"/></svg>'+
+  list.innerHTML='<svg class="world-map-winding-road" viewBox="0 0 100 2200" preserveAspectRatio="none" aria-hidden="true"><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095 S82 1278 40 1390 S20 1490 68 1595 S84 1740 33 1870 S15 2000 69 2140" fill="none" stroke="#352b49" stroke-width="18" stroke-linecap="round"/><path d="M25 76 C82 126 81 185 56 230 S9 344 45 400 S87 509 56 563 S8 673 48 735 S86 858 51 919 S17 1039 70 1095 S82 1278 40 1390 S20 1490 68 1595 S84 1740 33 1870 S15 2000 69 2140" fill="none" stroke="#fff1cb" stroke-width="12" stroke-linecap="round" stroke-dasharray="3 3"/></svg>'+
   NAMES.map((name,i)=>{
     const world=worlds[i]||{levels:[],unlocked:i===0,completed:false,completedCount:0};
     const unlocked=world.unlocked,active=i===index,visited=world.completed;
