@@ -2675,3 +2675,185 @@ body:has(#overlay.hidden) .game>canvas{
 #overlay.progresspage .progress-section .mission-card:not(.mission-mastered).done{
  background:linear-gradient(115deg,#d7eedb,#fff9eb)!important;
 }
+
+
+/* Home v38: compact, single-viewport desktop menu. The navigation, settings
+   trigger and Daily Challenge stay in one natural-flow stack. */
+@media(min-width:651px) and (min-height:680px){
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus)>.panel{
+  display:grid!important;
+  grid-template-rows:auto auto auto auto minmax(0,1fr) auto!important;
+  row-gap:clamp(5px,.85vh,11px)!important;
+  align-content:stretch!important;
+  overflow:hidden!important;
+  height:100%!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) #menuContent{
+  grid-row:5!important;
+  min-height:0!important;
+  margin:6px 0 0!important;
+  gap:clamp(7px,.9vh,12px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  justify-content:flex-start!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-main-nav{
+  flex:0 0 auto!important;gap:clamp(5px,.8vh,9px)!important;
+  margin:0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-main-tile{
+  min-height:clamp(49px,7.1vh,66px)!important;
+  padding:6px 9px!important;
+  font-size:clamp(14px,1.1vw,19px)!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-main-icon{
+  width:clamp(24px,2.5vw,38px)!important;
+  height:clamp(24px,2.5vw,38px)!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-settings{
+  flex:0 0 auto!important;margin:0!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-settings>summary{
+  min-height:clamp(38px,5.2vh,51px)!important;
+  font-size:clamp(13px,1vw,17px)!important;
+  font-weight:900!important;
+  display:flex!important;justify-content:space-between;align-items:center;
+  padding:8px 14px!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-settings>summary::after{content:none!important}
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .daily-home-teaser{
+  flex:0 0 auto!important;min-height:clamp(50px,7vh,69px)!important;
+  padding:6px 10px!important;margin:0!important;gap:8px!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .daily-home-teaser small,
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .daily-home-teaser span{font-size:9px}
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .daily-home-teaser b{font-size:clamp(13px,1.1vw,17px)}
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .daily-home-teaser button{min-height:35px;padding:6px 9px}
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) #startBtn{
+  min-height:clamp(56px,8vh,80px)!important;
+  margin:0!important;padding:8px!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .home-brand h2{font-size:clamp(29px,3vw,53px)!important}
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .menu-hero{
+  grid-row:1 / 7!important;
+  height:100%!important;min-height:0!important;
+  position:relative!important;align-self:stretch!important;
+ }
+ #overlay:not(.hidden):not(.storepage):not(.gameover):not(.settings-focus) .app-version{
+  grid-row:6!important;
+  align-self:end;
+ }
+}
+
+/* Focused settings view: replaces the home content with a large, readable
+   dedicated page. The hero, start button, navigation and challenge disappear. */
+#overlay.settings-focus:not(.storepage):not(.gameover){
+ overflow:hidden!important;background:#fff9ee!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover)>.panel{
+ position:relative!important;
+ display:block!important;
+ width:min(100%,1100px)!important;max-width:1100px!important;
+ height:100%!important;max-height:100%!important;
+ padding:clamp(12px,3vw,35px)!important;
+ margin:auto!important;
+ overflow-y:auto!important;overflow-x:hidden!important;
+ background:#fff9ee!important;
+ border:0!important;box-shadow:none!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover)>.panel>:not(#menuContent){
+ display:none!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover) #menuContent{
+ display:block!important;
+ position:static!important;grid-column:auto!important;grid-row:auto!important;
+ width:100%!important;height:auto!important;
+ min-height:0!important;max-height:none!important;
+ overflow:visible!important;
+ margin:0!important;padding:0!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover) #menuContent>:not(.home-settings){
+ display:none!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover) #menuContent>.home-settings{
+ display:block!important;position:static!important;
+ width:100%!important;height:auto!important;min-height:0!important;
+ margin:0!important;padding:0!important;
+ border:0!important;box-shadow:none!important;
+ background:transparent!important;
+ color:#29243a!important;
+}
+#overlay.settings-focus:not(.storepage):not(.gameover) .home-settings>summary{
+ display:none!important;
+}
+#overlay:not(.settings-focus) .home-settings .settings-head{display:none}
+#overlay.settings-focus .settings-head{
+ display:flex!important;justify-content:space-between;align-items:center;
+ gap:16px;flex-wrap:wrap;
+ padding:0 0 20px;margin:0 0 20px;
+ border-bottom:2px dashed #cbb8a3;
+}
+#overlay.settings-focus .settings-head small{
+ display:block;font:900 12px system-ui;letter-spacing:2px;color:#8a6886;
+}
+#overlay.settings-focus .settings-head h2{
+ margin:5px 0;font:1000 clamp(29px,4vw,49px)/1.1 system-ui;color:#29243a;
+}
+#overlay.settings-focus .settings-head p{
+ margin:6px 0 0;font:650 clamp(13px,1.15vw,17px)/1.4 system-ui;color:#89758b;
+}
+#overlay.settings-focus .settings-close{
+ cursor:pointer;padding:13px 19px;min-height:50px;
+ border:3px solid #29243a;border-radius:15px;
+ background:#ffda81;box-shadow:3px 4px 0 #29243a;
+ color:#29243a;font:950 15px system-ui;
+}
+#overlay.settings-focus .home-settings .pre-run-card{
+ display:flex!important;flex-direction:column!important;
+ gap:22px!important;padding:clamp(14px,2vw,26px)!important;
+ border:3px solid #29243a!important;border-radius:21px!important;
+ background:linear-gradient(145deg,#fff2d7,#f9e9da)!important;
+ box-shadow:5px 6px 0 #29243a!important;
+}
+#overlay.settings-focus .home-settings .pre-run-card>div:first-child{
+ display:flex;flex-direction:column;gap:6px;
+ font:750 15px/1.4 system-ui;color:#59475d;
+}
+#overlay.settings-focus .home-settings .pre-run-card>div:first-child small{
+ font:900 12px system-ui;letter-spacing:1px;color:#806580;
+}
+#overlay.settings-focus .home-settings .pre-run-card>div:first-child b{
+ font:1000 clamp(17px,2vw,24px)/1.2 system-ui;color:#29243a;
+}
+#overlay.settings-focus .pre-run-settings{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:14px!important;align-items:stretch!important;
+}
+#overlay.settings-focus .pre-run-settings label{
+ display:flex!important;flex-direction:column!important;gap:9px!important;
+ min-width:0;font:900 14px system-ui!important;color:#29243a;
+}
+#overlay.settings-focus .pre-run-settings select,
+#overlay.settings-focus .pre-run-settings button{
+ display:flex;align-items:center;justify-content:center;
+ width:100%!important;min-width:0!important;min-height:58px!important;
+ padding:12px 15px!important;
+ background:#fffaf0!important;
+ border:2px solid #29243a!important;border-radius:13px!important;
+ box-shadow:2px 3px 0 #29243a!important;
+ color:#29243a!important;font:850 clamp(13px,1.15vw,16px)/1.2 system-ui!important;
+ cursor:pointer;
+}
+#overlay.settings-focus .pre-run-settings button[aria-pressed="true"]{
+ background:#d6efde!important;
+}
+#overlay.settings-focus .settings-close:focus-visible,
+#overlay.settings-focus .pre-run-settings :is(select,button):focus-visible{
+ outline:3px solid #29799d;outline-offset:3px;
+}
+@media(max-width:650px){
+ #overlay.settings-focus .pre-run-settings{grid-template-columns:1fr!important}
+ #overlay.settings-focus .settings-head{align-items:flex-start}
+ #overlay.settings-focus .settings-close{min-height:44px}
+}
