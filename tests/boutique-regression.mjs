@@ -11,10 +11,10 @@ assert.match(html,/patternTarget\.innerHTML=outfitPatternSvg/,'Patterns must app
 assert.match(html,/outfitPatternSvg\(item,'shop-pattern-'/,'Patterns must appear in cards');
 const clothing=html.match(/const clothing=\[([\s\S]*?)\];/)?.[1];assert.ok(clothing);
 const prices=[...clothing.matchAll(/cost:(\d+)/g)].map(m=>Number(m[1]));
-assert.equal(prices.length,12,'Do not lose outfits');
+assert.equal(prices.length,26,'Preserve the original twelve outfits and add fourteen');
 assert.equal(prices[0],0,'Classic stays free');
 assert.ok(prices.slice(1).every(p=>p>=250),'Paid outfits must cost >= 250');
-assert.equal((clothing.match(/pattern:'/g)||[]).length,11,'Every paid outfit needs a pattern');
+assert.equal((clothing.match(/pattern:'/g)||[]).length,25,'Every paid outfit needs a pattern');
 assert.match(html,/localStorage\.setItem\('grandma-clothes'/,'Keep old purchases');
 const script=readFileSync('app.js','utf8');assert.ok(script);new Function(script);
 console.log('PASS mobile boutique layout, correct hanger frames, outfit prices, patterns in all previews and gameplay, save data and syntax');
