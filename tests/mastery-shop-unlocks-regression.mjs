@@ -34,4 +34,25 @@ assert.match(app,/gate\.locked\|\|\(!owned&&coins<item\.cost\)/,'locked button c
 assert.match(app,/masteryShopGate\(item\)\.locked\|\|coins<item\.cost/,'event handler verifies gates');
 assert.match(app,/mastery-shop-note/,'book should explain shop reward');
 assert.match(app,/mastery-lock-note/,'shop should show prerequisite');
+const outfitSource=app.slice(app.indexOf('const clothing=['),app.indexOf('const gadgets=['));
+const outfitMatch=[...outfitSource.matchAll(/\{id:'([^']+)'[^\n]*?masteryUnlock:\{world:(\d+),star:(\d+)\}/g)];
+const mappedOutfits=outfitMatch.map(m=>({id:m[1],world:Number(m[2]),star:Number(m[3])}));
+const mappedAccessories=accessories.filter(x=>x.masteryUnlock).map(x=>({id:x.id,...x.masteryUnlock}));
+const all=[...mappedOutfits,...mappedAccessories];
+assert.equal(all.length,15,'15 World Mastery linked shop items across seven worlds');
+assert.equal(new Set(all.map(x=>x.world)).size,7,'Every world offers a shop reward');
+assert.equal(new Set(all.map(x=>x.world+':'+x.star)).size,all.length,'Each item has its own distinct mastery goal');
+assert.equal(new Set(all.map(x=>x.id)).size,all.length,'Item ids are unique');
+for(const item of all){
+ assert.ok(goal[item.world]?.goals[item.star],'Each shop item references an existing World Mastery star');
+ const candidate={id:item.id,masteryUnlock:{world:item.world,star:item.star}};
+ const state={};
+ const gateOne=new Function('WORLD_MASTERY','metaState',gateSource+';return masteryShopGate;')(window.GrannyWorldMastery,{mastery:state});
+ assert.equal(gateOne(candidate).locked,true,item.id+' locked before star');
+ assert.equal(gateOne(candidate,true).locked,false,item.id+' remains equipped if already purchased');
+ state[item.world]={stars:{[item.star]:true}};
+ assert.equal(gateOne(candidate).locked,false,item.id+' becomes purchasable when earned');
+}
+assert.ok(app.includes("if(masteryShopGate(item).locked||coins<item.cost)return;"),'Outfit and accessory event handlers must enforce price and Mastery');
+
 console.log('PASS Mastery unlocks, grandfathering, purchase controls and Adventure Book messaging');
