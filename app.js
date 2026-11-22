@@ -1391,9 +1391,44 @@ function drawObstacle(o){
  const R=(x,y,w,h,r,c)=>rounded(x,y,w,h,r,c),E=(x,y,rx,ry,c)=>ellipse(x,y,rx,ry,c),L=(x,y,xx,yy,c,z=3)=>line(x,y,xx,yy,c,z);
  const polygon=(pts,c)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach(([a,b],i)=>i?ctx.lineTo(a,b):ctx.moveTo(a,b));ctx.closePath();ctx.fill()};
  const wheel=(cx,cy,r=8)=>{E(cx,cy,r,r,'#333746');E(cx,cy,r*.53,r*.53,'#c4cbd4');E(cx,cy,r*.2,r*.2,'#586375')};
- if(['snowman','snowball','icicle','sled','boombox','cassette','arcade','disco-ball','barrel','cannonball','crab','treasure'].includes(t)){
-   R(2,4,w-4,h-6,Math.min(12,h*.22),t==='snowman'||t==='snowball'?'#d6f0fc':t==='icicle'?'#addbef':t==='sled'?'#b2d8e9':t==='boombox'||t==='cassette'||t==='arcade'||t==='disco-ball'?'#7e4ca0':'#c99c62');
-   label(o.type.emoji||'★',w/2,h/2,Math.min(36,h*.75));
+ // World-specific illustrated obstacles: fixed geometry and visible silhouettes.
+ if(t==='snowman'){
+  E(w/2,h-15,20,21,'#f8fdff');E(w/2,20,14,14,'#f8fdff');E(w/2-5,16,2,2,'#34334c');E(w/2+5,16,2,2,'#34334c');
+  polygon([[w/2,21],[w/2+13,24],[w/2,26]],'#f19a55');R(9,1,w-18,6,2,'#6f8eb1');R(13,-6,w-26,9,2,'#6f8eb1');
+ }else if(t==='snowball'){
+  E(w/2,h*.55,w*.45,h*.43,'#f8ffff');E(w*.37,h*.36,6,5,'#c7eafa');E(w*.65,h*.67,9,7,'#d2edf5');
+ }else if(t==='icicle'){
+  polygon([[4,2],[w-4,2],[w*.75,h*.54],[w*.51,h-2],[w*.28,h*.47]],'#b1e3f0');
+  polygon([[9,5],[w*.41,5],[w*.46,h*.63]],'#f5fdff');L(w*.63,10,w*.58,h*.52,'#ecfbff',3);
+ }else if(t==='sled'){
+  R(6,13,w-11,22,7,'#b45f56');R(11,2,w-23,14,4,'#e49a75');
+  L(4,h-6,w-3,h-6,'#678ca8',5);L(8,h-6,15,34,'#678ca8',3);L(w-12,h-6,w-18,34,'#678ca8',3);
+ }else if(t==='boombox'){
+  R(3,9,w-6,h-12,6,'#6c458b');L(w*.26,9,w*.26,1,'#e2a1d8',4);L(w*.26,1,w*.74,1,'#e2a1d8',4);L(w*.74,1,w*.74,9,'#e2a1d8',4);
+  E(w*.29,h*.59,11,11,'#322348');E(w*.71,h*.59,11,11,'#322348');E(w*.29,h*.59,6,6,'#ed78c9');E(w*.71,h*.59,6,6,'#74e3e6');
+  R(w*.39,14,w*.22,11,2,'#b3f6f5');
+ }else if(t==='cassette'){
+  R(2,5,w-4,h-9,5,'#ac6db7');R(7,10,w-14,17,4,'#5a356f');
+  E(w*.34,18,5,5,'#fde0e9');E(w*.67,18,5,5,'#fde0e9');R(15,h-8,w-30,5,2,'#6de9df');
+ }else if(t==='arcade'){
+  polygon([[8,2],[w-9,2],[w-3,h-2],[3,h-2]],'#70418f');
+  R(11,11,w-22,24,3,'#34235b');R(15,14,w-30,17,2,'#6de5ee');R(12,h-19,w-24,7,2,'#fb7bbf');E(w*.4,h-16,3,3,'#fff3aa');
+ }else if(t==='disco-ball'){
+  L(w/2,0,w/2,8,'#dcd1ee',3);E(w/2,h*.53,20,20,'#a8a0dc');
+  for(let i=0;i<3;i++){L(6,h*.34+i*9,w-5,h*.34+i*9,'#e6e4ff',2);L(w*.3+i*8,12,w*.3+i*8,h-4,'#f79ed2',2);}
+ }else if(t==='barrel'){
+  R(6,3,w-12,h-5,10,'#a67047');L(10,7,10,h-8,'#7f5037',4);L(w-10,7,w-10,h-8,'#7f5037',4);
+  R(5,10,w-10,6,2,'#d7b57a');R(5,h-17,w-10,6,2,'#d7b57a');
+ }else if(t==='cannonball'){
+  E(w/2,h/2,w*.44,h*.44,'#3c405a');E(w*.35,h*.34,7,6,'#7b8695');E(w*.65,h*.68,5,4,'#2c2e49');
+ }else if(t==='crab'){
+  E(w/2,h*.68,17,13,'#d96052');E(w*.36,h*.46,3,3,'#fff');E(w*.63,h*.46,3,3,'#fff');
+  for(let j=0;j<3;j++){L(13+j*8,h*.72,5+j*8,h-2,'#aa4945',3);L(w-13-j*8,h*.72,w-5-j*8,h-2,'#aa4945',3);}
+  E(5,h*.32,7,7,'#e78162');E(w-5,h*.32,7,7,'#e78162');
+ }else if(t==='treasure'){
+  R(3,h*.3,w-6,h*.67,6,'#a06b47');R(3,h*.19,w-6,h*.23,5,'#d9a65a');
+  L(10,h*.34,10,h*.91,'#f5cf73',4);L(w-10,h*.34,w-10,h*.91,'#f5cf73',4);
+  R(w*.43,h*.41,w*.14,h*.28,3,'#f7d768');
  }else if(t==='car'){
    // A bespoke compact car: animated wheels, headlamp, windshield and warning.
    if(o.charging){for(let i=0;i<3;i++)L(w+6+i*10,12+i*7,w+19+i*10,12+i*7,'#f7e5b0',2)}
