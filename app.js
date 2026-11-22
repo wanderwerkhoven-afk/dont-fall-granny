@@ -1327,11 +1327,11 @@ function background(tierIndex=currentTier){
  const road=ctx.createLinearGradient(0,ground,0,H);
  tier.road.forEach((color,i)=>road.addColorStop(i/2,color));
  ctx.fillStyle=road;ctx.fillRect(0,ground,W,H-ground);
- ctx.fillStyle=zone===4||zone===6?'#28223f':'#493e49';
+ ctx.fillStyle=[4,6,8].includes(zone)?'#28223f':'#493e49';
  ctx.fillRect(0,ground,W,5);
  const depth=H-ground;
  ctx.save();ctx.beginPath();ctx.rect(0,ground,W,depth);ctx.clip();
- const pavement=zone===4||zone===6?'#b0a4cb55':'#9e786355';
+ const pavement=[4,6,8].includes(zone)?'#b0a4cb55':'#9e786355';
  for(let row=0;row<6;row++){
   const top=ground+depth*row/6,bottom=ground+depth*(row+1)/6;
   ctx.strokeStyle=pavement;ctx.lineWidth=1.15;
@@ -1344,7 +1344,7 @@ function background(tierIndex=currentTier){
  }
  const markingSpacing=125,phase=((travel%markingSpacing)+markingSpacing)%markingSpacing;
  for(let x=-markingSpacing-phase;x<W+markingSpacing;x+=markingSpacing)
-  rounded(x,ground+Math.min(29,depth*.3),43,4,2,zone===4||zone===6?'#d5c6e3':'#edbb94');
+  rounded(x,ground+Math.min(29,depth*.3),43,4,2,[4,6,8].includes(zone)?'#d5c6e3':'#edbb94');
  ctx.restore();
 }
 function drawGrandma(){const outfit=clothing.find(c=>c.id===selectedClothes)||clothing[0];const x=grandma.x,y=grandma.y,bob=grandma.vy===0?Math.sin(walk)*2:0;const mood=grandmaExpressions.resolve({
@@ -1541,7 +1541,7 @@ function render(){
  // Tier is painted inside the world, rather than outside the game frame.
  if(state!=='recovery'){
   ctx.save();ctx.textAlign='center';
-  ctx.font='900 23px system-ui';ctx.fillStyle=(currentTier===4||currentTier>=6)?'#fff':'#493e49';
+  ctx.font='900 23px system-ui';ctx.fillStyle=([4,6,8].includes(currentTier%TIERS.length))?'#fff':'#493e49';
   ctx.globalAlpha=.82;
   ctx.fillText(`TIER ${currentTier+1}`,W/2,Math.max(108,ground*.35));
   ctx.font='800 15px system-ui';ctx.fillText(tier.name.toUpperCase(),W/2,Math.max(132,ground*.35+23));
