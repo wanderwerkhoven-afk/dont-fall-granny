@@ -357,7 +357,7 @@ const clothing=[
  {id:'night',name:'Nachtloper',cost:825,color:'#6250a5',hair:'#b4c4ec',pattern:'dots',patternColor:'#def7ed'},
  {id:'mint',name:'Mintgroen',cost:375,color:'#4eb79b',hair:'#f3e9e1',pattern:'dots',patternColor:'#def7ed'},
  {id:'denim',name:'Denim diva',cost:425,color:'#426c9e',hair:'#f2e4cf',pattern:'checks',patternColor:'#d8e6f5'},
- {id:'flower',name:'Bloemenfeest',cost:475,color:'#ed87ac',hair:'#f8f0de',pattern:'flowers',patternColor:'#fff2cd'},
+ {id:'flower',name:'Bloemenfeest',cost:475,masteryUnlock:{world:0,star:0},color:'#ed87ac',hair:'#f8f0de',pattern:'flowers',patternColor:'#fff2cd'},
  {id:'forest',name:'Boswandeling',cost:550,color:'#477a53',hair:'#ded9ca',pattern:'leaves',patternColor:'#d2e8bd'},
  {id:'disco',name:'Disco oma',cost:950,color:'#b55dcd',hair:'#f9e6ac',pattern:'sparkles',patternColor:'#fbe9ae'},
  {id:'coral',name:'Koraal chic',cost:625,color:'#f4866a',hair:'#e6e4e3',pattern:'waves',patternColor:'#ffe3d8'},
@@ -505,6 +505,15 @@ function achievementProgress(a){
  if(a.id==='collector-3')return Math.min(3,s.accessoriesOwned)+'/3';
  return '';
 }
+function masteryShopGate(item,owned=false){
+ const unlock=item?.masteryUnlock;
+ if(!unlock||owned)return {locked:false,label:''};
+ const world=WORLD_MASTERY.WORLD_MASTERY[unlock.world];
+ const goal=world?.goals[unlock.star];
+ if(!world||!goal)return {locked:true,label:'World Mastery vereist'};
+ const earned=WORLD_MASTERY.normalizeStars(metaState.mastery[unlock.world]||{})[unlock.star];
+ return {locked:!earned,label:world.name+' · '+goal.sticker};
+}
 function masteryFor(tier=currentTier){const id=tier%TIERS.length;return metaState.mastery[id]||(metaState.mastery[id]={distance:0,perfects:0,nearMisses:0,bestCombo:0})}
 function addWorldMastery(key,amount){if(replay.mode==='playback')return;
  const m=masteryFor();m[key]=(m[key]||0)+amount;m.bestCombo=Math.max(m.bestCombo||0,combo);
@@ -528,14 +537,16 @@ function renderAdventureBook(){
  const total=WORLD_MASTERY.totalStars(metaState.mastery);
  const pages=WORLD_MASTERY.WORLD_MASTERY.map((world,index)=>{
   const p=WORLD_MASTERY.progress(index,metaState.mastery[index]||{});
-  const goals=p.goals.map(goal=>
-   '<div class="book-goal '+(goal.earned?'earned':'')+'">'+
+  const goals=p.goals.map(goal=>{
+   const item=[...clothing,...META.cosmetics].find(product=>product.masteryUnlock?.world===index&&product.masteryUnlock?.star===goal.index);
+   const note=item?'<small class="mastery-shop-note">'+(goal.earned?'✓ Koopbaar in '+(item.type?'Extra’s':'Outfits')+' · '+item.cost+' 🪙':'🔒 Ontgrendelt '+item.name+' in de winkel')+'</small>':'';
+   return '<div class="book-goal '+(goal.earned?'earned':'')+'">'+
    '<span class="book-sticker" aria-label="'+(goal.earned?'Sticker verdiend':'Sticker vergrendeld')+'">'+
    (goal.earned?goal.symbol:'☆')+'</span>'+
    '<div class="book-goal-copy"><b>'+(goal.earned?goal.sticker:goal.label)+'</b>'+
    '<small>'+(goal.earned?'Permanent vrijgespeeld':Math.min(goal.value,goal.target)+' / '+goal.target)+'</small>'+
-   '<div class="book-meter"><span style="width:'+(goal.fraction*100).toFixed(1)+'%"></span></div></div></div>'
-  ).join('');
+   '<div class="book-meter"><span style="width:'+(goal.fraction*100).toFixed(1)+'%"></span></div>'+note+'</div></div>'
+  }).join('');
   return '<article class="adventure-page" style="--book-color:'+world.color+'">'+
    '<div class="adventure-page-heading"><span class="adventure-world-icon">'+world.icon+'</span>'+
    '<div><small>WERELD '+(index+1)+' · MASTERYPAGINA</small><h4>'+world.name+'</h4></div>'+
@@ -912,8 +923,8 @@ function showMenu(page='home'){
  }
  if(page==='collection'){
   document.getElementById('menuKicker').textContent='OMA’S EXTRA’S  ✦  ACCESSOIRES';
-  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(Boolean).length+' accessoires</span></div><div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id;return '<div class="store-item '+(selected?'selected':'')+'"><div class="preview accessory-preview'+(item.type==='companion'?' companion-preview':'')+'">'+(item.type==='companion'?'<span class="companion-preview-icon" aria-hidden="true">'+item.icon+'</span>':item.icon)+'</div><b>'+item.name+'</b><small>'+item.type+'</small><button data-accessory="'+item.id+'" '+(selected||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
-  menuContent.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{const item=META.cosmetics.find(x=>x.id===btn.dataset.accessory);if(!item)return;if(!ownedAccessories.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedAccessories.push(item.id);saveCoins()}selectedAccessories[item.type]=item.id;saveMetaState();evaluateAchievements();showMenu('collection')}));
+  menuContent.innerHTML='<div class="collection-preview"><b>OMA LOOK</b><span>'+((clothing.find(x=>x.id===selectedClothes)||clothing[0]).name)+' · '+Object.values(selectedAccessories).filter(Boolean).length+' accessoires</span></div><div class="store-grid">'+META.cosmetics.map(item=>{const owned=ownedAccessories.includes(item.id),selected=selectedAccessories[item.type]===item.id,gate=masteryShopGate(item,owned);return '<div class="store-item '+(selected?'selected':'')+(gate.locked?' mastery-locked':'')+'"><div class="preview accessory-preview'+(item.type==='companion'?' companion-preview':'')+'">'+(item.type==='companion'?'<span class="companion-preview-icon" aria-hidden="true">'+item.icon+'</span>':item.icon)+'</div><b>'+item.name+'</b><small>'+item.type+'</small>'+(gate.locked?'<span class="mastery-lock-note">🔒 '+gate.label+'</span>':item.masteryUnlock&&!owned?'<span class="mastery-ready-note">★ MASTERY VRIJGESPEELD</span>':'')+'<button data-accessory="'+item.id+'" '+(selected||gate.locked||(!owned&&coins<item.cost)?'disabled':'')+'>'+(selected?'✓ ACTIEF':owned?'AANTREKKEN':gate.locked?'🔒 VERDIEN MASTERY-STER':'🪙 '+item.cost+' · KOPEN')+'</button></div>'}).join('')+'</div><div class="set-bonuses">'+(META.collectionSets||[]).map(s=>'<div class="'+(metaState.collections.includes(s.id)?'done':'')+'"><b>🎁 '+s.name+'</b><small>'+s.requires.join(' + ')+' · '+s.reward+'</small></div>').join('')+'</div>';
+  menuContent.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{const item=META.cosmetics.find(x=>x.id===btn.dataset.accessory);if(!item)return;if(!ownedAccessories.includes(item.id)){if(masteryShopGate(item).locked||coins<item.cost)return;coins-=item.cost;ownedAccessories.push(item.id);saveCoins()}selectedAccessories[item.type]=item.id;saveMetaState();evaluateAchievements();showMenu('collection')}));
   return
  }
  document.getElementById('menuKicker').textContent=page==='clothes'?'OMA’S KLEDINGKAST  ✦  PAS JE LOOK AAN':'GADGET GARAGE  ✦  SPECIALE SPELMODI';
@@ -921,12 +932,13 @@ function showMenu(page='home'){
  menuContent.innerHTML='<div class="store-grid">'+items.map(item=>{
  const owned=page==='clothes'?ownedClothes.includes(item.id):ownedGadgets.includes(item.id);
  const selected=page==='clothes'&&selectedClothes===item.id;
+ const gate=masteryShopGate(item,owned);
  const symbol=page==='clothes'?`<svg viewBox="0 0 64 64" width="58" height="58"><circle cx="32" cy="18" r="13" fill="#f1c8aa" stroke="#392d44" stroke-width="2"/><path d="M15 33 Q32 24 49 33 L53 58 L11 58Z" fill="${item.color}" stroke="#392d44" stroke-width="3"/>${outfitPatternSvg(item,'shop-pattern-'+item.id,'M15 33 Q32 24 49 33 L53 58 L11 58Z')}<path d="M19 15 Q30 0 46 15" stroke="${item.hair}" stroke-width="9" fill="none"/></svg>`:(item.id==='plane'?'✈️':'🛵');
- return `<div class="store-item ${selected?'selected':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small><button data-buy="${item.id}" ${selected||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):'🪙 '+item.cost+' · KOPEN'}</button></div>`
+ return `<div class="store-item ${selected?'selected':''} ${gate.locked?'mastery-locked':''}"><div class="preview">${symbol}</div><b>${item.name}</b><small>${item.description||'Een nieuwe look voor oma'}</small>${gate.locked?'<span class="mastery-lock-note">🔒 '+gate.label+'</span>':item.masteryUnlock&&!owned?'<span class="mastery-ready-note">★ MASTERY VRIJGESPEELD</span>':''}<button data-buy="${item.id}" ${selected||gate.locked||(!owned&&coins<item.cost)?'disabled':''}>${selected?'✓ ACTIEF':owned?(page==='clothes'?'AANTREKKEN':'✓ ONTGRENDELD'):gate.locked?'🔒 VERDIEN MASTERY-STER':'🪙 '+item.cost+' · KOPEN'}</button></div>`
  }).join('')+'</div>';
  menuContent.querySelectorAll('[data-buy]').forEach(btn=>btn.addEventListener('click',()=>{
  const item=items.find(x=>x.id===btn.dataset.buy);if(!item)return;
- if(page==='clothes'){if(!ownedClothes.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedClothes.push(item.id)}selectedClothes=item.id}
+ if(page==='clothes'){if(!ownedClothes.includes(item.id)){if(masteryShopGate(item).locked||coins<item.cost)return;coins-=item.cost;ownedClothes.push(item.id)}selectedClothes=item.id}
  else if(!ownedGadgets.includes(item.id)){if(coins<item.cost)return;coins-=item.cost;ownedGadgets.push(item.id)}
  const previousScroll=menuPanel.scrollTop;
  saveCoins();saveInventory();showMenu(page);
