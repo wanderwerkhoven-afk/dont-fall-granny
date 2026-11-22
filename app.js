@@ -361,7 +361,21 @@ const clothing=[
  {id:'forest',masteryUnlock:{world:1,star:2},name:'Boswandeling',cost:4400,color:'#477a53',hair:'#ded9ca',pattern:'leaves',patternColor:'#d2e8bd'},
  {id:'disco',masteryUnlock:{world:5,star:1},name:'Disco oma',cost:11500,color:'#b55dcd',hair:'#f9e6ac',pattern:'sparkles',patternColor:'#fbe9ae'},
  {id:'coral',masteryUnlock:{world:3,star:0},name:'Koraal chic',cost:6500,color:'#f4866a',hair:'#e6e4e3',pattern:'waves',patternColor:'#ffe3d8'},
- {id:'midnight',masteryUnlock:{world:6,star:0},name:'Middernacht',cost:16000,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
+ {id:'midnight',masteryUnlock:{world:6,star:0},name:'Middernacht',cost:16000,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'},
+ {id:'lavender',name:'Lavendel droom',cost:3800,color:'#a18bd4',hair:'#eee3d8',pattern:'flowers',patternColor:'#f9e1ff'},
+ {id:'rainbow',name:'Regenboog rebel',cost:8200,masteryUnlock:{world:0,star:2},color:'#e786b7',hair:'#f7f0d7',pattern:'stripes',patternColor:'#ffe18f'},
+ {id:'sailor',name:'Zeebries',cost:6100,color:'#3f92b7',hair:'#eee7d9',pattern:'waves',patternColor:'#d8f7ff'},
+ {id:'ladybug',name:'Lieveheersbeestje',cost:7200,color:'#dc5559',hair:'#f2e6d9',pattern:'dots',patternColor:'#29243a'},
+ {id:'sunflower',name:'Zonnebloem chic',cost:9600,masteryUnlock:{world:3,star:1},color:'#d99d39',hair:'#f6e9d2',pattern:'flowers',patternColor:'#643d27'},
+ {id:'aurora',name:'Noorderlicht',cost:12500,masteryUnlock:{world:4,star:2},color:'#357f86',hair:'#dbebf2',pattern:'waves',patternColor:'#a7efd8'},
+ {id:'candy-cane',name:'Suikerstok-stijl',cost:13000,masteryUnlock:{world:5,star:2},color:'#ed779f',hair:'#fff2ea',pattern:'stripes',patternColor:'#fff8e7'},
+ {id:'galaxy',name:'Melkweg magie',cost:19000,masteryUnlock:{world:6,star:2},color:'#493b89',hair:'#d6d1fa',pattern:'stars',patternColor:'#93e3fa'},
+ {id:'royal',name:'Koninklijke oma',cost:22000,color:'#773fb0',hair:'#f8ecdc',pattern:'sparkles',patternColor:'#ffd56c'},
+ {id:'pirate',name:'Piraat Granny',cost:10800,masteryUnlock:{world:2,star:1},color:'#414750',hair:'#f6e9db',pattern:'checks',patternColor:'#d7b99b'},
+ {id:'winter',name:'Winterwonder',cost:8800,color:'#6da9cd',hair:'#f4f2f0',pattern:'stars',patternColor:'#fffdf5'},
+ {id:'safari',name:'Safari superoma',cost:7900,color:'#bea16a',hair:'#eae1cf',pattern:'leaves',patternColor:'#587d4b'},
+ {id:'neon',name:'Neon nachtwacht',cost:16500,color:'#54376a',hair:'#e6e3d9',pattern:'sparkles',patternColor:'#80ffba'},
+ {id:'cherry',name:'Kersenfeest',cost:4800,color:'#b94b76',hair:'#f7eada',pattern:'dots',patternColor:'#fbe2b5'}
 ];
 const gadgets=[
  {id:'plane',name:'Vliegtuig',cost:12000,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
