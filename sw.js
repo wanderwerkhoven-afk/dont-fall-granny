@@ -1,11 +1,11 @@
 /* Don't Trip Grandma – versioned offline app shell. */
-const CACHE_NAME = 'dont-trip-grandma-offline-v49-phase-two-wardrobe';
+const CACHE_NAME = 'dont-trip-grandma-offline-v50-hat-collection';
 const CACHE_PREFIX = 'dont-trip-grandma-offline-';
 const APP_SHELL = [
   './',
   './index.html',
-  './style.css?v=42',
-  './game-meta.js?v=49',
+  './style.css?v=50',
+  './game-meta.js?v=50',
   './progression.js?v=10',
   './game-state.js?v=17',
   './run-results.js?v=17',
@@ -14,7 +14,7 @@ const APP_SHELL = [
   './danger-soundscape.js?v=23',
   './daily-challenge.js?v=26',
   './replay-engine.js?v=29',
-  './app.js?v=49',
+  './app.js?v=50',
   './granny-expressions.js?v=14',
   './storybook-worlds.js?v=49',
   './levels.js?v=49',
