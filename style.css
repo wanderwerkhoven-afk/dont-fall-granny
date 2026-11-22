@@ -3272,3 +3272,28 @@ body:has(#overlay.hidden) .game>canvas{
  #overlay.storepage #menuContent{order:3!important;flex:1 1 auto!important}
  #overlay.storepage .menu-tabs .menu-back{min-height:44px!important}
 }
+
+/* World Mastery store unlocks: visible prerequisites without changing pricing. */
+#overlay.storepage .store-item.mastery-locked{
+ background:linear-gradient(145deg,#f4f0ed,#fffaf1)!important;
+ border-color:#9d919f!important;
+ box-shadow:2px 3px 0 #7b6f80!important;
+}
+#overlay.storepage .store-item.mastery-locked .preview{filter:saturate(.55);opacity:.76}
+#overlay.storepage .store-item .mastery-lock-note,
+#overlay.storepage .store-item .mastery-ready-note{
+ display:block;width:100%;padding:7px 9px;
+ border:1.5px solid #695a70;border-radius:9px;
+ font:800 clamp(10px,.8vw,13px)/1.35 system-ui;
+ color:#5e5067;background:#f6e8db;text-align:center;
+}
+#overlay.storepage .store-item .mastery-ready-note{background:#e0efdb;border-color:#7aab86;color:#315f43}
+#overlay.storepage .store-item.mastery-locked button:disabled{
+ opacity:1!important;background:#e9e2e6!important;color:#766c78!important;
+ cursor:not-allowed!important;
+}
+#overlay.progresspage .mastery-shop-note{
+ display:block;margin-top:7px;font:800 11px/1.4 system-ui;
+ color:#6f5376;
+}
+#overlay.progresspage .book-goal.earned .mastery-shop-note{color:#356c4c}
