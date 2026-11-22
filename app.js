@@ -364,8 +364,8 @@ const clothing=[
  {id:'midnight',masteryUnlock:{world:6,star:0},name:'Middernacht',cost:16000,color:'#263e63',hair:'#e6d7f3',pattern:'stars',patternColor:'#ffeab0'}
 ];
 const gadgets=[
- {id:'plane',name:'Vliegtuig',cost:1200,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
- {id:'booster',name:'Scootmobiel',cost:1000,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
+ {id:'plane',name:'Vliegtuig',cost:12000,description:'Upgrade: extra beschermschild voor vliegevents · tik om te vliegen.'},
+ {id:'booster',name:'Scootmobiel',cost:10000,description:'Upgrade: extra beschermschild voor Scootmobiel-events · wissel van baan.'}
 ];
 let modeObstacles=[],modeSpawn=0,modeDistance=0,modeCamera=0,modeGraceTime=0;let ownedClothes=['classic'],selectedClothes='classic',ownedGadgets=[],vehicle=null,vehicleTime=0,vehicleCooldown=24,vehicleLane=1,vehicleVelocity=0,vehicleSpawnWait=25,menuPage='home';
 let ownedAccessories=['cane-classic'],selectedAccessories={cane:'cane-classic',glasses:null,companion:null};
