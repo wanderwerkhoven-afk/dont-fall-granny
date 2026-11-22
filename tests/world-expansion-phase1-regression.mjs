@@ -12,7 +12,7 @@ storage.set('granny-levels-v2',JSON.stringify({completed:Array.from({length:49},
 const w={};
 new Function('window','localStorage',levels)(w,localStorage);
 const worldNames=w.GrannyLevels.getWorlds().map(x=>x.name);
-assert.deepEqual(worldNames.slice(7),['Winterwonderland','Neon 80’s','Piratenbaai']);
+assert.deepEqual(worldNames.slice(7,10),['Winterwonderland','Neon 80’s','Piratenbaai']);
 assert.equal(w.GrannyLevels.LEVELS.length,91);
 assert.equal(w.GrannyLevels.getSelected(),48,'Preserve selected old level');
 assert.equal(w.GrannyLevels.getLevels()[48].best,1410,'Preserve existing score');
@@ -30,7 +30,7 @@ for(let i=7;i<10;i++){
  assert.equal(m.GrannyWorldMastery.progress(i,entry).earned,3);
 }
 const metaWindow={};new Function('window',meta)(metaWindow);
-assert.deepEqual(metaWindow.GrannyMeta.worldRules.slice(7).map(x=>x.id),['winter','neon','pirate']);
+assert.deepEqual(metaWindow.GrannyMeta.worldRules.slice(7,10).map(x=>x.id),['winter','neon','pirate']);
 assert.equal(metaWindow.GrannyMeta.worldChallenges.length,13);
 const ev={};new Function('window',event)(ev);
 assert.equal(ev.GrannyWorldEvents.EVENTS.length,13);
@@ -44,4 +44,4 @@ for(const kind of ['snowman','snowball','icicle','sled','boombox','cassette','ar
 assert.match(game,/currentTier%TIERS\.length/);
 assert.match(game,/function drawObstacle\(/);
 new Function(game);
-console.log('PASS phase-one expansion: 91 levels, migration, 13 scenes, 12 hazards, 3 events, 30 stars and new physics');
+console.log('PASS phase-one expansion: 91 levels, migration, 13 scenes, 12 hazards, 3 original phase-one events and permanent stars and new physics');
