@@ -36,7 +36,18 @@ const cosmetics=[
  {id:'glasses-heart',type:'glasses',icon:'💗',name:'Hartjesbril',cost:7500,masteryUnlock:{world:5,star:0}},
  {id:'glasses-star',type:'glasses',icon:'⭐',name:'Sterrenbril',cost:8500,masteryUnlock:{world:4,star:1}},
  {id:'companion-duck',type:'companion',icon:'🦆',name:'Wandel-eendje',cost:5500,masteryUnlock:{world:1,star:1}},
- {id:'companion-cat',type:'companion',icon:'🐈',name:'Trouwe kat',cost:6800,masteryUnlock:{world:3,star:2}}
+ {id:'companion-cat',type:'companion',icon:'🐈',name:'Trouwe kat',cost:6800,masteryUnlock:{world:3,star:2}},
+ {id:'cane-rose',type:'cane',icon:'🌹',name:'Rozenwandelstok',cost:4200},
+ {id:'cane-crystal',type:'cane',icon:'💎',name:'Kristallen wandelstok',cost:12500},
+ {id:'cane-rainbow',type:'cane',icon:'🌈',name:'Regenboogwandelstok',cost:15500},
+ {id:'glasses-sun',type:'glasses',icon:'😎',name:'Zonnebril deluxe',cost:5500},
+ {id:'glasses-moon',type:'glasses',icon:'🌙',name:'Maanbril',cost:8800},
+ {id:'glasses-rainbow',type:'glasses',icon:'🌈',name:'Regenboogbril',cost:10500},
+ {id:'companion-frog',type:'companion',icon:'🐸',name:'Kikker Karel',cost:6800},
+ {id:'companion-dog',type:'companion',icon:'🐕',name:'Wandelhondje',cost:9200},
+ {id:'companion-owl',type:'companion',icon:'🦉',name:'Uiltje Luna',cost:12500},
+ {id:'companion-fox',type:'companion',icon:'🦊',name:'Vosje Vinnie',cost:14800},
+ {id:'companion-unicorn',type:'companion',icon:'🦄',name:'Eenhoornvriend',cost:22000}
 ];
 const worldRules=[
  {id:'neighborhood',label:'Rustige start',speed:1,gravity:1850,jump:-690,coinValue:1,candyRate:1,attackBonus:0},
