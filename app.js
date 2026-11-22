@@ -88,7 +88,10 @@ const TIERS=[
  {name:'De woestijn',sky:['#f8ad77','#ffd2a0','#ffe8b5'],hill:'#dcaa72',near:'#efc88b',road:['#dca16d','#f3ca8c','#cb8b62'],building:'#c98d69',tree:'#aaaf70',sun:'#fff0a0',icon:'🌵'},
  {name:'De nacht',sky:['#20274f','#4e4479','#a37b99'],hill:'#575477',near:'#696287',road:['#756a85','#9c849b','#554e70'],building:'#424569',tree:'#4a6374',sun:'#fff5cb',icon:'🌙'},
  {name:'De snoepwereld',sky:['#e7b6e9','#ffd3e8','#fff0d0'],hill:'#d7a5cc',near:'#eac1d7',road:['#e5afbc','#f8d5c9','#ce98bd'],building:'#d5a7d8',tree:'#f2a5c5',sun:'#fff1b8',icon:'🍬'},
- {name:'De ruimte',sky:['#10152f','#26224d','#4b376e'],hill:'#443c73',near:'#62518b',road:['#71618c','#9b83ac','#50456e'],building:'#3e3c71',tree:'#7771b0',sun:'#f1e4ff',icon:'🚀'}
+ {name:'De ruimte',sky:['#10152f','#26224d','#4b376e'],hill:'#443c73',near:'#62518b',road:['#71618c','#9b83ac','#50456e'],building:'#3e3c71',tree:'#7771b0',sun:'#f1e4ff',icon:'🚀'},
+ {name:'Winterwonderland',sky:['#a4d8f1','#dbf4fc','#f5fbff'],hill:'#cee8f2',near:'#e3f4fa',road:['#a6cee0','#e5f4f7','#91bfd4'],building:'#a9d2e1',tree:'#7dacc1',sun:'#fefcff',icon:'❄️'},
+ {name:'Neon 80’s',sky:['#191339','#462264','#aa368f'],hill:'#53277c',near:'#773a92',road:['#402e6c','#794c9d','#342457'],building:'#553276',tree:'#fd62bf',sun:'#ff98d7',icon:'🕹️'},
+ {name:'Piratenbaai',sky:['#78cddd','#b4eee3','#f9e7bb'],hill:'#5ab3ac',near:'#e9cc8e',road:['#a9794c','#d7a56b','#805938'],building:'#997857',tree:'#56a78a',sun:'#ffe6a2',icon:'🏴‍☠️'}
 ];
 let currentTier=0,tierFlash=0,transition=0,previousTier=0,coins=0,coinsRun=0,coinItems=[],coinDistance=420,boostTime=0,revives=0;
 let levelStartScore=0,lastLevelCelebrated=-1,activeLevel=0;
@@ -126,7 +129,10 @@ const zoneTypes=[
  ['cactus','scorpion','rock','tumble'],
  ['bat','ghost','pumpkin','cat'],
  ['candybox','lollipop','donut','gum'],
- ['asteroid','alien','satellite','moonrock']
+ ['asteroid','alien','satellite','moonrock'],
+ ['snowman','snowball','icicle','sled'],
+ ['boombox','cassette','arcade','disco-ball'],
+ ['barrel','cannonball','crab','treasure']
 ];
 const extras=[
  {id:'log',w:57,h:35,emoji:'🪵'},{id:'mushroom',w:43,h:44,emoji:'🍄'},
@@ -134,7 +140,10 @@ const extras=[
  {id:'cactus',w:46,h:58,emoji:'🌵'},{id:'scorpion',w:46,h:30,emoji:'🦂'},{id:'rock',w:48,h:34,emoji:'🪨'},{id:'tumble',w:46,h:39,emoji:'🌾'},
  {id:'bat',w:46,h:35,emoji:'🦇'},{id:'ghost',w:45,h:52,emoji:'👻'},{id:'pumpkin',w:48,h:44,emoji:'🎃'},
  {id:'candybox',w:45,h:42,emoji:'🍫'},{id:'lollipop',w:42,h:57,emoji:'🍭'},{id:'donut',w:46,h:42,emoji:'🍩'},{id:'gum',w:44,h:36,emoji:'🧁'},
- {id:'asteroid',w:47,h:44,emoji:'☄️'},{id:'alien',w:47,h:48,emoji:'👾'},{id:'satellite',w:54,h:52,emoji:'🛰️'},{id:'moonrock',w:49,h:37,emoji:'🪨'}
+ {id:'asteroid',w:47,h:44,emoji:'☄️'},{id:'alien',w:47,h:48,emoji:'👾'},{id:'satellite',w:54,h:52,emoji:'🛰️'},{id:'moonrock',w:49,h:37,emoji:'🪨'},
+ {id:'snowman',w:45,h:56,emoji:'⛄'},{id:'snowball',w:42,h:41,emoji:'❄️'},{id:'icicle',w:44,h:56,emoji:'🧊'},{id:'sled',w:65,h:39,emoji:'🛷'},
+ {id:'boombox',w:56,h:46,emoji:'📻'},{id:'cassette',w:47,h:38,emoji:'📼'},{id:'arcade',w:47,h:63,emoji:'🕹️'},{id:'disco-ball',w:44,h:45,emoji:'🪩'},
+ {id:'barrel',w:48,h:54,emoji:'🛢️'},{id:'cannonball',w:43,h:43,emoji:'💣'},{id:'crab',w:46,h:38,emoji:'🦀'},{id:'treasure',w:54,h:43,emoji:'🧰'}
 ];
 const allTypes=[...types,...extras];
 // Current single-file game has no separate Balance/Fall controllers: keep this small
@@ -577,7 +586,7 @@ function currentWorldRule(){return META.worldRules[currentTier%Math.max(1,META.w
 function eventLabel(){return META.worldChallenges?.[currentTier%Math.max(1,META.worldChallenges.length)]||{icon:'⚡',label:'Wereldevent'}}
 function worldEventSpeed(){
  if(worldEventTime<=0)return 1;
- const zone=currentTier%7;
+ const zone=currentTier%TIERS.length;
  if(zone===2)return 1.18;
  if(zone===3)return 1+Math.sin(elapsed*2.1)*.1;
  if(zone===5)return 1.1;
@@ -585,9 +594,9 @@ function worldEventSpeed(){
 }
 function worldEventGravity(){
  if(worldEventTime<=0)return 1;
- return currentTier%7===6?.72:1
+ return currentTier%TIERS.length===6?.72:1
 }
-function worldEventCoinMultiplier(){return worldEventTime>0&&currentTier%7===5?1.5:1}
+function worldEventCoinMultiplier(){return worldEventTime>0&&currentTier%TIERS.length===5?1.5:1}
 function showEvent(text,duration=2){
  if(!eventBannerEl)return;eventBannerEl.textContent=text;eventBannerEl.classList.add('show');setTimeout(()=>eventBannerEl.classList.remove('show'),duration*1000)
 }
@@ -750,7 +759,7 @@ function tickWorldEvent(dt){
  worldEvents.tick(dt,{
   state,controllerState:runFlow.current,vehicle,
   recovery:recoveryWindow.active,paused:state==='paused',
-  world:currentTier%7,distance:score,
+  world:currentTier%TIERS.length,distance:score,
   safeToEnter:obstacles.every(o=>o.x<grandma.x-110||o.x>grandma.x+grandma.w+260)
  },{
   onStart:(ev,reason)=>{const started=beginWorldEvent(ev);if(started)saveWorldEventPity(0);return started;},
@@ -891,7 +900,7 @@ function showMenu(page='home'){
  menuTabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
  if(page==='home'){
   const nextUnlock=LEVELS.getLevels().find(l=>!l.completed);
-  document.getElementById('menuKicker').textContent='OMA’S LEVELAVONTUUR  ✦  49 LEVELS';
+  document.getElementById('menuKicker').textContent='OMA’S LEVELAVONTUUR  ✦  '+LEVELS.LEVELS.length+' LEVELS';
   document.getElementById('menuRecord').textContent='🏁 RECORD '+best+' M';
   const outfit=clothing.find(x=>x.id===selectedClothes)||clothing[0],pin=pinnedMission(),rank=currentRank(),unlockedWorld=LEVELS.getWorlds().filter(w=>w.unlocked).length-1,activeAccessories=Object.values(selectedAccessories).filter(Boolean).map(id=>META.cosmetics.find(x=>x.id===id)?.name).filter(Boolean),gadgetLabel=ownedGadgets.length?ownedGadgets.map(id=>gadgets.find(g=>g.id===id)?.name).filter(Boolean).join(' / '):'Geen gadget';
   menuContent.innerHTML='<details class="home-settings"><summary>⚙ Spelinstellingen <span aria-hidden="true">›</span></summary><div class="settings-head"><div><small>OMA’S SPELMENU</small><h2>Spelinstellingen</h2><p>Maak je wandeling helemaal naar wens.</p></div><button type="button" class="settings-close" aria-label="Sluit spelinstellingen">✕ Sluiten</button></div><div class="pre-run-card"><div><small>WERELD '+(LEVELS.LEVELS[LEVELS.getSelected()].worldIndex+1)+' · LEVEL '+LEVELS.LEVELS[LEVELS.getSelected()].number+' / 7 · '+LEVELS.LEVELS[LEVELS.getSelected()].goal+' M</small><b>'+outfit.name+' · '+(rank?.name||'Buurtwandelaar')+'</b><span>'+(pin?pin.icon+' '+pin.label:'Geen missie')+'</span></div><div class="pre-run-settings"><label>Moeilijkheid <select id="difficultySelect">'+Object.values(META.difficultyModes||{}).map(d=>'<option value="'+d.id+'" '+(d.id===metaState.settings.difficulty?'selected':'')+'>'+d.label+'</option>').join('')+'</select></label><label>Startwereld <select id="worldSelect">'+TIERS.map((t,i)=>'<option value="'+i+'" '+(i>unlockedWorld?'disabled':'')+' '+(i===LEVELS.LEVELS[LEVELS.getSelected()].worldIndex?'selected':'')+'>'+t.icon+' '+t.name+'</option>').join('')+'</select></label><button type="button" data-toggle-setting="music" aria-pressed="'+Boolean(metaState.settings.music)+'">'+(metaState.settings.music?'♫ Muziek aan':'♫ Muziek uit')+'</button><button type="button" data-toggle-setting="sfx" aria-pressed="'+Boolean(metaState.settings.sfx)+'">'+(metaState.settings.sfx?'🔊 Geluidseffecten aan':'🔇 Geluidseffecten uit')+'</button><button type="button" data-toggle-setting="visualWarnings" aria-pressed="'+Boolean(metaState.settings.visualWarnings)+'">'+(metaState.settings.visualWarnings?'◉ Waarschuwingen aan':'◎ Waarschuwingen uit')+'</button><button type="button" data-toggle-setting="ghost" aria-pressed="'+Boolean(metaState.settings.ghost)+'">'+(metaState.settings.ghost?'👻 Ghost Granny aan':'👻 Ghost Granny uit')+'</button><button type="button" data-toggle-setting="haptics">'+(metaState.settings.haptics?'📳 Haptics':'📴 Haptics')+'</button></div></div></details><div class="home-hub"><button class="home-hub-tile home-map-tile" type="button" id="worldMapButtonLegacy" aria-haspopup="dialog" aria-expanded="false"><span class="tile-icon" aria-hidden="true">'+HOME_ICONS.map+'</span><b>Wereldkaart</b></button><button class="home-hub-tile" type="button" data-open-page="clothes"><span class="tile-icon">'+HOME_ICONS.outfits+'</span><b>Outfits</b></button><button class="home-hub-tile" type="button" data-open-page="gadgets"><span class="tile-icon">'+HOME_ICONS.gadgets+'</span><b>Gadgets</b></button><button class="home-hub-tile" type="button" data-open-page="progress"><span class="tile-icon">'+HOME_ICONS.progress+'</span><b>Progressie</b></button><button class="home-hub-tile" type="button" data-open-page="collection"><span class="tile-icon">'+HOME_ICONS.extras+'</span><b>Extra’s</b></button><div class="home-achievement"><small>🏆 '+metaState.achievements.length+'/'+META.achievements.length+' ACHIEVEMENTS · XP '+(metaState.stats.xp||0)+'</small><strong>🏁 '+best+' m · 🔥 '+metaState.records.combo+'</strong></div>'+(nextUnlock?'<div class="home-next-unlock">VOLGENDE LEVELDOEL: '+nextUnlock.name+' · '+nextUnlock.number+'/7 · '+nextUnlock.goal+' m</div>':'<div class="home-next-unlock">ALLE 49 LEVELS BEHAALD</div>')+'</div>';
@@ -1289,7 +1298,7 @@ for(const o of obstacles){
 for(const o of obstacles){
  if(!o.hit&&!o.nearMiss&&o.nearMissCandidate&&o.x+o.w<body.x){
   o.nearMiss=true;
-  const focus=nearMissController.register();if(currentWorldRule().focusBonus)nearMissController.focus=Math.min(.04,nearMissController.focus+currentWorldRule().focusBonus+(worldEventTime>0&&currentTier%7===4?.01:0));
+  const focus=nearMissController.register();if(currentWorldRule().focusBonus)nearMissController.focus=Math.min(.04,nearMissController.focus+currentWorldRule().focusBonus+(worldEventTime>0&&currentTier%TIERS.length===4?.01:0));
   grandmaExpressions.react('near_miss');nearMissRun++;if(!daily.active&&replay.mode!=='playback'){metaState.stats.nearMisses++;incrementMission('near');}registerCombo(comebackTime>0?2:1,'NEAR MISS · COMBO '+(comebackTime>0?'+2':'+1'));if(!daily.active&&replay.mode!=='playback'){addWorldMastery('nearMisses',1);evaluateAchievements();}
   recoveryFeedback=1.35;recoveryFeedbackText='NEAR\nMISS!';
   statusEl.textContent='NEAR MISS! +FOCUS · 🔥 '+combo;
@@ -1303,7 +1312,7 @@ function rounded(x,y,w,h,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.roundR
 function background(tierIndex=currentTier){
  // Exactly one illustrated world renderer. The old duplicate scenery used
  // independent modulo-wrap loops and caused visual clutter and teleporting.
- const zone=((tierIndex%7)+7)%7,tier=TIERS[zone];
+ const zone=((tierIndex%TIERS.length)+TIERS.length)%TIERS.length,tier=TIERS[zone];
  const sky=ctx.createLinearGradient(0,0,0,ground);
  tier.sky.forEach((color,i)=>sky.addColorStop(i/2,color));
  ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
@@ -1382,7 +1391,10 @@ function drawObstacle(o){
  const R=(x,y,w,h,r,c)=>rounded(x,y,w,h,r,c),E=(x,y,rx,ry,c)=>ellipse(x,y,rx,ry,c),L=(x,y,xx,yy,c,z=3)=>line(x,y,xx,yy,c,z);
  const polygon=(pts,c)=>{ctx.fillStyle=c;ctx.beginPath();pts.forEach(([a,b],i)=>i?ctx.lineTo(a,b):ctx.moveTo(a,b));ctx.closePath();ctx.fill()};
  const wheel=(cx,cy,r=8)=>{E(cx,cy,r,r,'#333746');E(cx,cy,r*.53,r*.53,'#c4cbd4');E(cx,cy,r*.2,r*.2,'#586375')};
- if(t==='car'){
+ if(['snowman','snowball','icicle','sled','boombox','cassette','arcade','disco-ball','barrel','cannonball','crab','treasure'].includes(t)){
+   R(2,4,w-4,h-6,Math.min(12,h*.22),t==='snowman'||t==='snowball'?'#d6f0fc':t==='icicle'?'#addbef':t==='sled'?'#b2d8e9':t==='boombox'||t==='cassette'||t==='arcade'||t==='disco-ball'?'#7e4ca0':'#c99c62');
+   label(o.type.emoji||'★',w/2,h/2,Math.min(36,h*.75));
+ }else if(t==='car'){
    // A bespoke compact car: animated wheels, headlamp, windshield and warning.
    if(o.charging){for(let i=0;i<3;i++)L(w+6+i*10,12+i*7,w+19+i*10,12+i*7,'#f7e5b0',2)}
    R(5,17,w-10,24,8,'#d85861');polygon([[17,18],[29,4],[65,4],[78,18]],'#ee7780');
@@ -1455,7 +1467,7 @@ function finishVehicle(){
 }
 function drawVehicleMode(){
  const plane=vehicle==='plane';
- const eventWorld=worldEvents.current?.world??currentTier%7;
+ const eventWorld=worldEvents.current?.world??currentTier%TIERS.length;
  const eventTheme=TIERS[eventWorld];
  const eventColor=worldEvents.current?.accent||'#b2d6cf';
  ctx.save();
@@ -1549,7 +1561,7 @@ for(const c of coinItems){
  ellipse(0,0,12,12,'#f8ad2c');ellipse(0,0,9,9,'#ffe17a');
  ctx.fillStyle='#a76b1c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 13px system-ui';ctx.fillText('€',0,1);ctx.restore();
 }
-for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawLastSecondGrab();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%7===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
+for(const c of candies)drawCandy(c);for(const o of obstacles)drawObstacle(o);drawRecoveryGrandma();drawRecoveryMeter();drawLastSecondGrab();drawRecoveryFeedback();for(const p of particles)ellipse(p.x,p.y,4,4,p.color);for(const p of rewardPopups){ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.textAlign='center';ctx.font='900 17px system-ui';ctx.strokeStyle='#493e49';ctx.lineWidth=4;ctx.fillStyle='#ffdc70';ctx.strokeText(p.text,p.x,p.y);ctx.fillText(p.text,p.x,p.y);ctx.restore();}if(boostTime>0){rounded(18,57,175,32,10,'#fff2b6');ctx.fillStyle='#493e49';ctx.font='bold 15px system-ui';ctx.fillText('⚡ Turbo '+Math.ceil(boostTime)+'s',29,79)}if(comboBurstTime>0){ctx.save();ctx.globalAlpha=Math.min(.22,comboBurstTime*.14);ctx.fillStyle='#ffd866';ctx.fillRect(0,0,W,H);ctx.restore()}if(worldEventTime>0&&currentTier%TIERS.length===3){ctx.save();ctx.globalAlpha=.12;ctx.fillStyle='#d49a63';for(let i=0;i<24;i++)ctx.fillRect((i*79+elapsed*95)%W,(i*43)%ground,18,3);ctx.restore()}if(flash>0){ctx.fillStyle=`rgba(255,220,140,${flash*.3})`;ctx.fillRect(0,0,W,H)}ctx.restore();drawReplayGhost()}
 let dailyFixedAccumulator=0;
 function replayStep(){
  replayStepping=true;
@@ -1617,7 +1629,7 @@ function updateReplayDebugPanel(){
 
  replayDebug.hidden=false;
  window.__grannyDebug={fall:()=>end(),result:()=>showRunResult(),retry:()=>retryRun(),
-  setWorldForTest:world=>{if(state==='playing'&&!worldEvents.used)currentTier=Math.max(0,Math.min(6,world|0));},
+  setWorldForTest:world=>{if(state==='playing'&&!worldEvents.used)currentTier=Math.max(0,Math.min(TIERS.length-1,world|0));},
   advanceWorldEventForTest:seconds=>{for(let i=0;i<Math.ceil(seconds/.05);i++)tickWorldEvent(.05);},
   dangerTestObstacle:(id='cat',seconds=.7)=>{
    if(state!=='playing'||runFlow.current!==GameState.RUNNING)return false;
