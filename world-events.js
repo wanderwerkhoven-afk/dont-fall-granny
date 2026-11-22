@@ -13,7 +13,10 @@ const EVENTS=Object.freeze([
  {id:'ruimte_plane',world:6,title:'De ruimte · Sterrenvlucht',mode:'plane',duration:12,icon:'🚀',accent:'#c3bae9',caption:'Zweef tussen ruimterotsen'},
  {id:'winter_scooter',world:7,title:'Winterwonderland · IJsslalom',mode:'booster',duration:11,icon:'❄️',accent:'#cfebf7',caption:'Slalom langs sneeuwbanken'},
  {id:'neon_plane',world:8,title:'Neon 80’s · Arcadevlucht',mode:'plane',duration:11,icon:'🕹️',accent:'#dd86dc',caption:'Vlieg door de retro neonlucht'},
- {id:'pirate_scooter',world:9,title:'Piratenbaai · Schatkistenslalom',mode:'booster',duration:12,icon:'🏴‍☠️',accent:'#edcc91',caption:'Race over de piratensteiger'}
+ {id:'pirate_scooter',world:9,title:'Piratenbaai · Schatkistenslalom',mode:'booster',duration:12,icon:'🏴‍☠️',accent:'#edcc91',caption:'Race over de piratensteiger'},
+ {id:'halloween_plane',world:10,title:'Halloweenland · Spookvlucht',mode:'plane',duration:11,icon:'🎃',accent:'#b39bc4',caption:'Vlieg langs spookhuizen'},
+ {id:'jungle_scooter',world:11,title:'De jungle · Lianenslalom',mode:'booster',duration:11,icon:'🌴',accent:'#9fd6ab',caption:'Slalom tussen oerwoudplanten'},
+ {id:'carnival_plane',world:12,title:'Het carnaval · Kermisvlucht',mode:'plane',duration:12,icon:'🎡',accent:'#f7b5d7',caption:'Vlieg langs het reuzenrad'}
 ]);
 const INTRO=.85,OUTRO=.75;
 const ELIGIBLE_AT=18, PITY_AT=35, PITY_DISTANCE=680;
